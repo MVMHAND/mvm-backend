@@ -127,6 +127,9 @@ my-blog/
 
 #### Type Definitions
 
+- Prefer named `interface` or `type` aliases for object shapes, props, state, and API payloads instead of inline or anonymous types to make debugging and refactors (including renames) easier.
+- Centralize shared types in `src/types/*` and reuse them across components, actions, and stores.
+
 ```
 
 // Use interfaces for objects
