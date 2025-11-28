@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getUsersAction } from '@/actions/users'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
 import { UserTable } from '@/components/features/users/UserTable'
+import { UserSearch } from '@/components/features/users/UserSearch'
 
 interface UsersPageProps {
   searchParams: {
@@ -63,26 +63,10 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         </Link>
       </div>
 
-      {/* Search */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <form method="get" className="flex gap-4">
-            <input
-              type="search"
-              name="search"
-              defaultValue={search}
-              placeholder="Search by name or email..."
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
-            />
-            <Button type="submit">Search</Button>
-            {search && (
-              <Link href="/admin/users">
-                <Button variant="outline">Clear</Button>
-              </Link>
-            )}
-          </form>
-        </CardContent>
-      </Card>
+      {/* Search */} 
+      <div className="mb-6">
+          <UserSearch initialSearch={search} />
+      </div>
 
       {/* User Table */}
       <UserTable users={users} />

@@ -523,8 +523,29 @@ export async function uploadAvatarAction(
 
     // Generate unique filename
     const fileExt = file.name.split('.').pop()
-    const fileName = `${userId}-${Date.now()}.${fileExt}`
-    const filePath = `avatars/${fileName}`
+    const fileName = `${Date.now()}.${fileExt}`
+    const filePath = `${userId}/${fileName}`
+
+    // Check if the user already has avatar files stored
+    const { data: existingAvatar } = await supabase.storage
+      .from('avatars')
+      .list(userId)
+
+    // Remove every existing avatar object to avoid leaving stale files behind
+    if (existingAvatar && existingAvatar.length > 0) {
+      const avatarPaths = existingAvatar.map((avatar) => `${userId}/${avatar.name}`)
+      const { error: removeError } = await supabase.storage
+        .from('avatars')
+        .remove(avatarPaths)
+
+      if (removeError) {
+        console.error('Error removing existing avatar(s):', removeError)
+        return {
+          success: false,
+          error: 'Failed to replace existing avatar. Please try again.',
+        }
+      }
+    }
 
     // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
