@@ -1,6 +1,11 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
+import { createClient as createServiceRoleClient, type SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
+/**
+ * Creates a Supabase client for Server Components and Server Actions
+ * Uses the anon key for regular user operations
+ */
 export async function createClient() {
   const cookieStore = await cookies()
 
@@ -9,21 +14,15 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+        getAll() {
+          return cookieStore.getAll()
         },
-        set(name: string, value: string, options: CookieOptions) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set({ name, value, ...options })
-          } catch (error) {
-            // Silently fail - cookies can only be modified in Server Actions or Route Handlers
-            // This is expected when checking auth in Server Components
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options })
-          } catch (error) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
             // Silently fail - cookies can only be modified in Server Actions or Route Handlers
             // This is expected when checking auth in Server Components
           }
@@ -31,4 +30,28 @@ export async function createClient() {
       },
     }
   )
+}
+
+/**
+ * Creates a Supabase admin client with service role privileges
+ * Use this ONLY for admin operations like inviting users, bypassing RLS, etc.
+ * NEVER expose this client to the browser
+ */
+let adminClient: SupabaseClient | null = null
+
+export async function createAdminClient() {
+  if (!adminClient) {
+    adminClient = createServiceRoleClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      }
+    )
+  }
+
+  return adminClient
 }

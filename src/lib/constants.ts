@@ -16,6 +16,7 @@ export const APP_DESCRIPTION =
 
 // User Status
 export const USER_STATUS = {
+  INVITED: 'invited',
   ACTIVE: 'active',
   INACTIVE: 'inactive',
   DELETED: 'deleted',

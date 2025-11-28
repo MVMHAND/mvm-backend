@@ -3,7 +3,7 @@
  * These should be generated from Supabase schema in production
  */
 
-export type UserStatus = 'active' | 'inactive' | 'deleted'
+export type UserStatus = 'invited' | 'active' | 'inactive' | 'deleted'
 
 export interface Profile {
   id: string

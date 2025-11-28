@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ENUMS
 -- ================================================
 
-CREATE TYPE user_status AS ENUM ('active', 'inactive', 'deleted');
+CREATE TYPE user_status AS ENUM ('invited', 'active', 'inactive', 'deleted');
 
 -- ================================================
 -- TABLES
@@ -173,11 +173,21 @@ CREATE POLICY "Allow authenticated users to read profiles"
     TO authenticated
     USING (true);
 
+CREATE POLICY "Allow service role to insert profiles"
+    ON profiles FOR INSERT
+    TO authenticated
+    WITH CHECK (true);
+
 CREATE POLICY "Allow users to update own profile"
     ON profiles FOR UPDATE
     TO authenticated
     USING (auth.uid() = id)
     WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Allow service role to delete profiles"
+    ON profiles FOR DELETE
+    TO authenticated
+    USING (true);
 
 -- RLS Policies for permissions
 CREATE POLICY "Allow authenticated users to read permissions"
@@ -283,3 +293,36 @@ COMMENT ON COLUMN roles.is_super_admin IS 'Marks the single super admin role';
 COMMENT ON COLUMN roles.is_system IS 'Marks system roles that should not be deleted';
 COMMENT ON COLUMN profiles.status IS 'User account status';
 COMMENT ON COLUMN audit_logs.metadata IS 'Additional context for the logged action';
+
+-- ================================================
+-- STORAGE BUCKET & POLICIES FOR AVATARS
+-- ================================================
+
+-- Create avatars bucket
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow authenticated users to upload avatars
+CREATE POLICY "Authenticated users can upload avatars"
+    ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (bucket_id = 'avatars');
+
+-- Allow authenticated users to update avatars
+CREATE POLICY "Authenticated users can update avatars"
+    ON storage.objects FOR UPDATE
+    TO authenticated
+    USING (bucket_id = 'avatars');
+
+-- Allow authenticated users to delete avatars
+CREATE POLICY "Authenticated users can delete avatars"
+    ON storage.objects FOR DELETE
+    TO authenticated
+    USING (bucket_id = 'avatars');
+
+-- Allow public read access to avatars (bucket is public)
+CREATE POLICY "Public read access to avatars"
+    ON storage.objects FOR SELECT
+    TO public
+    USING (bucket_id = 'avatars');

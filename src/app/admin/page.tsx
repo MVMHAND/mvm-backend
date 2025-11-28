@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { getUsersAction } from '@/actions/users'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -13,6 +15,10 @@ export default async function AdminDashboard() {
     redirect('/admin/login')
   }
 
+  // Get user count
+  const usersResult = await getUsersAction(1, 1)
+  const totalUsers = usersResult.success ? usersResult.data!.total : 0
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -21,15 +27,17 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Total Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-mvm-blue">-</p>
-            <p className="text-sm text-gray-600">Coming in Phase 2</p>
-          </CardContent>
-        </Card>
+        <Link href="/admin/users">
+          <Card className="cursor-pointer transition-shadow hover:shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg">Total Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-mvm-blue">{totalUsers}</p>
+              <p className="text-sm text-gray-600">View all users →</p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <Card>
           <CardHeader>
