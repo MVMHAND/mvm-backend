@@ -67,11 +67,4 @@ export interface AuthUser {
 }
 
 // Menu configuration types
-export interface MenuItem {
-  id: string
-  label: string
-  path: string
-  icon?: string
-  permissionKey?: string
-  children?: MenuItem[]
-}
+export type { MenuItem, MenuPermissionMetadata } from '@/config/menu'

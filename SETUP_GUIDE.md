@@ -227,6 +227,9 @@ npm run build
 # Start production server
 npm run start
 
+# Sync permissions from menu config to database
+npm run sync-permissions
+
 # Run linting
 npm run lint
 
@@ -237,6 +240,44 @@ npm run format
 npm run type-check
 ```
 
+### Permission Sync
+
+The `sync-permissions` script ensures the `permissions` table in your database stays in sync with the menu configuration defined in `src/config/menu.ts`.
+
+**How it works:**
+- Each menu item in `MENU_CONFIG` can define a `relatedPermissions` array containing all CRUD operations for that section
+- The sync script extracts all permissions from these arrays and syncs them to the database
+- **Upserts** all permission definitions (with label, group, description)
+- **Deletes** any permissions in the database that are no longer in the menu config (CASCADE removes linked `role_permissions` rows)
+
+**When to run:**
+- Automatically runs after `npm run build` via the `postbuild` hook
+- Manually run `npm run sync-permissions` after changing menu config during development
+- Run in CI/CD pipeline before deployment to ensure permissions are up-to-date
+
+**Environment Configuration:**
+
+The script loads environment variables from files in this order of precedence:
+1. `.env.{NODE_ENV}.local` (e.g., `.env.production.local`)
+2. `.env.local` (default for local development)
+3. `.env.{NODE_ENV}` (e.g., `.env.production`)
+4. `.env` (fallback)
+
+**Examples:**
+```bash
+# Development (uses .env.local)
+npm run sync-permissions
+
+# Production (uses .env.production.local or .env.production)
+NODE_ENV=production npm run sync-permissions
+
+# Test environment
+NODE_ENV=test npm run sync-permissions
+```
+
+**Requirements:**
+- `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` environment variables must be set in your env file or system environment
+
 ## Project Structure
 
 ```
@@ -244,10 +285,13 @@ my-virtual-mate/
 ├── src/
 │   ├── app/              # Next.js pages and layouts
 │   ├── components/       # React components
+│   ├── config/           # Menu and app configuration
 │   ├── lib/              # Utilities and configurations
 │   ├── types/            # TypeScript type definitions
 │   ├── actions/          # Server actions
 │   └── hooks/            # Custom React hooks (future)
+├── scripts/
+│   └── sync-permissions.ts  # Deploy-time permission sync
 ├── supabase/
 │   └── migrations/       # Database migrations
 ├── public/               # Static assets

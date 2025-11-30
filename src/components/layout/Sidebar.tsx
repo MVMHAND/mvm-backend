@@ -1,0 +1,158 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  LayoutDashboard,
+  Users,
+  Shield,
+  Settings,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react'
+import { useState } from 'react'
+import type { MenuItem } from '@/config/menu'
+
+// Icon mapping
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  LayoutDashboard,
+  Users,
+  Shield,
+  Settings,
+  FileText,
+}
+
+interface SidebarProps {
+  menuItems: MenuItem[]
+  userPermissions: string[]
+}
+
+export function Sidebar({ menuItems, userPermissions }: SidebarProps) {
+  const pathname = usePathname()
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+
+  // Check if user has permission for a menu item
+  const hasPermission = (item: MenuItem): boolean => {
+    // No permission required = always visible
+    if (!item.permissionKey) {
+      return true
+    }
+    // Check if user has the permission
+    return userPermissions.includes(item.permissionKey)
+  }
+
+  // Filter menu items based on permissions
+  const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
+    return items
+      .filter((item) => hasPermission(item))
+      .map((item) => ({
+        ...item,
+        children: item.children ? filterMenuItems(item.children) : undefined,
+      }))
+  }
+
+  const filteredMenu = filterMenuItems(menuItems)
+
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+      } else {
+        newSet.add(itemId)
+      }
+      return newSet
+    })
+  }
+
+  const renderMenuItem = (item: MenuItem, depth = 0) => {
+    const Icon = item.icon ? iconMap[item.icon] : null
+    const isActive = item.path === pathname
+    const isExpanded = expandedItems.has(item.id)
+    const hasChildren = item.children && item.children.length > 0
+
+    // For items with children
+    if (hasChildren) {
+      return (
+        <div key={item.id}>
+          <button
+            onClick={() => toggleExpanded(item.id)}
+            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              depth > 0 ? 'ml-4' : ''
+            } ${
+              isExpanded
+                ? 'bg-mvm-blue/10 text-mvm-blue'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-mvm-blue'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              {Icon && <Icon className="h-5 w-5" />}
+              <span>{item.label}</span>
+            </div>
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+          {isExpanded && item.children && (
+            <div className="mt-1 space-y-1">
+              {item.children.map((child) => renderMenuItem(child, depth + 1))}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // For regular menu items
+    return (
+      <Link
+        key={item.id}
+        href={item.path || '#'}
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          depth > 0 ? 'ml-4' : ''
+        } ${
+          isActive
+            ? 'bg-mvm-blue text-white'
+            : 'text-gray-700 hover:bg-gray-100 hover:text-mvm-blue'
+        }`}
+      >
+        {Icon && <Icon className="h-5 w-5" />}
+        <span>{item.label}</span>
+        {item.badge && (
+          <span className="ml-auto rounded-full bg-mvm-yellow px-2 py-0.5 text-xs font-semibold text-gray-900">
+            {item.badge}
+          </span>
+        )}
+      </Link>
+    )
+  }
+
+  return (
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white">
+      <div className="flex h-full flex-col">
+        {/* Logo/Brand */}
+        <div className="flex h-16 items-center border-b border-gray-200 px-6">
+          <Link href="/admin" className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-mvm-blue to-mvm-yellow">
+              <span className="text-sm font-bold text-white">MV</span>
+            </div>
+            <span className="text-lg font-bold text-gray-900">My Virtual Mate</span>
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-1">{filteredMenu.map((item) => renderMenuItem(item))}</div>
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-gray-200 p-4">
+          <p className="text-xs text-gray-500">© 2024 My Virtual Mate</p>
+          <p className="text-xs text-gray-400">Admin Panel v1.0</p>
+        </div>
+      </div>
+    </aside>
+  )
+}

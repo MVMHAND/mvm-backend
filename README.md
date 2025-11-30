@@ -66,10 +66,13 @@ my-virtual-mate/
 ├── src/
 │   ├── app/              # Next.js app router pages
 │   ├── components/       # React components
+│   ├── config/           # Menu and app configuration
 │   ├── lib/              # Utility functions and configurations
 │   ├── types/            # TypeScript type definitions
 │   ├── actions/          # Server actions
 │   └── hooks/            # Custom React hooks
+├── scripts/
+│   └── sync-permissions.ts  # Deploy-time permission sync
 ├── supabase/
 │   └── migrations/       # Database migration files
 ├── public/               # Static assets
@@ -79,8 +82,9 @@ my-virtual-mate/
 ## Scripts
 
 - `npm run dev` - Start development server
-- `npm run build` - Build for production
+- `npm run build` - Build for production (auto-syncs permissions)
 - `npm run start` - Start production server
+- `npm run sync-permissions` - Sync permissions from menu config to database
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
 - `npm run type-check` - Check TypeScript types
