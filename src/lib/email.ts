@@ -257,7 +257,7 @@ function getInvitationEmailTemplate(params: {
       ${setupLink}
     </p>
     <p style="color: ${BRAND_COLORS.gray}; font-size: 14px; margin-top: 30px;">
-      <strong>Note:</strong> This invitation link will expire in 24 hours for security reasons.
+      <strong>Note:</strong> This invitation link will expire in 48 hours for security reasons.
     </p>
   `
 

@@ -6,6 +6,7 @@ import { sendInvitationEmail } from '@/lib/email'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import type { ActionResponse } from '@/types'
 import type { UserWithRole } from '@/types/database'
+import { randomBytes, createHash } from 'crypto'
 
 /**
  * Get paginated list of users with their roles
@@ -114,7 +115,7 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
       }
     }
 
-    // Check if user already exists
+    // Check if user already exists in profiles
     const { data: existingUser } = await supabase
       .from('profiles')
       .select('id')
@@ -128,43 +129,33 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
       }
     }
 
-    // Create auth user using admin client (Supabase will send the invitation email)
-    const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-    const { data: authData, error: authError } = await adminClient.auth.admin.inviteUserByEmail(
-      email,
-      {
-        data: {
-          name,
-          role_id: roleId,
-        },
-        redirectTo: redirectUrl,
-      }
-    )
+    // Check if there's already a pending invitation
+    const { data: existingInvitation } = await adminClient
+      .from('user_invitations')
+      .select('id, expires_at')
+      .eq('email', email)
+      .is('accepted_at', null)
+      .single()
 
-    if (authError) {
-      console.error('Error creating auth user:', authError)
-      return {
-        success: false,
-        error: 'Failed to send invitation',
+    if (existingInvitation) {
+      // Check if invitation is still valid
+      if (new Date(existingInvitation.expires_at) > new Date()) {
+        return {
+          success: false,
+          error: 'A pending invitation already exists for this email',
+        }
       }
+      // Delete expired invitation
+      await adminClient.from('user_invitations').delete().eq('id', existingInvitation.id)
     }
 
-    // Create profile using admin client (to bypass RLS)
-    const { error: profileError } = await adminClient.from('profiles').insert({
-      id: authData.user.id,
-      name,
-      email,
-      role_id: roleId,
-      status: 'invited',
-    })
+    // Generate secure invitation token
+    const token = randomBytes(32).toString('hex')
+    const tokenHash = createHash('sha256').update(token).digest('hex')
 
-    if (profileError) {
-      console.error('Error creating profile:', profileError)
-      return {
-        success: false,
-        error: 'Failed to create user profile',
-      }
-    }
+    // Set expiration to 48 hours from now
+    const expiresAt = new Date()
+    expiresAt.setHours(expiresAt.getHours() + 48)
 
     // Get current user for audit log and email
     const {
@@ -172,7 +163,10 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
     } = await supabase.auth.getUser()
 
     let inviterName = 'Admin'
+    let inviterId: string | null = null
+
     if (currentUser) {
+      inviterId = currentUser.id
       const { data: currentProfile } = await supabase
         .from('profiles')
         .select('name')
@@ -182,19 +176,43 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
       if (currentProfile) {
         inviterName = currentProfile.name
       }
+    }
 
-      // Create audit log
+    // Create invitation record in database
+    const { data: invitation, error: invitationError } = await adminClient
+      .from('user_invitations')
+      .insert({
+        email,
+        name,
+        role_id: roleId,
+        token_hash: tokenHash,
+        invited_by: inviterId,
+        expires_at: expiresAt.toISOString(),
+      })
+      .select()
+      .single()
+
+    if (invitationError) {
+      console.error('Error creating invitation:', invitationError)
+      return {
+        success: false,
+        error: 'Failed to create invitation',
+      }
+    }
+
+    // Create audit log
+    if (currentUser) {
       await createAuditLog({
         actorId: currentUser.id,
         actionType: AUDIT_ACTION_TYPES.USER_INVITE,
-        targetType: 'user',
-        targetId: authData.user.id,
+        targetType: 'user_invitation',
+        targetId: invitation.id,
         metadata: { email, name, role_id: roleId },
       })
     }
 
-    // Send custom invitation email
-    const setupLink = `${redirectUrl}?token_hash=${authData.user.id}&type=invite`
+    // Send invitation email with unhashed token
+    const setupLink = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/accept-invitation?token=${token}`
     const emailResult = await sendInvitationEmail({
       to: email,
       userName: name,
@@ -204,7 +222,12 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
 
     if (!emailResult.success) {
       console.error('Failed to send invitation email:', emailResult.error)
-      // Don't fail the entire operation if email fails - user was still created
+      // Delete the invitation if email fails
+      await adminClient.from('user_invitations').delete().eq('id', invitation.id)
+      return {
+        success: false,
+        error: 'Failed to send invitation email. Please try again.',
+      }
     }
 
     revalidatePath('/admin/users')
@@ -388,7 +411,7 @@ export async function toggleUserStatusAction(
 }
 
 /**
- * Delete user (soft delete by setting status to 'deleted')
+ * Delete user (soft delete in profiles + hard delete from Supabase Auth)
  */
 export async function deleteUserAction(userId: string): Promise<ActionResponse> {
   try {
@@ -409,8 +432,8 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
       }
     }
 
-    // Use admin client to bypass RLS for deleting other users
-    const { error } = await adminClient
+    // Soft delete in profiles (use admin client to bypass RLS)
+    const { error: profileError } = await adminClient
       .from('profiles')
       .update({
         status: 'deleted',
@@ -418,12 +441,21 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
       })
       .eq('id', userId)
 
-    if (error) {
-      console.error('Error deleting user:', error)
+    if (profileError) {
+      console.error('Error soft deleting user profile:', profileError)
       return {
         success: false,
         error: 'Failed to delete user',
       }
+    }
+
+    // Hard delete from Supabase Auth
+    const { error: authError } = await adminClient.auth.admin.deleteUser(userId)
+
+    if (authError) {
+      console.error('Error deleting user from Supabase Auth:', authError)
+      // Don't fail the entire operation - profile is already marked as deleted
+      // Just log the error
     }
 
     // Create audit log
