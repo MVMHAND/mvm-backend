@@ -2,7 +2,10 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendInvitationEmail } from '@/lib/email'
+import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import type { ActionResponse } from '@/types'
+import type { UserWithRole } from '@/types/database'
 
 /**
  * Get paginated list of users with their roles
@@ -11,7 +14,7 @@ export async function getUsersAction(
   page = 1,
   limit = 10,
   search = ''
-): Promise<ActionResponse<{ users: any[]; total: number; pages: number }>> {
+): Promise<ActionResponse<{ users: UserWithRole[]; total: number; pages: number }>> {
   try {
     const supabase = await createClient()
     const offset = (page - 1) * limit
@@ -62,7 +65,7 @@ export async function getUsersAction(
  */
 export async function getUserByIdAction(
   userId: string
-): Promise<ActionResponse<any>> {
+): Promise<ActionResponse<UserWithRole>> {
   try {
     const supabase = await createClient()
 
@@ -163,19 +166,45 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
       }
     }
 
-    // Create audit log
+    // Get current user for audit log and email
     const {
       data: { user: currentUser },
     } = await supabase.auth.getUser()
 
+    let inviterName = 'Admin'
     if (currentUser) {
-      await supabase.from('audit_logs').insert({
-        actor_id: currentUser.id,
-        action_type: 'user.invite',
-        target_type: 'user',
-        target_id: authData.user.id,
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', currentUser.id)
+        .single()
+      
+      if (currentProfile) {
+        inviterName = currentProfile.name
+      }
+
+      // Create audit log
+      await createAuditLog({
+        actorId: currentUser.id,
+        actionType: AUDIT_ACTION_TYPES.USER_INVITE,
+        targetType: 'user',
+        targetId: authData.user.id,
         metadata: { email, name, role_id: roleId },
       })
+    }
+
+    // Send custom invitation email
+    const setupLink = `${redirectUrl}?token_hash=${authData.user.id}&type=invite`
+    const emailResult = await sendInvitationEmail({
+      to: email,
+      userName: name,
+      inviterName,
+      setupLink,
+    })
+
+    if (!emailResult.success) {
+      console.error('Failed to send invitation email:', emailResult.error)
+      // Don't fail the entire operation if email fails - user was still created
     }
 
     revalidatePath('/admin/users')

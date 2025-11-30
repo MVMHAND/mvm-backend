@@ -18,6 +18,7 @@ export type {
   ProfileUpdate,
   RoleUpdate,
   UserStatus,
+  UserWithRole,
 } from './database'
 
 // Component prop types

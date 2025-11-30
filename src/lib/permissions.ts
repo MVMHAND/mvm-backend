@@ -38,7 +38,7 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
     }
 
     // Super Admin has all permissions
-    if (profile.role && (profile.role as any).is_super_admin) {
+    if (profile.role && (profile.role as unknown as { is_super_admin: boolean }).is_super_admin) {
       return true
     }
 
@@ -94,7 +94,7 @@ export async function getUserPermissions(): Promise<string[]> {
     }
 
     // Super Admin has all permissions - return all permission keys
-    if (profile.role && (profile.role as any).is_super_admin) {
+    if (profile.role && (profile.role as unknown as { is_super_admin: boolean }).is_super_admin) {
       const { data: allPermissions } = await supabase
         .from('permissions')
         .select('permission_key')
@@ -142,7 +142,7 @@ export async function isSuperAdmin(): Promise<boolean> {
       .eq('id', user.id)
       .single()
 
-    return !!(profile?.role as any)?.is_super_admin
+    return !!(profile?.role as unknown as { is_super_admin: boolean })?.is_super_admin
   } catch (error) {
     console.error('Error checking super admin:', error)
     return false

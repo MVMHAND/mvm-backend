@@ -29,9 +29,9 @@ export function Breadcrumb() {
       currentPath += `/${path}`
 
       // Capitalize and format label
-      let label = path
+      const label = path
         .split('-')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
         .join(' ')
 
       // Don't add href to the last item (current page)

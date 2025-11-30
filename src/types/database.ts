@@ -43,6 +43,10 @@ export interface RolePermission {
   created_at: string
 }
 
+export interface UserWithRole extends Profile {
+  role: Role
+}
+
 export interface AuditLog {
   id: string
   actor_id: string

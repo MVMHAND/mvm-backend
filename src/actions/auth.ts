@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import type { ActionResponse } from '@/types'
 
 /**
@@ -27,6 +28,14 @@ export async function loginAction(formData: FormData): Promise<ActionResponse> {
   })
 
   if (error) {
+    // Log failed login attempt
+    await createAuditLog({
+      actorId: null,
+      actionType: AUDIT_ACTION_TYPES.LOGIN_FAILURE,
+      targetType: 'auth',
+      metadata: { email, error: error.message },
+    })
+
     return {
       success: false,
       error: 'Invalid email or password',
@@ -46,6 +55,14 @@ export async function loginAction(formData: FormData): Promise<ActionResponse> {
       .from('profiles')
       .update({ last_login: new Date().toISOString() })
       .eq('id', data.user.id)
+
+    // Log successful login
+    await createAuditLog({
+      actorId: data.user.id,
+      actionType: AUDIT_ACTION_TYPES.LOGIN_SUCCESS,
+      targetType: 'auth',
+      metadata: { email },
+    })
   }
 
   revalidatePath('/admin', 'layout')
@@ -62,6 +79,11 @@ export async function loginAction(formData: FormData): Promise<ActionResponse> {
 export async function logoutAction(): Promise<ActionResponse> {
   const supabase = await createClient()
 
+  // Get user before logging out
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   const { error } = await supabase.auth.signOut()
 
   if (error) {
@@ -69,6 +91,16 @@ export async function logoutAction(): Promise<ActionResponse> {
       success: false,
       error: 'Failed to logout',
     }
+  }
+
+  // Log logout
+  if (user) {
+    await createAuditLog({
+      actorId: user.id,
+      actionType: AUDIT_ACTION_TYPES.LOGOUT,
+      targetType: 'auth',
+      metadata: {},
+    })
   }
 
   revalidatePath('/admin', 'layout')

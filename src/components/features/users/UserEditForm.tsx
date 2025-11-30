@@ -54,7 +54,7 @@ export function UserEditForm({ user, roles, disabled = false }: UserEditFormProp
       setSuccess(result.message || 'User updated successfully!')
       setIsLoading(false)
       router.refresh()
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred')
       setIsLoading(false)
     }

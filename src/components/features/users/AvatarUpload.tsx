@@ -68,7 +68,7 @@ export function AvatarUpload({ user, disabled = false }: AvatarUploadProps) {
       }
       router.refresh()
       setIsLoading(false)
-    } catch (err) {
+    } catch {
       alert('An unexpected error occurred')
       setIsLoading(false)
     }

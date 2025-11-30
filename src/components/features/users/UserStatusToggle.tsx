@@ -38,7 +38,7 @@ export function UserStatusToggle({ user }: UserStatusToggleProps) {
       }
 
       router.refresh()
-    } catch (err) {
+    } catch {
       alert('An unexpected error occurred')
     } finally {
       setIsLoading(false)

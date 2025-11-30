@@ -31,7 +31,7 @@ export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
       // Redirect to users list
       router.push('/admin/users')
       router.refresh()
-    } catch (err) {
+    } catch {
       alert('An unexpected error occurred')
       setIsLoading(false)
       setShowConfirm(false)

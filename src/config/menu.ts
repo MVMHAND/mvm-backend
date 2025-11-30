@@ -91,7 +91,7 @@ export const MENU_CONFIG: MenuItem[] = [
   {
     id: 'audit',
     label: 'Audit Logs',
-    path: '/admin/audit',
+    path: '/admin/audit-logs',
     icon: 'FileText',
     permissionKey: 'audit.view',
     relatedPermissions: [

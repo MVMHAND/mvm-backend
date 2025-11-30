@@ -54,8 +54,8 @@ export default async function AdminLayout({
         email: profile.email,
         avatar_url: profile.avatar_url,
         role: {
-          name: (profile.role as any).name,
-          is_super_admin: (profile.role as any).is_super_admin,
+          name: (profile.role as unknown as { name: string }).name,
+          is_super_admin: (profile.role as unknown as { is_super_admin: boolean }).is_super_admin,
         },
       }}
     >

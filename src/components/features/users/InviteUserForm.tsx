@@ -55,7 +55,7 @@ export function InviteUserForm({ roles }: InviteUserFormProps) {
         router.push('/admin/users')
         router.refresh()
       }, 2000)
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred')
       setIsLoading(false)
     }
