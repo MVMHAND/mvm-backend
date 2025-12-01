@@ -1,5 +1,4 @@
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ================================================
 -- ENUMS
@@ -13,7 +12,7 @@ CREATE TYPE user_status AS ENUM ('invited', 'active', 'inactive', 'deleted');
 
 -- Roles table
 CREATE TABLE roles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
     description TEXT,
     is_super_admin BOOLEAN NOT NULL DEFAULT FALSE,
@@ -40,7 +39,7 @@ CREATE TABLE profiles (
 
 -- Permissions table
 CREATE TABLE permissions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     permission_key TEXT NOT NULL UNIQUE,
     label TEXT NOT NULL,
     description TEXT,
@@ -50,7 +49,7 @@ CREATE TABLE permissions (
 
 -- Role permissions junction table
 CREATE TABLE role_permissions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
     permission_key TEXT NOT NULL REFERENCES permissions(permission_key) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -59,7 +58,7 @@ CREATE TABLE role_permissions (
 
 -- Audit logs table
 CREATE TABLE audit_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     actor_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
     action_type TEXT NOT NULL,
     target_type TEXT NOT NULL,
