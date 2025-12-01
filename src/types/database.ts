@@ -77,3 +77,6 @@ export type AuditLogInsert = Omit<AuditLog, 'id' | 'created_at'>
 // Update types
 export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'created_at' | 'email'>>
 export type RoleUpdate = Partial<Omit<Role, 'id' | 'created_at' | 'is_super_admin'>>
+
+// Blog-related tables
+export type { BlogCategory, BlogContributor, BlogPost, BlogPostStatus } from './blog'

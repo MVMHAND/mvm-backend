@@ -37,3 +37,26 @@ export const MAX_PAGE_SIZE = 100
 
 // Session Configuration
 export const SESSION_TIMEOUT_MINUTES = 60
+
+// Blog Post Status
+export const BLOG_POST_STATUS = {
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
+  UNPUBLISHED: 'unpublished',
+} as const
+
+// Blog Routes
+export const BLOG_ROUTES = {
+  POSTS: '/admin/blog/posts',
+  CATEGORIES: '/admin/blog/categories',
+  CONTRIBUTORS: '/admin/blog/contributors',
+} as const
+
+// Blog Limits
+export const BLOG_LIMITS = {
+  SEO_TITLE_MAX_LENGTH: 60,
+  SEO_DESCRIPTION_MAX_LENGTH: 160,
+  EXPERTISE_MAX_COUNT: 3,
+  STATS_MAX_COUNT: 3,
+  READING_WORDS_PER_MINUTE: 200,
+} as const

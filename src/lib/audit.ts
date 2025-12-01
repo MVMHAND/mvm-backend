@@ -52,6 +52,23 @@ export const AUDIT_ACTION_TYPES = {
   // System
   SYSTEM_CONFIG_UPDATE: 'system.config_update',
   SYSTEM_ERROR: 'system.error',
+
+  // Blog - Categories
+  BLOG_CATEGORY_CREATED: 'blog.category.created',
+  BLOG_CATEGORY_UPDATED: 'blog.category.updated',
+  BLOG_CATEGORY_DELETED: 'blog.category.deleted',
+
+  // Blog - Contributors
+  BLOG_CONTRIBUTOR_CREATED: 'blog.contributor.created',
+  BLOG_CONTRIBUTOR_UPDATED: 'blog.contributor.updated',
+  BLOG_CONTRIBUTOR_DELETED: 'blog.contributor.deleted',
+
+  // Blog - Posts
+  BLOG_POST_CREATED: 'blog.post.created',
+  BLOG_POST_UPDATED: 'blog.post.updated',
+  BLOG_POST_DELETED: 'blog.post.deleted',
+  BLOG_POST_PUBLISHED: 'blog.post.published',
+  BLOG_POST_UNPUBLISHED: 'blog.post.unpublished',
 } as const
 
 /**

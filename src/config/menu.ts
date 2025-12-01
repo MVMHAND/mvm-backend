@@ -89,6 +89,39 @@ export const MENU_CONFIG: MenuItem[] = [
     ],
   },
   {
+    id: 'blog',
+    label: 'Blog',
+    icon: 'BookOpen',
+    permissionKey: 'blog.view',
+    relatedPermissions: [
+      { key: 'blog.view', label: 'View Blog', group: 'Blog', description: 'View blog posts, categories, and contributors' },
+      { key: 'blog.manage', label: 'Manage Blog', group: 'Blog', description: 'Full blog management (create, edit, delete, publish)' },
+    ],
+    children: [
+      {
+        id: 'blog-posts',
+        label: 'Posts',
+        path: '/admin/blog/posts',
+        icon: 'FileText',
+        permissionKey: 'blog.view',
+      },
+      {
+        id: 'blog-categories',
+        label: 'Categories',
+        path: '/admin/blog/categories',
+        icon: 'FolderOpen',
+        permissionKey: 'blog.view',
+      },
+      {
+        id: 'blog-contributors',
+        label: 'Contributors',
+        path: '/admin/blog/contributors',
+        icon: 'Users',
+        permissionKey: 'blog.view',
+      },
+    ],
+  },
+  {
     id: 'audit',
     label: 'Audit Logs',
     path: '/admin/audit-logs',

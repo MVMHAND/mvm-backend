@@ -23,8 +23,8 @@ export type {
 
 // Component prop types
 export interface PageProps {
-  params: { [key: string]: string }
-  searchParams: { [key: string]: string | string[] | undefined }
+  params: Promise<Record<string, string>>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 // Server action response types
@@ -69,3 +69,22 @@ export interface AuthUser {
 
 // Menu configuration types
 export type { MenuItem, MenuPermissionMetadata } from '@/config/menu'
+
+// Blog types
+export type {
+  BlogCategory,
+  BlogCategoryWithUsers,
+  BlogContributor,
+  BlogContributorWithUsers,
+  BlogPost,
+  BlogPostWithRelations,
+  BlogPostStatus,
+  BlogCategoryFormData,
+  BlogContributorFormData,
+  BlogPostFormData,
+  BlogPostFilters,
+  CategoryValidationResult,
+  ContributorValidationResult,
+  PostValidationResult,
+  SEOValidation,
+} from './blog'
