@@ -6,24 +6,18 @@ import { useRouter } from 'next/navigation'
 import { logoutAction } from '@/actions/auth'
 import { getInitials } from '@/lib/utils'
 import { Breadcrumb } from './Breadcrumb'
+import { useUser } from '@/store/provider'
 
-interface TopBarProps {
-  user: {
-    id: string
-    name: string
-    email: string
-    avatar_url: string | null
-    role: {
-      name: string
-      is_super_admin: boolean
-    }
-  }
-}
-
-export function TopBar({ user }: TopBarProps) {
+export function TopBar() {
+  const user = useUser()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
+
+  // Don't render if no user (shouldn't happen in protected routes)
+  if (!user) {
+    return null
+  }
 
   const handleLogout = async () => {
     setIsLoggingOut(true)

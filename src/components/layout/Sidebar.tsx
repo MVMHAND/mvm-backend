@@ -10,8 +10,10 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
+  BookOpen,
+  FolderOpen,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useAppStore, useSidebar } from '@/store/provider'
 import type { MenuItem } from '@/config/menu'
 
 // Icon mapping
@@ -21,31 +23,29 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Shield,
   Settings,
   FileText,
+  BookOpen,
+  FolderOpen,
 }
 
-interface SidebarProps {
-  menuItems: MenuItem[]
-  userPermissions: string[]
-}
-
-export function Sidebar({ menuItems, userPermissions }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname()
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
-  // Check if user has permission for a menu item
-  const hasPermission = (item: MenuItem): boolean => {
-    // No permission required = always visible
-    if (!item.permissionKey) {
-      return true
-    }
-    // Check if user has the permission
-    return userPermissions.includes(item.permissionKey)
-  }
+  // Get state from Zustand store
+  const menuItems = useAppStore((state) => state.menuItems)
+  const hasPermission = useAppStore((state) => state.hasPermission)
+  const { expandedItems, toggleItem } = useSidebar()
 
   // Filter menu items based on permissions
   const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
     return items
-      .filter((item) => hasPermission(item))
+      .filter((item) => {
+        // No permission required = always visible
+        if (!item.permissionKey) {
+          return true
+        }
+        // Check if user has the permission
+        return hasPermission(item.permissionKey)
+      })
       .map((item) => ({
         ...item,
         children: item.children ? filterMenuItems(item.children) : undefined,
@@ -53,18 +53,6 @@ export function Sidebar({ menuItems, userPermissions }: SidebarProps) {
   }
 
   const filteredMenu = filterMenuItems(menuItems)
-
-  const toggleExpanded = (itemId: string) => {
-    setExpandedItems((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId)
-      } else {
-        newSet.add(itemId)
-      }
-      return newSet
-    })
-  }
 
   const renderMenuItem = (item: MenuItem, depth = 0) => {
     const Icon = item.icon ? iconMap[item.icon] : null
@@ -77,7 +65,7 @@ export function Sidebar({ menuItems, userPermissions }: SidebarProps) {
       return (
         <div key={item.id}>
           <button
-            onClick={() => toggleExpanded(item.id)}
+            onClick={() => toggleItem(item.id)}
             className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
               depth > 0 ? 'ml-4' : ''
             } ${

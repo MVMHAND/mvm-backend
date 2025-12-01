@@ -55,8 +55,8 @@ Use this document as the single source of truth when implementing, refactoring, 
 
 - **State management**
   - Server Components + Server Actions for data and mutations.
-  - Zustand for client‑side UI state only.
-  - React Context only for authentication state.
+  - Zustand for client-side global state (user, permissions, UI preferences).
+  - Local `useState` for component-specific UI state.
 
 ---
 
@@ -244,18 +244,29 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
 
 ### 8.2 State Management
 
-- Client-side UI state:
-  - Use Zustand for global UI (sidebar open, theme, etc.).
-  - Co-located `useState` for simple local state.
-- Auth state:
-  - Use React Context for authenticated user info where needed.
-- Server state:
-  - Fetch in Server Components or Server Actions; **don’t** build a client-heavy data fetching layer.
+- **Zustand store** (`src/store/`):
+
+  - Uses the **slices pattern** for modularity:
+    - `authSlice.ts` – user, permissions, menu items, `hasPermission()`, `isSuperAdmin()`.
+    - `uiSlice.ts` – sidebar state, theme, mobile menu.
+  - **SSR-compatible**: `StoreProvider` creates a new store per request to avoid shared state.
+  - Persist middleware saves UI preferences (theme, sidebar collapsed) to localStorage.
+  - **Never persist sensitive data** (user info, tokens).
+
+- **Key rules**:
+  - Only use Zustand in **Client Components** (`'use client'`).
+  - Server Components must **not** read/write to the store.
+  - Initialize store with server-fetched data via `StoreProvider initialState`.
+  - Keep truly local UI state in `useState` (form fields, toggles, dropdown open).
+
+- **Store usage**:
+  - Import hooks from `@/store/provider`.
+  - Use selectors for performance: `const user = useAppStore(state => state.user)`.
+  - Available typed hooks: `useUser()`, `useAuth()`, `useSidebar()`, `useTheme()`, `useMenuItems()`.
 
 ### 8.3 Styling & Design
 
 - **Tailwind CSS**:
-
   - Keep global styles in `app/globals.css`.
   - Use utility classes primarily.
   - CSS Modules only for complex, component-specific styling needs.
@@ -279,44 +290,34 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
   - Add ARIA attributes to menus, dialogs, forms, and complex interactive controls.
 
 ### 8.4 TypeScript & Naming Standards
-
-- **General**
-
-  - Strict TypeScript; no `any` (use `unknown` + proper guards).
-  - Centralize shared types in `src/types/*`.
-  - Prefer named `interface` / `type` aliases for props, payloads, etc.
-  - All functions should have explicit return types.
-
-- **Naming**
-
-  - Components & types: `PascalCase`.
-  - Variables & functions: `camelCase`.
-  - Constants: `SCREAMING_SNAKE_CASE`.
-  - Booleans: prefix with `is`, `has`, `should`, `can`.
-  - Event handlers: prefix with `handle` or `on` (e.g., `handleSubmit`).
-
-- **Files & folders**
-
-  - React components: `PascalCase.tsx`.
-  - Non-component files: `camelCase.ts`.
-  - Page files: `page.tsx`, `layout.tsx`, `error.tsx`, `loading.tsx`.
-  - Route folders: lowercase, hyphen-separated (e.g., `user-settings`, `[id]`).
-
-- **Imports order**
-  1. React imports.
-  2. Next.js imports.
-  3. Third-party libraries.
-  4. Internal absolute imports `@/...`.
-  5. Relative imports (local files).
-
-### 8.5 Utilities & Patterns
-
-- Use a `cn` helper combining `clsx` and `tailwind-merge` for className merging.
-- Implement reusable helpers for:
-  - Date formatting.
-  - Slug generation.
-  - Text truncation.
-- Use Next `Image` for all images (including Supabase Storage URLs) and configure `next.config` remote patterns accordingly.
+  
+  - **General**
+  
+  -  Strict TypeScript; no `any` (use `unknown` + proper guards).
+  -  Centralize shared types in `src/types/*`.
+  -  Prefer named `interface` / `type` aliases for props, payloads, etc.
+  -  All functions should have explicit return types.
+  
+  - **Naming**
+  
+  -  Components & types: `PascalCase`.
+  -  Variables & functions: `camelCase`.
+  -  Constants: `SCREAMING_SNAKE_CASE`.
+  -  Booleans: prefix with `is`, `has`, `should`, `can`.
+  -  Event handlers: prefix with `handle` or `on` (e.g., `handleSubmit`).
+  
+  - **Files & folders**
+  
+  -  Components: `PascalCase.tsx`; non-components: `camelCase.ts`.
+  -  Pages: `page.tsx`, `layout.tsx`, `error.tsx`, `loading.tsx`.
+  -  Route folders: lowercase, hyphen-separated (e.g., `user-settings`, `[id]`).
+  -  Imports order: React, Next.js, third-party, internal `@/...`, then relative.
+  
+  ### 8.5 Utilities & Patterns
+  
+  - Use a `cn` helper (clsx + tailwind-merge) for className merging.
+  - Implement reusable helpers (date formatting, slug generation, text truncation).
+  - Use Next `Image` for all images and configure `next.config` remote patterns for Supabase Storage.
 
 ### 8.6 Error & Loading States
 
@@ -328,17 +329,17 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
 
 ## 9. Non-Functional, Tooling & Workflow (Compact)
 
-- **Performance**: target `< 2s` TTFB for admin pages; use dynamic imports for heavy client components, efficient image loading, and Next.js revalidation (`revalidate`, `revalidatePath`, `revalidateTag`) where appropriate.
-- **DB & environments**: all schema changes go through migrations only; dev/staging/prod should share the same schema; run migrations and checks in CI before deploy.
-- **Tooling**: use ESLint + Prettier (no `any`, no unused vars/params except `_`-prefixed, prefer `const`, Tailwind plugin, single quotes, no semicolons, print width ~100). Run lint, type-check, and build in CI.
-- **Deployment**: deploy on Vercel (or similar) with required env vars set: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`. Use Node 18+.
-- **Commits**: conventional commits like `feat(scope): ...`, `fix(scope): ...` are preferred; Husky/lint-staged may be used to enforce linting/formatting on commit.
+- **Performance**: target `< 2s` TTFB and use efficient loading (dynamic imports, caching, image optimization).
+- **DB & environments**: apply schema changes via migrations and keep dev/staging/prod schemas in sync.
+- **Tooling**: use ESLint + Prettier and run lint, type-check, and build in CI.
+- **Deployment**: deploy on Vercel (or similar) with required env vars configured and Node 18+.
+- **Commits**: use conventional commits and pre-commit linting/formatting.
 
 ---
 
 ## 10. How Future AI-Assisted Changes Should Behave
 
-- Always follow this file’s tech stack, RBAC, security, and code-driven navigation rules.
-- When adding features, update menu config + permissions and keep the single, immutable Super Admin invariant intact.
-- Default to least-privilege, secure behavior (RLS, server-side mutations, no service keys in client) and align with the established naming, structure, and styling conventions.
-- If requirements seem ambiguous, prefer a safer interpretation and ask for clarification in the prompt instead of weakening these rules.
+- Follow this document’s tech stack, RBAC, security, and code-defined navigation rules.
+- When adding features, update menu config + permissions and keep the single immutable Super Admin.
+- Default to least-privilege (RLS, server-side mutations, no client service keys) and follow naming, structure, and styling conventions.
+- If requirements are ambiguous, pick the safer option and ask for clarification instead of weakening these rules.
