@@ -73,3 +73,17 @@ export function getInitials(name: string): string {
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
+
+/**
+ * Resolve the canonical site URL using env + sensible fallbacks
+ */
+export function getSiteUrl(): string {
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    (process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : undefined) ||
+    'http://localhost:3000'
+
+  return siteUrl
+}

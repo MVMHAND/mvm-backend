@@ -7,6 +7,7 @@ import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import type { ActionResponse } from '@/types'
 import type { UserWithRole } from '@/types/database'
 import { randomBytes, createHash } from 'crypto'
+import { getSiteUrl } from '@/lib/utils'
 
 /**
  * Combined user type that includes both active users and pending invitations
@@ -315,7 +316,8 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
     }
 
     // Send invitation email with unhashed token
-    const setupLink = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/accept-invitation?token=${token}`
+    const siteUrl = getSiteUrl()
+    const setupLink = `${siteUrl}/auth/accept-invitation?token=${token}`
     const emailResult = await sendInvitationEmail({
       to: email,
       userName: name,

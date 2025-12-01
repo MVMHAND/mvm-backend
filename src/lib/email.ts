@@ -1,11 +1,12 @@
 import { Resend } from 'resend'
+import { getSiteUrl } from '@/lib/utils'
 
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Email configuration
 const FROM_EMAIL = 'My Virtual Mate <onboarding@resend.dev>' // Update with your verified domain
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+const SITE_URL = getSiteUrl()
 
 // Brand colors for email templates
 const BRAND_COLORS = {

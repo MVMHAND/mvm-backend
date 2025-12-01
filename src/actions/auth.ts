@@ -7,6 +7,7 @@ import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import { sendPasswordResetEmail } from '@/lib/email'
 import { randomBytes, createHash } from 'crypto'
 import type { ActionResponse } from '@/types'
+import { getSiteUrl } from '@/lib/utils'
 
 /**
  * Login action - authenticates a user with email and password
@@ -182,7 +183,8 @@ export async function forgotPasswordAction(formData: FormData): Promise<ActionRe
     }
 
     // Send password reset email with the token
-    const resetLink = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset-password?token=${token}`
+    const siteUrl = getSiteUrl()
+    const resetLink = `${siteUrl}/auth/reset-password?token=${token}`
     await sendPasswordResetEmail({
       to: email,
       userName: profile.name,
