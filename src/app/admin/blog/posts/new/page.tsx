@@ -3,6 +3,8 @@ import { getAllCategoriesForSelectAction } from '@/actions/blog-categories'
 import { getAllContributorsForSelectAction } from '@/actions/blog-contributors'
 import { PageContainer, PageHeader, FormContainer, ErrorMessage } from '@/components/layout/PageLayout'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NewPostPage() {
   const [categoriesResult, contributorsResult] = await Promise.all([
     getAllCategoriesForSelectAction(),

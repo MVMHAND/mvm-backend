@@ -227,8 +227,8 @@ VALUES
     ('Manager', 'Manager with limited administrative permissions', TRUE),
     ('Support', 'Support staff with read-only access', TRUE);
 
--- Insert initial permissions (these will be managed via code sync after initial setup)
--- Run `npm run sync-permissions` to sync permissions from src/config/menu.ts
+-- Insert initial permissions
+-- These are synced with src/config/menu.ts via subsequent migrations
 INSERT INTO permissions (permission_key, label, description, "group")
 VALUES
     -- User permissions

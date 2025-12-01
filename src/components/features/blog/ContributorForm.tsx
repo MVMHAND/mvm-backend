@@ -177,6 +177,7 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
             <div className="flex-shrink-0">
               <div className="relative">
                 {avatarUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={avatarUrl}
                     alt="Avatar preview"

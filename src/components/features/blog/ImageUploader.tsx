@@ -124,6 +124,7 @@ export function ImageUploader({
       {preview && !hidePreview ? (
         <div className="space-y-3">
           <div className="relative overflow-hidden rounded-lg border border-gray-200">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={preview}
               alt="Preview"

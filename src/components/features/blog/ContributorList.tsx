@@ -100,6 +100,7 @@ export function ContributorList({ contributors, pagination }: ContributorListPro
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isPending, deletingId]
   )
 

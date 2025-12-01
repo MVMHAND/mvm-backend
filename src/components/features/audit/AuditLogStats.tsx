@@ -1,14 +1,10 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/Card'
+import type { AuditLogStats as AuditLogStatsType } from '@/types'
 
 interface AuditLogStatsProps {
-  stats: {
-    totalLogs: number
-    todayLogs: number
-    weekLogs: number
-    topActions: { action_type: string; count: number }[]
-  }
+  stats: AuditLogStatsType
 }
 
 export function AuditLogStats({ stats }: AuditLogStatsProps) {

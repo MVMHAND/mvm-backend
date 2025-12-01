@@ -46,6 +46,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-4">
           {user.avatar_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={user.avatar_url}
               alt={user.name}

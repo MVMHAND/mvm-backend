@@ -8,7 +8,7 @@ import {
   getAuditLogStats,
   deleteOldAuditLogs,
 } from '@/lib/audit'
-import type { ActionResponse } from '@/types'
+import type { ActionResponse, AuditLogStats, PaginatedAuditLogs } from '@/types'
 
 /**
  * Get paginated audit logs with filters
@@ -21,7 +21,7 @@ export async function getAuditLogsAction(params: {
   targetType?: string
   startDate?: string
   endDate?: string
-}): Promise<ActionResponse> {
+}): Promise<ActionResponse<PaginatedAuditLogs>> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -42,7 +42,7 @@ export async function getAuditLogsAction(params: {
 
   return {
     success: true,
-    data: result.data,
+    data: result.data as PaginatedAuditLogs,
   }
 }
 
@@ -80,7 +80,7 @@ export async function getAuditLogsForTargetAction(
 /**
  * Get audit log statistics
  */
-export async function getAuditLogStatsAction(): Promise<ActionResponse> {
+export async function getAuditLogStatsAction(): Promise<ActionResponse<AuditLogStats>> {
   const supabase = await createClient()
   const {
     data: { user },

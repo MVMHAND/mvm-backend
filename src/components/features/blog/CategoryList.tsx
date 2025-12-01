@@ -91,6 +91,7 @@ export function CategoryList({ categories, pagination }: CategoryListProps) {
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isPending, deletingId]
   )
 

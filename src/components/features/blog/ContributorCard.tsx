@@ -10,6 +10,7 @@ export function ContributorCard({ contributor }: ContributorCardProps) {
       <div className="p-6">
         <div className="flex items-start gap-4">
           {contributor.avatar_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={contributor.avatar_url}
               alt={contributor.full_name}

@@ -87,6 +87,7 @@ export function AvatarUpload({ user, disabled = false }: AvatarUploadProps) {
     <div className="space-y-4">
       <div className="flex justify-center">
         {displayAvatar ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={displayAvatar}
             alt={user.name}

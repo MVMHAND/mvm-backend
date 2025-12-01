@@ -216,6 +216,7 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         className: 'whitespace-normal',
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [categories, contributors, isPending, actioningId]
   )
 

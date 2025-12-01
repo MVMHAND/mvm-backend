@@ -9,9 +9,7 @@
     "lint": "next lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
-    "type-check": "tsc --noEmit",
-    "sync-permissions": "tsx scripts/sync-permissions.ts",
-    "postbuild": "npm run sync-permissions"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

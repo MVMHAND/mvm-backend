@@ -57,6 +57,7 @@ export function RoleUsers({ users, roleName }: RoleUsersProps) {
           <div className="flex items-center gap-3">
             {/* Avatar */}
             {user.avatar_url ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={user.avatar_url}
                 alt={user.name}

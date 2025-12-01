@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { InviteUserForm } from '@/components/features/users/InviteUserForm'
 import { PageContainer, PageHeader, ErrorMessage, FormContainer } from '@/components/layout/PageLayout'
 
+export const dynamic = 'force-dynamic'
+
 export default async function InviteUserPage() {
   // Get roles for the form
   const result = await getRolesAction()

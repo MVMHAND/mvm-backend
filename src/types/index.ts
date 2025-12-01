@@ -70,6 +70,36 @@ export interface AuthUser {
 // Menu configuration types
 export type { MenuItem, MenuPermissionMetadata } from '@/config/menu'
 
+// Audit types
+export interface AuditLogStats {
+  totalLogs: number
+  todayLogs: number
+  weekLogs: number
+  topActions: { action_type: string; count: number }[]
+}
+
+export interface AuditLogEntry {
+  id: string
+  actor_id: string | null
+  action_type: string
+  target_type: string
+  target_id: string | null
+  metadata: Record<string, unknown> | null
+  created_at: string
+  actor?: {
+    name: string
+    email: string
+  }
+}
+
+export interface PaginatedAuditLogs {
+  logs: AuditLogEntry[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
 // Blog types
 export type {
   BlogCategory,

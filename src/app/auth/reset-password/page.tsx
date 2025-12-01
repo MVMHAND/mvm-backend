@@ -1,6 +1,16 @@
+import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { ResetPasswordForm } from '@/components/features/auth/ResetPasswordForm'
 import { APP_NAME } from '@/lib/constants'
+
+function FormLoadingFallback() {
+  return (
+    <div className="flex flex-col items-center justify-center py-8 space-y-4">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-mvm-blue border-t-transparent"></div>
+      <p className="text-sm text-gray-600">Loading...</p>
+    </div>
+  )
+}
 
 export default function ResetPasswordPage() {
   return (
@@ -22,7 +32,9 @@ export default function ResetPasswordPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResetPasswordForm />
+            <Suspense fallback={<FormLoadingFallback />}>
+              <ResetPasswordForm />
+            </Suspense>
           </CardContent>
         </Card>
       </div>

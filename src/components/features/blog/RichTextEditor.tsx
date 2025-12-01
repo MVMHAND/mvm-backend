@@ -14,7 +14,7 @@ interface RichTextEditorProps {
   placeholder?: string
 }
 
-export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder: _placeholder }: RichTextEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [

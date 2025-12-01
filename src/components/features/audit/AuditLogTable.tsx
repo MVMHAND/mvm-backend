@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getAuditLogsAction } from '@/actions/audit'
 import { formatDateTime } from '@/lib/utils'
+import type { AuditLogEntry } from '@/types'
 
 interface AuditLogTableProps {
   page: number
@@ -16,22 +17,8 @@ interface AuditLogTableProps {
   }
 }
 
-interface AuditLog {
-  id: string
-  actor_id: string | null
-  action_type: string
-  target_type: string
-  target_id: string | null
-  metadata: Record<string, unknown> | null
-  created_at: string
-  actor?: {
-    name: string
-    email: string
-  }
-}
-
 export function AuditLogTable({ page, filters }: AuditLogTableProps) {
-  const [logs, setLogs] = useState<AuditLog[]>([])
+  const [logs, setLogs] = useState<AuditLogEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pagination, setPagination] = useState({
