@@ -1,43 +1,42 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import { AdminTable, Column, TableBadge, DateCell, TableError, FilterConfig } from '@/components/ui/AdminTable'
 import { StatusBadge } from './StatusBadge'
-import { PostFilters } from './PostFilters'
 import { deletePostAction, publishPostAction, unpublishPostAction } from '@/actions/blog-posts'
 import { formatDateTime } from '@/lib/utils'
-import type { BlogPost, BlogCategory, BlogContributor, BlogPostStatus } from '@/types'
+import type { BlogPost } from '@/types'
+
+interface CategoryOption {
+  id: string
+  name: string
+}
+
+interface ContributorOption {
+  id: string
+  full_name: string
+}
 
 interface PostListProps {
   posts: BlogPost[]
-  categories: BlogCategory[]
-  contributors: BlogContributor[]
+  categories: CategoryOption[]
+  contributors: ContributorOption[]
+  pagination?: {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+  }
 }
 
-export function PostList({ posts, categories, contributors }: PostListProps) {
+export function PostList({ posts, categories, contributors, pagination }: PostListProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<BlogPostStatus | 'all'>('all')
-  const [categoryFilter, setCategoryFilter] = useState('')
-  const [contributorFilter, setContributorFilter] = useState('')
   const [actioningId, setActioningId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  // Filter posts
-  const filteredPosts = posts.filter((post) => {
-    const matchesSearch =
-      post.title.toLowerCase().includes(search.toLowerCase()) ||
-      post.seo_meta_description.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || post.status === statusFilter
-    const matchesCategory = !categoryFilter || post.category_id === categoryFilter
-    const matchesContributor = !contributorFilter || post.contributor_id === contributorFilter
-
-    return matchesSearch && matchesStatus && matchesCategory && matchesContributor
-  })
 
   const handleDelete = (postId: string, postTitle: string) => {
     if (!confirm(`Are you sure you want to delete "${postTitle}"?`)) {
@@ -92,150 +91,158 @@ export function PostList({ posts, categories, contributors }: PostListProps) {
     })
   }
 
+  // Build filter configuration from categories and contributors
+  const filters: FilterConfig[] = useMemo(
+    () => [
+      {
+        key: 'status',
+        label: 'Status',
+        type: 'select',
+        options: [
+          { value: 'draft', label: 'Draft' },
+          { value: 'published', label: 'Published' },
+          { value: 'archived', label: 'Archived' },
+        ],
+        placeholder: 'All statuses',
+      },
+      {
+        key: 'category',
+        label: 'Category',
+        type: 'select',
+        options: categories.map((c) => ({ value: c.id, label: c.name })),
+        placeholder: 'All categories',
+      },
+      {
+        key: 'contributor',
+        label: 'Author',
+        type: 'select',
+        options: contributors.map((c) => ({ value: c.id, label: c.full_name })),
+        placeholder: 'All authors',
+      },
+    ],
+    [categories, contributors]
+  )
+
+  const columns: Column<BlogPost>[] = useMemo(
+    () => [
+      {
+        key: 'post',
+        header: 'Post',
+        render: (post) => (
+          <div className="max-w-md">
+            <div className="font-medium text-gray-900">{post.title}</div>
+            <div className="mt-1 text-sm text-gray-500 line-clamp-1">{post.seo_meta_description}</div>
+          </div>
+        ),
+        className: 'whitespace-normal',
+      },
+      {
+        key: 'category',
+        header: 'Category',
+        render: (post) => (
+          <TableBadge variant="info">
+            {categories.find((c) => c.id === post.category_id)?.name || 'Unknown'}
+          </TableBadge>
+        ),
+      },
+      {
+        key: 'author',
+        header: 'Author',
+        render: (post) => (
+          <span className="text-sm text-gray-500">
+            {contributors.find((c) => c.id === post.contributor_id)?.full_name || 'Unknown'}
+          </span>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        render: (post) => <StatusBadge status={post.status} />,
+      },
+      {
+        key: 'published',
+        header: 'Published',
+        render: (post) =>
+          post.published_date ? (
+            <DateCell date={post.published_date} formatter={formatDateTime} />
+          ) : (
+            <span className="text-gray-400">—</span>
+          ),
+      },
+      {
+        key: 'actions',
+        header: 'Actions',
+        headerAlign: 'right',
+        cellAlign: 'right',
+        render: (post) => (
+          <div className="flex justify-end gap-2">
+            <Link href={`/admin/blog/posts/${post.id}/preview`}>
+              <Button size="sm" variant="ghost">
+                Preview
+              </Button>
+            </Link>
+            <Link href={`/admin/blog/posts/${post.id}`}>
+              <Button size="sm" variant="outline">
+                Edit
+              </Button>
+            </Link>
+            {post.status === 'draft' && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => handlePublish(post.id)}
+                disabled={isPending && actioningId === post.id}
+              >
+                {isPending && actioningId === post.id ? 'Publishing...' : 'Publish'}
+              </Button>
+            )}
+            {post.status === 'published' && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleUnpublish(post.id)}
+                disabled={isPending && actioningId === post.id}
+              >
+                {isPending && actioningId === post.id ? 'Unpublishing...' : 'Unpublish'}
+              </Button>
+            )}
+            {post.status !== 'published' && (
+              <Button
+                size="sm"
+                variant="danger"
+                onClick={() => handleDelete(post.id, post.title)}
+                disabled={isPending && actioningId === post.id}
+              >
+                {isPending && actioningId === post.id ? 'Deleting...' : 'Delete'}
+              </Button>
+            )}
+          </div>
+        ),
+        className: 'whitespace-normal',
+      },
+    ],
+    [categories, contributors, isPending, actioningId]
+  )
+
   return (
     <div className="space-y-4">
-      {error && (
-        <div className="rounded-lg bg-red-50 p-4 text-red-800">
-          <p>{error}</p>
-        </div>
-      )}
+      {error && <TableError message={error} />}
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Input
-          type="search"
-          placeholder="Search posts..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-md"
-        />
-        <Link href="/admin/blog/posts/new">
-          <Button>Create Post</Button>
-        </Link>
-      </div>
-
-      <PostFilters
-        statusFilter={statusFilter}
-        categoryFilter={categoryFilter}
-        contributorFilter={contributorFilter}
-        onStatusChange={setStatusFilter}
-        onCategoryChange={setCategoryFilter}
-        onContributorChange={setContributorFilter}
-        categories={categories}
-        contributors={contributors}
+      <AdminTable
+        data={posts}
+        columns={columns}
+        keyExtractor={(post) => post.id}
+        searchable
+        searchPlaceholder="Search posts..."
+        filters={filters}
+        pagination={pagination}
+        headerAction={
+          <Link href="/admin/blog/posts/new">
+            <Button>Create Post</Button>
+          </Link>
+        }
+        emptyMessage="No posts yet. Create your first one!"
       />
-
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Post
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Author
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Published
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {filteredPosts.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                  {search || statusFilter !== 'all' || categoryFilter || contributorFilter
-                    ? 'No posts found matching your filters.'
-                    : 'No posts yet. Create your first one!'}
-                </td>
-              </tr>
-            ) : (
-              filteredPosts.map((post) => (
-                <tr key={post.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="max-w-md">
-                      <div className="font-medium text-gray-900">{post.title}</div>
-                      <div className="mt-1 text-sm text-gray-500 line-clamp-1">{post.seo_meta_description}</div>
-                    </div>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                      {categories.find((c) => c.id === post.category_id)?.name || 'Unknown'}
-                    </span>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                    {contributors.find((c) => c.id === post.contributor_id)?.full_name || 'Unknown'}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4">
-                    <StatusBadge status={post.status} />
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                    {post.published_date ? formatDateTime(post.published_date) : '—'}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      <Link href={`/admin/blog/posts/${post.id}/preview`}>
-                        <Button size="sm" variant="ghost">
-                          Preview
-                        </Button>
-                      </Link>
-                      <Link href={`/admin/blog/posts/${post.id}`}>
-                        <Button size="sm" variant="outline">
-                          Edit
-                        </Button>
-                      </Link>
-                      {post.status === 'draft' && (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handlePublish(post.id)}
-                          disabled={isPending && actioningId === post.id}
-                        >
-                          {isPending && actioningId === post.id ? 'Publishing...' : 'Publish'}
-                        </Button>
-                      )}
-                      {post.status === 'published' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleUnpublish(post.id)}
-                          disabled={isPending && actioningId === post.id}
-                        >
-                          {isPending && actioningId === post.id ? 'Unpublishing...' : 'Unpublish'}
-                        </Button>
-                      )}
-                      {post.status !== 'published' && (
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => handleDelete(post.id, post.title)}
-                          disabled={isPending && actioningId === post.id}
-                        >
-                          {isPending && actioningId === post.id ? 'Deleting...' : 'Delete'}
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {filteredPosts.length > 0 && (
-        <div className="text-sm text-gray-500">
-          Showing {filteredPosts.length} of {posts.length} posts
-        </div>
-      )}
     </div>
   )
 }

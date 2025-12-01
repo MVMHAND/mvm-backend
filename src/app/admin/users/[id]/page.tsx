@@ -1,6 +1,3 @@
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 import { getUserByIdAction } from '@/actions/users'
 import { getRolesAction } from '@/actions/roles'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -9,35 +6,14 @@ import { UserStatusToggle } from '@/components/features/users/UserStatusToggle'
 import { DeleteUserButton } from '@/components/features/users/DeleteUserButton'
 import { AvatarUpload } from '@/components/features/users/AvatarUpload'
 import { formatDateTime, getInitials } from '@/lib/utils'
+import { PageContainer, ErrorMessage, InfoMessage } from '@/components/layout/PageLayout'
 
 interface UserDetailPageProps {
-  params: {
-    id: string
-  }
-}
-
-export async function generateMetadata({ params }: UserDetailPageProps) {
-  const { id } = await params
-  const result = await getUserByIdAction(id)
-  const userName = result.success && result.data ? result.data.name : 'User'
-  
-  return {
-    title: `${userName} | My Virtual Mate`,
-    description: 'Manage user details',
-  }
+  params: Promise<{ id: string }>
 }
 
 export default async function UserDetailPage({ params }: UserDetailPageProps) {
   const { id } = await params
-  const supabase = await createClient()
-  const {
-    data: { user: currentUser },
-  } = await supabase.auth.getUser()
-
-  // Redirect to login if not authenticated
-  if (!currentUser) {
-    redirect('/admin/login')
-  }
 
   // Get user data and roles
   const [userResult, rolesResult] = await Promise.all([
@@ -47,23 +23,17 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
 
   if (!userResult.success) {
     return (
-      <div className="p-8">
-        <div className="rounded-lg bg-red-50 p-4 text-red-800">
-          <p className="font-medium">Error</p>
-          <p>{userResult.error}</p>
-        </div>
-      </div>
+      <PageContainer>
+        <ErrorMessage message={userResult.error || 'Failed to load user'} />
+      </PageContainer>
     )
   }
 
   if (!rolesResult.success) {
     return (
-      <div className="p-8">
-        <div className="rounded-lg bg-red-50 p-4 text-red-800">
-          <p className="font-medium">Error</p>
-          <p>{rolesResult.error}</p>
-        </div>
-      </div>
+      <PageContainer>
+        <ErrorMessage message={rolesResult.error || 'Failed to load roles'} />
+      </PageContainer>
     )
   }
 
@@ -72,13 +42,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
   const isSuperAdmin = user.role?.is_super_admin || false
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <Link href="/admin/users" className="text-sm text-mvm-blue hover:underline">
-          ← Back to Users
-        </Link>
-      </div>
-
+    <PageContainer>
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-4">
           {user.avatar_url ? (
@@ -126,12 +90,12 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
       </div>
 
       {isSuperAdmin && (
-        <div className="mb-6 rounded-lg border-2 border-purple-200 bg-purple-50 p-4">
-          <p className="text-sm font-medium text-purple-900">
+        <InfoMessage variant="warning" className="mb-6">
+          <p className="font-medium">
             🔒 This is the Super Admin user. This account cannot be edited, deactivated, or
             deleted.
           </p>
-        </div>
+        </InfoMessage>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -198,6 +162,6 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
           </Card>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

@@ -1,50 +1,43 @@
-import { Suspense } from 'react'
-import Link from 'next/link'
 import { CategoryList } from '@/components/features/blog/CategoryList'
 import { getCategoriesAction } from '@/actions/blog-categories'
-import { Button } from '@/components/ui/Button'
+import { PageContainer, PageHeader, ErrorMessage } from '@/components/layout/PageLayout'
 
-export const metadata = {
-  title: 'Blog Categories',
-  description: 'Manage blog post categories',
+interface CategoriesPageProps {
+  searchParams: Promise<{
+    page?: string
+    search?: string
+  }>
 }
 
-async function CategoriesContent() {
-  const result = await getCategoriesAction()
+export default async function CategoriesPage({ searchParams }: CategoriesPageProps) {
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const search = params.search || ''
+
+  const result = await getCategoriesAction({ page, limit: 10, search })
 
   if (!result.success || !result.data) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-red-800">
-        <p>Failed to load categories: {result.error}</p>
-      </div>
+      <PageContainer>
+        <PageHeader title="Blog Categories" description="Manage blog post categories" />
+        <ErrorMessage message={result.error || 'Failed to load categories'} />
+      </PageContainer>
     )
   }
 
-  return <CategoryList categories={result.data} />
-}
+  const { categories, total, pages } = result.data
 
-function CategoriesLoading() {
   return (
-    <div className="space-y-4">
-      <div className="h-10 w-full max-w-md animate-pulse rounded-lg bg-gray-200" />
-      <div className="h-64 w-full animate-pulse rounded-lg bg-gray-200" />
-    </div>
-  )
-}
+    <PageContainer>
+      <PageHeader
+        title="Blog Categories"
+        description={`Manage blog post categories (${total} total)`}
+      />
 
-export default function CategoriesPage() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Blog Categories</h1>
-          <p className="mt-1 text-gray-600">Manage blog post categories</p>
-        </div>
-      </div>
-
-      <Suspense fallback={<CategoriesLoading />}>
-        <CategoriesContent />
-      </Suspense>
-    </div>
+      <CategoryList
+        categories={categories}
+        pagination={{ page, pageSize: 10, total, totalPages: pages }}
+      />
+    </PageContainer>
   )
 }

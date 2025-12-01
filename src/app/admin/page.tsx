@@ -1,20 +1,15 @@
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { getUsersAction } from '@/actions/users'
 import { getRolesWithCountsAction } from '@/actions/roles'
+import { PageContainer, PageHeader } from '@/components/layout/PageLayout'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  // Redirect to login if not authenticated
-  if (!user) {
-    redirect('/admin/login')
-  }
 
   // Get stats in parallel
   const [usersResult, rolesResult] = await Promise.all([
@@ -29,20 +24,15 @@ export default async function AdminDashboard() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('name, role:roles(name)')
-    .eq('id', user.id)
+    .eq('id', user?.id ?? '')
     .single()
 
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {profile?.name || user?.email}!
-        </h1>
-        <p className="mt-2 text-gray-600">
-          Here's what's happening with your admin panel today
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title={`Welcome back, ${profile?.name || user?.email}!`}
+        description="Here's what's happening with your admin panel today"
+      />
 
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -163,6 +153,6 @@ export default async function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageContainer>
   )
 }

@@ -1,81 +1,57 @@
-import { Suspense } from 'react'
 import { PostList } from '@/components/features/blog/PostList'
 import { getPostsAction } from '@/actions/blog-posts'
-import { getCategoriesAction } from '@/actions/blog-categories'
-import { getContributorsAction } from '@/actions/blog-contributors'
+import { getAllCategoriesForSelectAction } from '@/actions/blog-categories'
+import { getAllContributorsForSelectAction } from '@/actions/blog-contributors'
+import { PageContainer, PageHeader, ErrorMessage } from '@/components/layout/PageLayout'
 
-export const metadata = {
-  title: 'Blog Posts',
-  description: 'Manage blog posts',
+interface PostsPageProps {
+  searchParams: Promise<{
+    page?: string
+    search?: string
+    status?: string
+    category?: string
+    contributor?: string
+  }>
 }
 
-async function PostsContent() {
+export default async function PostsPage({ searchParams }: PostsPageProps) {
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const search = params.search || ''
+  const status = params.status || ''
+  const category = params.category || ''
+  const contributor = params.contributor || ''
+
   const [postsResult, categoriesResult, contributorsResult] = await Promise.all([
-    getPostsAction(),
-    getCategoriesAction(),
-    getContributorsAction(),
+    getPostsAction({ page, limit: 10, search, status, category, contributor }),
+    getAllCategoriesForSelectAction(),
+    getAllContributorsForSelectAction(),
   ])
 
   if (!postsResult.success || !postsResult.data) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-red-800">
-        <p>Failed to load posts: {postsResult.error}</p>
-      </div>
+      <PageContainer>
+        <PageHeader title="Blog Posts" description="Create and manage blog posts" />
+        <ErrorMessage message={postsResult.error || 'Failed to load posts'} />
+      </PageContainer>
     )
   }
 
-  if (!categoriesResult.success || !categoriesResult.data) {
-    return (
-      <div className="rounded-lg bg-red-50 p-4 text-red-800">
-        <p>Failed to load categories: {categoriesResult.error}</p>
-      </div>
-    )
-  }
-
-  if (!contributorsResult.success || !contributorsResult.data) {
-    return (
-      <div className="rounded-lg bg-red-50 p-4 text-red-800">
-        <p>Failed to load contributors: {contributorsResult.error}</p>
-      </div>
-    )
-  }
+  const { posts, total, pages } = postsResult.data
 
   return (
-    <PostList
-      posts={postsResult.data}
-      categories={categoriesResult.data}
-      contributors={contributorsResult.data}
-    />
-  )
-}
+    <PageContainer>
+      <PageHeader
+        title="Blog Posts"
+        description={`Create and manage blog posts (${total} total)`}
+      />
 
-function PostsLoading() {
-  return (
-    <div className="space-y-4">
-      <div className="h-10 w-full max-w-md animate-pulse rounded-lg bg-gray-200" />
-      <div className="flex gap-3">
-        <div className="h-10 w-32 animate-pulse rounded-lg bg-gray-200" />
-        <div className="h-10 w-32 animate-pulse rounded-lg bg-gray-200" />
-        <div className="h-10 w-32 animate-pulse rounded-lg bg-gray-200" />
-      </div>
-      <div className="h-96 w-full animate-pulse rounded-lg bg-gray-200" />
-    </div>
-  )
-}
- 
-export default function PostsPage() {
-  return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Blog Posts</h1>
-          <p className="mt-2 text-gray-600">Create and manage blog posts</p>
-        </div>
-      </div>
-
-      <Suspense fallback={<PostsLoading />}>
-        <PostsContent />
-      </Suspense>
-    </div>
+      <PostList
+        posts={posts}
+        categories={categoriesResult.success ? categoriesResult.data || [] : []}
+        contributors={contributorsResult.success ? contributorsResult.data || [] : []}
+        pagination={{ page, pageSize: 10, total, totalPages: pages }}
+      />
+    </PageContainer>
   )
 }

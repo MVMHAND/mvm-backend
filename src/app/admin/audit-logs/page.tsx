@@ -1,15 +1,9 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { AuditLogTable } from '@/components/features/audit/AuditLogTable'
 import { AuditLogFilters } from '@/components/features/audit/AuditLogFilters'
 import { AuditLogStats } from '@/components/features/audit/AuditLogStats'
 import { getAuditLogStatsAction } from '@/actions/audit'
-
-export const metadata = {
-  title: 'Audit Logs | My Virtual Mate',
-  description: 'View system audit logs and activity history',
-}
+import { PageContainer, PageHeader, PageSection } from '@/components/layout/PageLayout'
 
 interface AuditLogsPageProps {
   searchParams: Promise<{
@@ -24,33 +18,23 @@ interface AuditLogsPageProps {
 
 export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps) {
   const params = await searchParams
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/admin/login')
-  }
 
   // Get audit log statistics
   const statsResult = await getAuditLogStatsAction()
   const stats = statsResult.success ? statsResult.data : null
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Audit Logs</h1>
-        <p className="mt-2 text-gray-600">
-          Track all system activities, user actions, and changes
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Audit Logs"
+        description="Track all system activities, user actions, and changes"
+      />
 
       {/* Statistics */}
       {stats && <AuditLogStats stats={stats} />}
 
       {/* Filters */}
-      <div className="mb-6">
+      <PageSection>
         <Card>
           <CardHeader>
             <CardTitle>Filter Logs</CardTitle>
@@ -60,7 +44,7 @@ export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps
             <AuditLogFilters initialFilters={params} />
           </CardContent>
         </Card>
-      </div>
+      </PageSection>
 
       {/* Audit Log Table */}
       <Card>
@@ -81,6 +65,6 @@ export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps
           />
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   )
 }

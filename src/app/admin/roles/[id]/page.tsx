@@ -1,6 +1,4 @@
-import { redirect, notFound } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
 import {
   getRoleByIdAction,
   getPermissionsAction,
@@ -12,36 +10,13 @@ import { RoleEditForm } from '@/components/features/roles/RoleEditForm'
 import { RoleUsers } from '@/components/features/roles/RoleUsers'
 import { DeleteRoleButton } from '@/components/features/roles/DeleteRoleButton'
 import { formatDate } from '@/lib/utils'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 interface RoleDetailPageProps {
   params: Promise<{ id: string }>
 }
 
-export async function generateMetadata({ params }: RoleDetailPageProps) {
-  const { id } = await params
-  const result = await getRoleByIdAction(id)
-
-  if (!result.success || !result.data) {
-    return { title: 'Role Not Found | My Virtual Mate' }
-  }
-
-  return {
-    title: `${result.data.name} | Roles | My Virtual Mate`,
-    description: result.data.description || `Manage ${result.data.name} role`,
-  }
-}
-
 export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // Redirect to login if not authenticated
-  if (!user) {
-    redirect('/admin/login')
-  }
-
   const { id } = await params
 
   // Fetch role, permissions, assigned permissions, and users in parallel
@@ -62,20 +37,7 @@ export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
   const roleUsers = usersResult.data || []
 
   return (
-    <div className="p-8">
-      {/* Breadcrumb */}
-      <nav className="mb-6 text-sm">
-        <ol className="flex items-center gap-2">
-          <li>
-            <Link href="/admin/roles" className="text-mvm-blue hover:underline">
-              Roles
-            </Link>
-          </li>
-          <li className="text-gray-400">/</li>
-          <li className="text-gray-600">{role.name}</li>
-        </ol>
-      </nav>
-
+    <PageContainer>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3">
@@ -164,6 +126,6 @@ export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

@@ -14,7 +14,8 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  // If not authenticated, render without navigation (for login page)
+  // If not authenticated, render children only (for login page)
+  // Middleware handles redirecting non-login routes to login page
   if (!user) {
     return <>{children}</>
   }

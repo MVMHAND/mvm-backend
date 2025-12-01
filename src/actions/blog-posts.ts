@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import {
-  getAllPosts,
   getPostWithRelations,
   calculateReadingTime,
   generateSlugFromTitle,
@@ -20,21 +19,80 @@ import type {
   BlogPost,
   BlogPostFormData,
   BlogPostWithRelations,
-  BlogPostFilters,
 } from '@/types'
 
+interface GetPostsParams {
+  page?: number
+  limit?: number
+  search?: string
+  status?: string
+  category?: string
+  contributor?: string
+}
+
+interface PaginatedPosts {
+  posts: BlogPost[]
+  total: number
+  page: number
+  pages: number
+}
+
 /**
- * Get all blog posts with optional filters
+ * Get paginated blog posts with optional filters
  */
 export async function getPostsAction(
-  filters?: BlogPostFilters
-): Promise<ActionResponse<BlogPost[]>> {
+  params: GetPostsParams = {}
+): Promise<ActionResponse<PaginatedPosts>> {
   try {
-    const posts = await getAllPosts(filters)
-    
+    const supabase = await createClient()
+    const page = params.page || 1
+    const limit = params.limit || 10
+    const search = params.search || ''
+    const offset = (page - 1) * limit
+
+    // Build query
+    let query = supabase
+      .from('blog_posts')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+
+    // Add search filter
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,seo_meta_description.ilike.%${search}%`)
+    }
+
+    // Add status filter
+    if (params.status) {
+      query = query.eq('status', params.status)
+    }
+
+    // Add category filter
+    if (params.category) {
+      query = query.eq('category_id', params.category)
+    }
+
+    // Add contributor filter
+    if (params.contributor) {
+      query = query.eq('contributor_id', params.contributor)
+    }
+
+    // Execute query with pagination
+    const { data, error, count } = await query.range(offset, offset + limit - 1)
+
+    if (error) {
+      console.error('Error fetching posts:', error)
+      return {
+        success: false,
+        error: 'Failed to fetch posts',
+      }
+    }
+
+    const total = count || 0
+    const pages = Math.ceil(total / limit)
+
     return {
       success: true,
-      data: posts,
+      data: { posts: data || [], total, page, pages },
     }
   } catch (error) {
     console.error('Error in getPostsAction:', error)

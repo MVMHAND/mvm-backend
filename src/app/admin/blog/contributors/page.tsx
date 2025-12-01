@@ -1,48 +1,46 @@
-import { Suspense } from 'react'
 import { ContributorList } from '@/components/features/blog/ContributorList'
 import { getContributorsAction } from '@/actions/blog-contributors'
+import { PageContainer, PageHeader, ErrorMessage } from '@/components/layout/PageLayout'
 
-export const metadata = {
-  title: 'Blog Contributors',
-  description: 'Manage blog post contributors',
+interface ContributorsPageProps {
+  searchParams: Promise<{
+    page?: string
+    search?: string
+  }>
 }
 
-async function ContributorsContent() {
-  const result = await getContributorsAction()
+export default async function ContributorsPage({ searchParams }: ContributorsPageProps) {
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const search = params.search || ''
+
+  const result = await getContributorsAction({ page, limit: 10, search })
 
   if (!result.success || !result.data) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-red-800">
-        <p>Failed to load contributors: {result.error}</p>
-      </div>
+      <PageContainer>
+        <PageHeader
+          title="Blog Contributors"
+          description="Manage blog post contributors and authors"
+        />
+        <ErrorMessage message={result.error || 'Failed to load contributors'} />
+      </PageContainer>
     )
   }
 
-  return <ContributorList contributors={result.data} />
-}
+  const { contributors, total, pages } = result.data
 
-function ContributorsLoading() {
   return (
-    <div className="space-y-4">
-      <div className="h-10 w-full max-w-md animate-pulse rounded-lg bg-gray-200" />
-      <div className="h-64 w-full animate-pulse rounded-lg bg-gray-200" />
-    </div>
-  )
-}
+    <PageContainer>
+      <PageHeader
+        title="Blog Contributors"
+        description={`Manage blog post contributors and authors (${total} total)`}
+      />
 
-export default function ContributorsPage() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Blog Contributors</h1>
-          <p className="mt-1 text-gray-600">Manage blog post contributors and authors</p>
-        </div>
-      </div>
-
-      <Suspense fallback={<ContributorsLoading />}>
-        <ContributorsContent />
-      </Suspense>
-    </div>
+      <ContributorList
+        contributors={contributors}
+        pagination={{ page, pageSize: 10, total, totalPages: pages }}
+      />
+    </PageContainer>
   )
 }

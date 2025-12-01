@@ -14,12 +14,22 @@ import {
   uploadPostCoverAction,
 } from '@/actions/blog-posts'
 import { slugify } from '@/lib/utils'
-import type { BlogPost, BlogCategory, BlogContributor } from '@/types'
+import type { BlogPost } from '@/types'
+
+interface CategoryOption {
+  id: string
+  name: string
+}
+
+interface ContributorOption {
+  id: string
+  full_name: string
+}
 
 interface PostFormProps {
   post?: BlogPost
-  categories: BlogCategory[]
-  contributors: BlogContributor[]
+  categories: CategoryOption[]
+  contributors: ContributorOption[]
   isEditing?: boolean
 }
 

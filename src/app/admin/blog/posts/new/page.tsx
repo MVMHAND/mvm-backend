@@ -1,69 +1,42 @@
-import { Suspense } from 'react'
-import Link from 'next/link'
 import { PostForm } from '@/components/features/blog/PostForm'
-import { getCategoriesAction } from '@/actions/blog-categories'
-import { getContributorsAction } from '@/actions/blog-contributors'
-import { Button } from '@/components/ui/Button'
+import { getAllCategoriesForSelectAction } from '@/actions/blog-categories'
+import { getAllContributorsForSelectAction } from '@/actions/blog-contributors'
+import { PageContainer, PageHeader, FormContainer, ErrorMessage } from '@/components/layout/PageLayout'
 
-export const metadata = {
-  title: 'Create Post',
-  description: 'Create a new blog post',
-}
-
-async function NewPostContent() {
+export default async function NewPostPage() {
   const [categoriesResult, contributorsResult] = await Promise.all([
-    getCategoriesAction(),
-    getContributorsAction(),
+    getAllCategoriesForSelectAction(),
+    getAllContributorsForSelectAction(),
   ])
 
   if (!categoriesResult.success || !categoriesResult.data) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-red-800">
-        <p>Failed to load categories: {categoriesResult.error}</p>
-      </div>
+      <PageContainer>
+        <PageHeader title="Create Post" description="Write a new blog post" />
+        <ErrorMessage message={categoriesResult.error || 'Failed to load categories'} />
+      </PageContainer>
     )
   }
 
   if (!contributorsResult.success || !contributorsResult.data) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-red-800">
-        <p>Failed to load contributors: {contributorsResult.error}</p>
-      </div>
+      <PageContainer>
+        <PageHeader title="Create Post" description="Write a new blog post" />
+        <ErrorMessage message={contributorsResult.error || 'Failed to load contributors'} />
+      </PageContainer>
     )
   }
 
   return (
-    <PostForm
-      categories={categoriesResult.data}
-      contributors={contributorsResult.data}
-    />
-  )
-}
+    <PageContainer>
+      <PageHeader title="Create Post" description="Write a new blog post" />
 
-function NewPostLoading() {
-  return <div className="h-96 w-full animate-pulse rounded-lg bg-gray-200" />
-}
-
-export default function NewPostPage() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/blog/posts">
-          <Button variant="outline" size="sm">
-            ← Back to Posts
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Create Post</h1>
-          <p className="mt-1 text-gray-600">Write a new blog post</p>
-        </div>
-      </div>
-
-      <div className="max-w-5xl">
-        <Suspense fallback={<NewPostLoading />}>
-          <NewPostContent />
-        </Suspense>
-      </div>
-    </div>
+      <FormContainer>
+        <PostForm
+          categories={categoriesResult.data}
+          contributors={contributorsResult.data}
+        />
+      </FormContainer>
+    </PageContainer>
   )
 }

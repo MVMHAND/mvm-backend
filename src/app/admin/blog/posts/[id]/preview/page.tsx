@@ -8,11 +8,6 @@ import { getContributorByIdAction } from '@/actions/blog-contributors'
 import { Button } from '@/components/ui/Button'
 import type { PageProps } from '@/types'
 
-export const metadata = {
-  title: 'Preview Post',
-  description: 'Preview blog post',
-}
-
 interface PreviewContentProps {
   postId: string
 }

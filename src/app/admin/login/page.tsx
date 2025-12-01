@@ -4,11 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LoginForm } from '@/components/features/auth/LoginForm'
 import { APP_NAME } from '@/lib/constants'
 
-export const metadata = {
-  title: 'Admin Login | My Virtual Mate',
-  description: 'Sign in to access the admin panel',
-}
-
 export default async function LoginPage() {
   // Check if user is already authenticated
   const supabase = await createClient()

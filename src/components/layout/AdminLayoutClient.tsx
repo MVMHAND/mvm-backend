@@ -36,8 +36,8 @@ export function AdminLayoutClient({
         {/* Top bar */}
         <TopBar user={user} />
 
-        {/* Page content */}
-        <main className="pt-16">{children}</main>
+        {/* Page content - with consistent min-height for content area */}
+        <main className="min-h-[calc(100vh-4rem)] pt-16">{children}</main>
       </div>
     </div>
   )

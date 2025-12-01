@@ -14,7 +14,8 @@ import { randomBytes, createHash } from 'crypto'
 export async function getUsersAction(
   page = 1,
   limit = 10,
-  search = ''
+  search = '',
+  status = ''
 ): Promise<ActionResponse<{ users: UserWithRole[]; total: number; pages: number }>> {
   try {
     const supabase = await createClient()
@@ -26,8 +27,12 @@ export async function getUsersAction(
       .select('*, role:roles(*)', { count: 'exact' })
       .order('created_at', { ascending: false })
 
-    // Filter out deleted users
-    query = query.neq('status', 'deleted')
+    // Filter by status if provided, otherwise filter out deleted users
+    if (status) {
+      query = query.eq('status', status)
+    } else {
+      query = query.neq('status', 'deleted')
+    }
 
     // Add search filter if provided
     if (search) {

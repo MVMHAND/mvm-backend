@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import {
-  getAllContributors,
   getContributorWithUsers,
   validateContributorDeletion,
   validateExpertiseCount,
@@ -21,19 +20,104 @@ import type {
   BlogContributorWithUsers,
 } from '@/types'
 
+interface GetContributorsParams {
+  page?: number
+  limit?: number
+  search?: string
+}
+
+interface PaginatedContributors {
+  contributors: BlogContributor[]
+  total: number
+  page: number
+  pages: number
+}
+
 /**
- * Get all blog contributors
+ * Get paginated blog contributors with optional search
  */
-export async function getContributorsAction(): Promise<ActionResponse<BlogContributor[]>> {
+export async function getContributorsAction(
+  params: GetContributorsParams = {}
+): Promise<ActionResponse<PaginatedContributors>> {
   try {
-    const contributors = await getAllContributors()
-    
+    const supabase = await createClient()
+    const page = params.page || 1
+    const limit = params.limit || 10
+    const search = params.search || ''
+    const offset = (page - 1) * limit
+
+    // Build query
+    let query = supabase
+      .from('blog_contributors')
+      .select('*, post_count:blog_posts(count)', { count: 'exact' })
+      .order('created_at', { ascending: false })
+
+    // Add search filter
+    if (search) {
+      query = query.or(`full_name.ilike.%${search}%,position.ilike.%${search}%`)
+    }
+
+    // Execute query with pagination
+    const { data, error, count } = await query.range(offset, offset + limit - 1)
+
+    if (error) {
+      console.error('Error fetching contributors:', error)
+      return {
+        success: false,
+        error: 'Failed to fetch contributors',
+      }
+    }
+
+    // Transform data to include post_count
+    const contributors = (data || []).map((contrib) => ({
+      ...contrib,
+      post_count: Array.isArray(contrib.post_count) ? contrib.post_count[0]?.count || 0 : 0,
+    }))
+
+    const total = count || 0
+    const pages = Math.ceil(total / limit)
+
     return {
       success: true,
-      data: contributors,
+      data: { contributors, total, page, pages },
     }
   } catch (error) {
     console.error('Error in getContributorsAction:', error)
+    return {
+      success: false,
+      error: 'Failed to fetch contributors',
+    }
+  }
+}
+
+/**
+ * Get all contributors for dropdown/select options (no pagination)
+ */
+export async function getAllContributorsForSelectAction(): Promise<
+  ActionResponse<{ id: string; full_name: string }[]>
+> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('blog_contributors')
+      .select('id, full_name')
+      .order('full_name', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching contributors for select:', error)
+      return {
+        success: false,
+        error: 'Failed to fetch contributors',
+      }
+    }
+
+    return {
+      success: true,
+      data: data || [],
+    }
+  } catch (error) {
+    console.error('Error in getAllContributorsForSelectAction:', error)
     return {
       success: false,
       error: 'Failed to fetch contributors',

@@ -3,22 +3,107 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
-import { getAllCategories, getCategoryWithUsers, validateCategoryDeletion } from '@/lib/blog/categories'
+import { getCategoryWithUsers, validateCategoryDeletion } from '@/lib/blog/categories'
 import type { ActionResponse, BlogCategory, BlogCategoryFormData, BlogCategoryWithUsers } from '@/types'
 
+interface GetCategoriesParams {
+  page?: number
+  limit?: number
+  search?: string
+}
+
+interface PaginatedCategories {
+  categories: BlogCategory[]
+  total: number
+  page: number
+  pages: number
+}
+
 /**
- * Get all blog categories
+ * Get paginated blog categories with optional search
  */
-export async function getCategoriesAction(): Promise<ActionResponse<BlogCategory[]>> {
+export async function getCategoriesAction(
+  params: GetCategoriesParams = {}
+): Promise<ActionResponse<PaginatedCategories>> {
   try {
-    const categories = await getAllCategories()
-    
+    const supabase = await createClient()
+    const page = params.page || 1
+    const limit = params.limit || 10
+    const search = params.search || ''
+    const offset = (page - 1) * limit
+
+    // Build query
+    let query = supabase
+      .from('blog_categories')
+      .select('*, post_count:blog_posts(count)', { count: 'exact' })
+      .order('created_at', { ascending: false })
+
+    // Add search filter
+    if (search) {
+      query = query.ilike('name', `%${search}%`)
+    }
+
+    // Execute query with pagination
+    const { data, error, count } = await query.range(offset, offset + limit - 1)
+
+    if (error) {
+      console.error('Error fetching categories:', error)
+      return {
+        success: false,
+        error: 'Failed to fetch categories',
+      }
+    }
+
+    // Transform data to include post_count
+    const categories = (data || []).map((cat) => ({
+      ...cat,
+      post_count: Array.isArray(cat.post_count) ? cat.post_count[0]?.count || 0 : 0,
+    }))
+
+    const total = count || 0
+    const pages = Math.ceil(total / limit)
+
     return {
       success: true,
-      data: categories,
+      data: { categories, total, page, pages },
     }
   } catch (error) {
     console.error('Error in getCategoriesAction:', error)
+    return {
+      success: false,
+      error: 'Failed to fetch categories',
+    }
+  }
+}
+
+/**
+ * Get all categories for dropdown/select options (no pagination)
+ */
+export async function getAllCategoriesForSelectAction(): Promise<
+  ActionResponse<{ id: string; name: string }[]>
+> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('blog_categories')
+      .select('id, name')
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching categories for select:', error)
+      return {
+        success: false,
+        error: 'Failed to fetch categories',
+      }
+    }
+
+    return {
+      success: true,
+      data: data || [],
+    }
+  } catch (error) {
+    console.error('Error in getAllCategoriesForSelectAction:', error)
     return {
       success: false,
       error: 'Failed to fetch categories',
