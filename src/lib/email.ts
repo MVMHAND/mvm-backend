@@ -79,13 +79,15 @@ export async function sendInvitationEmail(params: {
   userName: string
   inviterName: string
   setupLink: string
+  expiresAt: Date
 }): Promise<{ success: boolean; error?: string }> {
-  const { to, userName, inviterName, setupLink } = params
+  const { to, userName, inviterName, setupLink, expiresAt } = params
 
   const html = getInvitationEmailTemplate({
     userName,
     inviterName,
     setupLink,
+    expiresAt,
   })
 
   return sendEmail({
@@ -229,14 +231,31 @@ function getEmailWrapper(content: string): string {
 }
 
 /**
+ * Format date for email display
+ */
+function formatEmailDate(date: Date): string {
+  return date.toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  })
+}
+
+/**
  * Invitation email template
  */
 function getInvitationEmailTemplate(params: {
   userName: string
   inviterName: string
   setupLink: string
+  expiresAt: Date
 }): string {
-  const { userName, inviterName, setupLink } = params
+  const { userName, inviterName, setupLink, expiresAt } = params
+  const expiryFormatted = formatEmailDate(expiresAt)
 
   const content = `
     <h2 style="color: ${BRAND_COLORS.dark}; margin-top: 0;">Welcome to My Virtual Mate!</h2>
@@ -256,9 +275,14 @@ function getInvitationEmailTemplate(params: {
     <p style="color: ${BRAND_COLORS.blue}; font-size: 14px; word-break: break-all;">
       ${setupLink}
     </p>
-    <p style="color: ${BRAND_COLORS.gray}; font-size: 14px; margin-top: 30px;">
-      <strong>Note:</strong> This invitation link will expire in 48 hours for security reasons.
-    </p>
+    <div style="margin-top: 30px; padding: 15px; background-color: ${BRAND_COLORS.light}; border-radius: 6px; border-left: 4px solid ${BRAND_COLORS.yellow};">
+      <p style="color: ${BRAND_COLORS.dark}; font-size: 14px; margin: 0;">
+        <strong>⏰ Important:</strong> This invitation link will expire on:
+      </p>
+      <p style="color: ${BRAND_COLORS.blue}; font-size: 16px; font-weight: 600; margin: 8px 0 0 0;">
+        ${expiryFormatted}
+      </p>
+    </div>
   `
 
   return getEmailWrapper(content)
@@ -302,6 +326,79 @@ function getAlertEmailTemplate(params: {
     <div style="text-align: center; margin-top: 30px;">
       <a href="${SITE_URL}/admin/audit-logs" class="button">View Audit Logs</a>
     </div>
+  `
+
+  return getEmailWrapper(content)
+}
+
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(params: {
+  to: string
+  userName: string
+  resetLink: string
+  expiresAt: Date
+}): Promise<{ success: boolean; error?: string }> {
+  const { to, userName, resetLink, expiresAt } = params
+
+  const html = getPasswordResetEmailTemplate({
+    userName,
+    resetLink,
+    expiresAt,
+  })
+
+  return sendEmail({
+    to,
+    subject: 'Reset Your Password – My Virtual Mate',
+    html,
+  })
+}
+
+/**
+ * Password reset email template
+ */
+function getPasswordResetEmailTemplate(params: {
+  userName: string
+  resetLink: string
+  expiresAt: Date
+}): string {
+  const { userName, resetLink, expiresAt } = params
+  const expiryFormatted = formatEmailDate(expiresAt)
+
+  const content = `
+    <h2 style="color: ${BRAND_COLORS.dark}; margin-top: 0;">Reset Your Password</h2>
+    <p style="color: ${BRAND_COLORS.gray}; line-height: 1.6;">
+      Hi ${userName},
+    </p>
+    <p style="color: ${BRAND_COLORS.gray}; line-height: 1.6;">
+      We received a request to reset your password for your My Virtual Mate admin account.
+      Click the button below to create a new password.
+    </p>
+    <div style="text-align: center;">
+      <a href="${resetLink}" class="button">Reset My Password</a>
+    </div>
+    <p style="color: ${BRAND_COLORS.gray}; font-size: 14px; line-height: 1.6;">
+      If the button doesn't work, copy and paste this link into your browser:
+    </p>
+    <p style="color: ${BRAND_COLORS.blue}; font-size: 14px; word-break: break-all;">
+      ${resetLink}
+    </p>
+    <div style="margin-top: 30px; padding: 15px; background-color: ${BRAND_COLORS.light}; border-radius: 6px; border-left: 4px solid ${BRAND_COLORS.yellow};">
+      <p style="color: ${BRAND_COLORS.dark}; font-size: 14px; margin: 0;">
+        <strong>⏰ Important:</strong> This reset link will expire on:
+      </p>
+      <p style="color: ${BRAND_COLORS.blue}; font-size: 16px; font-weight: 600; margin: 8px 0 0 0;">
+        ${expiryFormatted}
+      </p>
+      <p style="color: ${BRAND_COLORS.gray}; font-size: 12px; margin: 4px 0 0 0;">
+        (30 minutes from request)
+      </p>
+    </div>
+    <p style="color: ${BRAND_COLORS.gray}; font-size: 14px; margin-top: 20px;">
+      <strong>Didn't request this?</strong> You can safely ignore this email. Your password will remain unchanged.
+      No action is needed on your part.
+    </p>
   `
 
   return getEmailWrapper(content)

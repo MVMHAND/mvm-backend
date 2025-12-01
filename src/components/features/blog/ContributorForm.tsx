@@ -67,6 +67,11 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
       return
     }
 
+    if (filteredStats.length === 0) {
+      setError('Please add at least one stat')
+      return
+    }
+
     if (filteredStats.length > 3) {
       setError('Maximum 3 stats allowed')
       return
@@ -123,7 +128,9 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
   }
 
   const removeStat = (index: number) => {
-    setStats(stats.filter((_, i) => i !== index))
+    if (stats.length > 1) {
+      setStats(stats.filter((_, i) => i !== index))
+    }
   }
 
   const updateStat = (index: number, value: string) => {
@@ -165,12 +172,34 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
             />
           </div>
 
-          <ImageUploader
-            label="Avatar (optional)"
-            onUpload={handleAvatarUpload}
-            currentUrl={avatarUrl}
-            maxSizeMB={2}
-          />
+          {/* Avatar with circle preview */}
+          <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
+            <div className="flex-shrink-0">
+              <div className="relative">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar preview"
+                    className="h-32 w-32 rounded-full object-cover border-4 border-mvm-blue/20"
+                  />
+                ) : (
+                  <div className="h-32 w-32 rounded-full bg-gray-200 flex items-center justify-center border-4 border-dashed border-gray-300">
+                    <span className="text-gray-400 text-sm text-center px-2">No avatar</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex-1 w-full">
+              <ImageUploader
+                label="Avatar (required)"
+                onUpload={handleAvatarUpload}
+                currentUrl={avatarUrl}
+                maxSizeMB={2}
+                hidePreview
+              />
+              <p className="mt-2 text-xs text-gray-500">Upload a square image for best results. The avatar will be displayed in a circle.</p>
+            </div>
+          </div>
 
           <div>
             <label htmlFor="bio" className="mb-1 block text-sm font-medium text-gray-700">
@@ -224,8 +253,8 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
-              Stats (optional){' '}
-              <span className="text-xs text-gray-500">(max 3 items, e.g., "5+ Years Experience")</span>
+              Stats <span className="text-red-500">*</span>{' '}
+              <span className="text-xs text-gray-500">(1-3 items, e.g., "5+ Years Experience")</span>
             </label>
             <div className="space-y-2">
               {stats.map((item, index) => (
@@ -237,14 +266,16 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
                     placeholder="e.g., 5+ Years Experience"
                     className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
                   />
-                  <Button
-                    type="button"
-                    variant="danger"
-                    size="sm"
-                    onClick={() => removeStat(index)}
-                  >
-                    Remove
-                  </Button>
+                  {stats.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      onClick={() => removeStat(index)}
+                    >
+                      Remove
+                    </Button>
+                  )}
                 </div>
               ))}
               {stats.length < 3 && (

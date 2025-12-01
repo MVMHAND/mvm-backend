@@ -10,6 +10,7 @@ interface ImageUploaderProps {
   maxSizeMB?: number
   label?: string
   accept?: string
+  hidePreview?: boolean
 }
 
 export function ImageUploader({
@@ -18,6 +19,7 @@ export function ImageUploader({
   maxSizeMB = 5,
   label = 'Upload Image',
   accept = 'image/jpeg,image/jpg,image/png,image/webp',
+  hidePreview = false,
 }: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(currentUrl || null)
   const [isDragging, setIsDragging] = useState(false)
@@ -119,7 +121,7 @@ export function ImageUploader({
         </div>
       )}
 
-      {preview ? (
+      {preview && !hidePreview ? (
         <div className="space-y-3">
           <div className="relative overflow-hidden rounded-lg border border-gray-200">
             <img
@@ -148,6 +150,38 @@ export function ImageUploader({
               Remove
             </Button>
           </div>
+        </div>
+      ) : hidePreview ? (
+        <div className="flex gap-2">
+          {isUploading ? (
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-mvm-blue" />
+              <span className="text-sm text-gray-600">Uploading...</span>
+            </div>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {preview ? 'Change Image' : 'Upload Image'}
+              </Button>
+              {preview && (
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  onClick={handleRemove}
+                  disabled={isUploading}
+                >
+                  Remove
+                </Button>
+              )}
+            </>
+          )}
         </div>
       ) : (
         <div

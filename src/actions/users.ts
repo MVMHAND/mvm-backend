@@ -9,19 +9,81 @@ import type { UserWithRole } from '@/types/database'
 import { randomBytes, createHash } from 'crypto'
 
 /**
- * Get paginated list of users with their roles
+ * Combined user type that includes both active users and pending invitations
+ */
+export interface CombinedUser {
+  id: string
+  name: string
+  email: string
+  avatar_url: string | null
+  status: 'active' | 'inactive' | 'invited' | 'deleted'
+  role: {
+    id: string
+    name: string
+    is_super_admin: boolean
+  }
+  created_at: string
+  invitation_expires_at?: string | null
+}
+
+/**
+ * Get paginated list of users with their roles (including pending invitations)
  */
 export async function getUsersAction(
   page = 1,
   limit = 10,
   search = '',
   status = ''
-): Promise<ActionResponse<{ users: UserWithRole[]; total: number; pages: number }>> {
+): Promise<ActionResponse<{ users: CombinedUser[]; total: number; pages: number }>> {
   try {
     const supabase = await createClient()
-    const offset = (page - 1) * limit
+    const adminClient = await createAdminClient()
 
-    // Build query
+    // If filtering by 'invited' status, only get pending invitations
+    if (status === 'invited') {
+      let invitationQuery = adminClient
+        .from('user_invitations')
+        .select('*, role:roles(*)', { count: 'exact' })
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+
+      if (search) {
+        invitationQuery = invitationQuery.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
+      }
+
+      const offset = (page - 1) * limit
+      const { data: invitations, error: invError, count: invCount } = await invitationQuery
+        .range(offset, offset + limit - 1)
+
+      if (invError) {
+        console.error('Error fetching invitations:', invError)
+        return { success: false, error: 'Failed to fetch invited users' }
+      }
+
+      const invitedUsers: CombinedUser[] = (invitations || []).map((inv) => ({
+        id: inv.id,
+        name: inv.name,
+        email: inv.email,
+        avatar_url: null,
+        status: 'invited' as const,
+        role: inv.role,
+        created_at: inv.created_at,
+        invitation_expires_at: inv.expires_at,
+      }))
+
+      return {
+        success: true,
+        data: {
+          users: invitedUsers,
+          total: invCount || 0,
+          pages: Math.ceil((invCount || 0) / limit),
+        },
+      }
+    }
+
+    // Get profiles (active/inactive users)
+    const offset = (page - 1) * limit
     let query = supabase
       .from('profiles')
       .select('*, role:roles(*)', { count: 'exact' })
@@ -34,28 +96,64 @@ export async function getUsersAction(
       query = query.neq('status', 'deleted')
     }
 
-    // Add search filter if provided
     if (search) {
       query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
     }
 
-    // Execute query with pagination
-    const { data: users, error, count } = await query.range(offset, offset + limit - 1)
+    const { data: profiles, error: profileError, count: profileCount } = await query
+      .range(offset, offset + limit - 1)
 
-    if (error) {
-      console.error('Error fetching users:', error)
-      return {
-        success: false,
-        error: 'Failed to fetch users',
-      }
+    if (profileError) {
+      console.error('Error fetching users:', profileError)
+      return { success: false, error: 'Failed to fetch users' }
     }
 
-    const total = count || 0
+    // If no status filter (showing all), also get pending invitations
+    let allUsers: CombinedUser[] = (profiles || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      email: p.email,
+      avatar_url: p.avatar_url,
+      status: p.status,
+      role: p.role,
+      created_at: p.created_at,
+      invitation_expires_at: null,
+    }))
+
+    let total = profileCount || 0
+
+    // If showing all users (no status filter), include pending invitations
+    if (!status) {
+      const { data: invitations, count: invCount } = await adminClient
+        .from('user_invitations')
+        .select('*, role:roles(*)', { count: 'exact' })
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+
+      const invitedUsers: CombinedUser[] = (invitations || []).map((inv) => ({
+        id: inv.id,
+        name: inv.name,
+        email: inv.email,
+        avatar_url: null,
+        status: 'invited' as const,
+        role: inv.role,
+        created_at: inv.created_at,
+        invitation_expires_at: inv.expires_at,
+      }))
+
+      // Combine and sort by created_at
+      allUsers = [...allUsers, ...invitedUsers].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+      total = total + (invCount || 0)
+    }
+
     const pages = Math.ceil(total / limit)
 
     return {
       success: true,
-      data: { users: users || [], total, pages },
+      data: { users: allUsers, total, pages },
     }
   } catch (error) {
     console.error('Error in getUsersAction:', error)
@@ -158,9 +256,9 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
     const token = randomBytes(32).toString('hex')
     const tokenHash = createHash('sha256').update(token).digest('hex')
 
-    // Set expiration to 48 hours from now
+    // Set expiration to 12 hours from now
     const expiresAt = new Date()
-    expiresAt.setHours(expiresAt.getHours() + 48)
+    expiresAt.setHours(expiresAt.getHours() + 12)
 
     // Get current user for audit log and email
     const {
@@ -223,6 +321,7 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
       userName: name,
       inviterName,
       setupLink,
+      expiresAt,
     })
 
     if (!emailResult.success) {

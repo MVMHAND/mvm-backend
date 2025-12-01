@@ -1,47 +1,73 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { loginAction } from '@/actions/auth'
+import { forgotPasswordAction } from '@/actions/auth'
 
-export function LoginForm() {
-  const router = useRouter()
+export function ForgotPasswordForm() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
+    setSuccess(false)
     setIsLoading(true)
 
     try {
       const formData = new FormData()
       formData.append('email', email)
-      formData.append('password', password)
 
-      const result = await loginAction(formData)
+      const result = await forgotPasswordAction(formData)
 
       if (!result.success) {
-        setError(result.error || 'Login failed. Please try again.')
+        setError(result.error || 'An error occurred. Please try again.')
         setIsLoading(false)
         return
       }
 
-      // Redirect to admin dashboard
-      router.push('/admin')
-      router.refresh()
+      setSuccess(true)
+      setIsLoading(false)
     } catch {
       setError('An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }
   }
 
+  if (success) {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-lg bg-green-50 p-4 text-sm text-green-800">
+          <p className="font-medium">Check your email</p>
+          <p className="mt-1">
+            If an account with this email exists, we&apos;ve sent you a password reset link.
+            Please check your inbox and spam folder.
+          </p>
+        </div>
+
+        <div className="text-center">
+          <Link
+            href="/admin/login"
+            className="text-sm text-mvm-blue hover:underline"
+          >
+            ← Back to login
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <p className="text-sm text-gray-600">
+        Enter the email address associated with your account and we&apos;ll send you a link to
+        reset your password.
+      </p>
+
       <Input
         label="Email Address"
         type="email"
@@ -53,17 +79,6 @@ export function LoginForm() {
         disabled={isLoading}
       />
 
-      <Input
-        label="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Enter your password"
-        required
-        autoComplete="current-password"
-        disabled={isLoading}
-      />
-
       {error && (
         <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800">
           <p className="font-medium">Error</p>
@@ -72,16 +87,16 @@ export function LoginForm() {
       )}
 
       <Button type="submit" className="w-full" isLoading={isLoading}>
-        Sign In
+        Send Reset Link
       </Button>
 
       <div className="text-center">
-        <a
-          href="/admin/forgot-password"
+        <Link
+          href="/admin/login"
           className="text-sm text-mvm-blue hover:underline"
         >
-          Forgot your password?
-        </a>
+          ← Back to login
+        </Link>
       </div>
     </form>
   )

@@ -1,15 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { LogOut, User, Settings, ChevronDown } from 'lucide-react'
+import { LogOut, User, ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { logoutAction } from '@/actions/auth'
 import { getInitials } from '@/lib/utils'
 import { Breadcrumb } from './Breadcrumb'
-import { useUser } from '@/store/provider'
+import { useUser, useSidebar } from '@/store/provider'
 
 export function TopBar() {
   const user = useUser()
+  const { collapsed } = useSidebar()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
@@ -26,7 +27,11 @@ export function TopBar() {
   }
 
   return (
-    <header className="fixed left-64 right-0 top-0 z-30 border-b border-gray-200 bg-white">
+    <header
+      className={`fixed right-0 top-0 z-30 border-b border-gray-200 bg-white transition-all duration-300 ${
+        collapsed ? 'left-16' : 'left-64'
+      }`}
+    >
       <div className="flex h-16 items-center justify-between px-6">
         {/* Left side - breadcrumbs */}
         <div className="flex items-center">
@@ -98,16 +103,6 @@ export function TopBar() {
                   >
                     <User className="h-4 w-4" />
                     <span>My Profile</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsDropdownOpen(false)
-                      router.push('/admin/settings/general')
-                    }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
                   </button>
                 </div>
 

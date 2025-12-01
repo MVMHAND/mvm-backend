@@ -176,11 +176,6 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         cellAlign: 'right',
         render: (post) => (
           <div className="flex justify-end gap-2">
-            <Link href={`/admin/blog/posts/${post.id}/preview`}>
-              <Button size="sm" variant="ghost">
-                Preview
-              </Button>
-            </Link>
             <Link href={`/admin/blog/posts/${post.id}`}>
               <Button size="sm" variant="outline">
                 Edit

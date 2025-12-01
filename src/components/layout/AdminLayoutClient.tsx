@@ -2,7 +2,7 @@
 
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
-import { StoreProvider } from '@/store/provider'
+import { StoreProvider, useSidebar } from '@/store/provider'
 import type { MenuItem } from '@/config/menu'
 import type { AuthUser } from '@/store/types'
 
@@ -11,6 +11,28 @@ interface AdminLayoutClientProps {
   menuItems: MenuItem[]
   userPermissions: string[]
   user: AuthUser
+}
+
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+  const { collapsed } = useSidebar()
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main content area */}
+      <div
+        className={`transition-all duration-300 ${collapsed ? 'pl-16' : 'pl-64'}`}
+      >
+        {/* Top bar */}
+        <TopBar />
+
+        {/* Page content - with consistent min-height for content area */}
+        <main className="min-h-[calc(100vh-4rem)] pt-16">{children}</main>
+      </div>
+    </div>
+  )
 }
 
 export function AdminLayoutClient({
@@ -27,19 +49,7 @@ export function AdminLayoutClient({
         menuItems,
       }}
     >
-      <div className="min-h-screen bg-gray-50">
-        {/* Sidebar */}
-        <Sidebar />
-
-        {/* Main content area */}
-        <div className="pl-64">
-          {/* Top bar */}
-          <TopBar />
-
-          {/* Page content - with consistent min-height for content area */}
-          <main className="min-h-[calc(100vh-4rem)] pt-16">{children}</main>
-        </div>
-      </div>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
     </StoreProvider>
   )
 }

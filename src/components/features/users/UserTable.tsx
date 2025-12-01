@@ -10,7 +10,7 @@ import {
   DateCell,
   FilterConfig,
 } from '@/components/ui/AdminTable'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatDateTime } from '@/lib/utils'
 
 interface User {
   id: string
@@ -24,6 +24,7 @@ interface User {
     is_super_admin: boolean
   }
   created_at: string
+  invitation_expires_at?: string | null
 }
 
 interface UserTableProps {
@@ -91,12 +92,19 @@ export function UserTable({ users, pagination }: UserTableProps) {
       key: 'status',
       header: 'Status',
       render: (user) => (
-        <TableBadge variant={getStatusVariant(user.status)}>{user.status}</TableBadge>
+        <div className="space-y-1">
+          <TableBadge variant={getStatusVariant(user.status)}>{user.status}</TableBadge>
+          {user.status === 'invited' && user.invitation_expires_at && (
+            <p className="text-xs text-gray-500">
+              Expires: {formatDateTime(user.invitation_expires_at)}
+            </p>
+          )}
+        </div>
       ),
     },
     {
       key: 'joined',
-      header: 'Joined',
+      header: 'Created',
       render: (user) => <DateCell date={user.created_at} formatter={formatDate} />,
     },
     {
@@ -105,11 +113,15 @@ export function UserTable({ users, pagination }: UserTableProps) {
       headerAlign: 'right',
       cellAlign: 'right',
       render: (user) => (
-        <Link href={`/admin/users/${user.id}`}>
-          <Button variant="ghost" size="sm">
-            View
-          </Button>
-        </Link>
+        user.status === 'invited' ? (
+          <span className="text-xs text-gray-400">Pending</span>
+        ) : (
+          <Link href={`/admin/users/${user.id}`}>
+            <Button variant="ghost" size="sm">
+              View
+            </Button>
+          </Link>
+        )
       ),
     },
   ]

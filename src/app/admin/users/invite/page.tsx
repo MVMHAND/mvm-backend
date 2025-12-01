@@ -24,7 +24,7 @@ export default async function InviteUserPage() {
         description="Send an invitation email to a new admin user. They will receive an email with instructions to set their password and access the admin panel."
       />
 
-      <FormContainer maxWidth="2xl">
+      <FormContainer>
         <Card>
           <CardHeader>
             <CardTitle>User Details</CardTitle>

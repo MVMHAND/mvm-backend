@@ -61,27 +61,6 @@ export function ContributorList({ contributors, pagination }: ContributorListPro
         ),
       },
       {
-        key: 'expertise',
-        header: 'Expertise',
-        render: (contributor) => (
-          <div className="flex flex-wrap gap-1">
-            {contributor.expertise.slice(0, 2).map((exp, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800"
-              >
-                {exp}
-              </span>
-            ))}
-            {contributor.expertise.length > 2 && (
-              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
-                +{contributor.expertise.length - 2}
-              </span>
-            )}
-          </div>
-        ),
-      },
-      {
         key: 'posts',
         header: 'Posts',
         render: (contributor) => (

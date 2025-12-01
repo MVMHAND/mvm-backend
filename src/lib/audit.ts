@@ -27,6 +27,7 @@ export const AUDIT_ACTION_TYPES = {
   LOGIN_SUCCESS: 'auth.login.success',
   LOGIN_FAILURE: 'auth.login.failure',
   LOGOUT: 'auth.logout',
+  PASSWORD_RESET_REQUEST: 'auth.password_reset_request',
   PASSWORD_RESET: 'auth.password_reset',
   PASSWORD_CHANGE: 'auth.password_change',
 

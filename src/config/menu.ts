@@ -65,30 +65,6 @@ export const MENU_CONFIG: MenuItem[] = [
     ],
   },
   {
-    id: 'settings',
-    label: 'Settings',
-    icon: 'Settings',
-    permissionKey: 'settings.view',
-    relatedPermissions: [
-      { key: 'settings.view', label: 'View Settings', group: 'Settings', description: 'View system settings' },
-      { key: 'settings.edit', label: 'Edit Settings', group: 'Settings', description: 'Modify system settings' },
-    ],
-    children: [
-      {
-        id: 'settings-general',
-        label: 'General',
-        path: '/admin/settings/general',
-        permissionKey: 'settings.view',
-      },
-      {
-        id: 'settings-security',
-        label: 'Security',
-        path: '/admin/settings/security',
-        permissionKey: 'settings.view',
-      },
-    ],
-  },
-  {
     id: 'blog',
     label: 'Blog',
     icon: 'BookOpen',
@@ -126,9 +102,9 @@ export const MENU_CONFIG: MenuItem[] = [
     label: 'Audit Logs',
     path: '/admin/audit-logs',
     icon: 'FileText',
-    permissionKey: 'audit.view',
+    permissionKey: 'super_admin_only',
     relatedPermissions: [
-      { key: 'audit.view', label: 'View Audit Logs', group: 'Audit', description: 'View system audit logs' },
+      { key: 'audit.view', label: 'View Audit Logs', group: 'Audit', description: 'View system audit logs (Super Admin only)' },
     ],
   },
 ]

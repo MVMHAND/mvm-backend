@@ -28,13 +28,15 @@ export default function HomePage() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button
-            size="lg"
-            variant="secondary"
-            className="min-w-48 bg-white text-mvm-blue hover:bg-white/90"
-          >
-            Learn More
-          </Button>
+          <Link href="https://myvirtualmate.com">
+            <Button
+              size="lg"
+              variant="secondary"
+              className="min-w-48 bg-white text-mvm-blue hover:bg-white/90"
+              >
+              Learn More
+            </Button>
+          </Link>
           <Link href="/admin/login">
             <Button
               size="lg"

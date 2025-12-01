@@ -12,7 +12,7 @@ export const COLORS = {
 export const APP_NAME = 'My Virtual Mate'
 export const APP_TAGLINE = 'Your Virtual Companion Platform'
 export const APP_DESCRIPTION =
-  'An innovative platform connecting you with your perfect virtual companion. Coming soon!'
+  'An innovative platform connecting you with your perfect virtual companion.'
 
 // User Status
 export const USER_STATUS = {
