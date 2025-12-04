@@ -1,0 +1,8 @@
+# Supabase CLI artifacts (safe to ignore)
+.temp
+.branches
+
+# Local Supabase env/config (keep out of git)
+.env
+.env.local
+*.log
