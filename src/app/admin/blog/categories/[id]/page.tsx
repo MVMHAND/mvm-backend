@@ -26,7 +26,7 @@ export default async function EditCategoryPage({ params }: PageProps) {
     <PageContainer>
       <PageHeader title="Edit Category" description="Update category information" />
 
-      <FormContainer maxWidth="2xl">
+      <FormContainer>
         <Suspense fallback={<CategoryFormLoading />}>
           <CategoryFormContent categoryId={id} />
         </Suspense>

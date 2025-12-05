@@ -12,7 +12,7 @@ export async function getRolesAction(): Promise<ActionResponse<Role[]>> {
     const supabase = await createClient()
 
     const { data: roles, error } = await supabase
-      .from('roles')
+      .from('user_roles')
       .select('id, name, description, is_super_admin, is_system, created_at, updated_at')
       .order('is_super_admin', { ascending: false })
       .order('name')
@@ -51,7 +51,7 @@ export async function getRolesWithCountsAction(
 
     // Get roles
     let query = supabase
-      .from('roles')
+      .from('user_roles')
       .select('*')
       .order('is_super_admin', { ascending: false })
       .order('name')
@@ -73,7 +73,7 @@ export async function getRolesWithCountsAction(
 
     // Get user counts per role
     const { data: userCounts, error: countsError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role_id')
       .neq('status', 'deleted')
 
@@ -125,7 +125,7 @@ export async function getRoleByIdAction(
 
     // Get role
     const { data: role, error: roleError } = await supabase
-      .from('roles')
+      .from('user_roles')
       .select('*')
       .eq('id', roleId)
       .single()
@@ -139,7 +139,7 @@ export async function getRoleByIdAction(
 
     // Get role permissions
     const { data: rolePermissions, error: permError } = await supabase
-      .from('role_permissions')
+      .from('user_role_permissions')
       .select('permission_key')
       .eq('role_id', roleId)
 
@@ -149,7 +149,7 @@ export async function getRoleByIdAction(
 
     // Get all permissions to match against
     const { data: allPermissions } = await supabase
-      .from('permissions')
+      .from('user_permissions')
       .select('*')
       .order('group')
       .order('label')
@@ -161,7 +161,7 @@ export async function getRoleByIdAction(
 
     // Get user count
     const { count } = await supabase
-      .from('profiles')
+      .from('users')
       .select('*', { count: 'exact', head: true })
       .eq('role_id', roleId)
       .neq('status', 'deleted')
@@ -201,7 +201,7 @@ export async function getRoleUsersAction(
     const supabase = await createClient()
 
     const { data: users, error } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id, name, email, avatar_url, status')
       .eq('role_id', roleId)
       .neq('status', 'deleted')
@@ -238,7 +238,7 @@ export async function getPermissionsAction(): Promise<
     const supabase = await createClient()
 
     const { data: permissions, error } = await supabase
-      .from('permissions')
+      .from('user_permissions')
       .select('*')
       .order('group')
       .order('label')
@@ -290,7 +290,7 @@ export async function getRolePermissionsAction(
     const supabase = await createClient()
 
     const { data, error } = await supabase
-      .from('role_permissions')
+      .from('user_role_permissions')
       .select('permission_key')
       .eq('role_id', roleId)
 
@@ -335,7 +335,7 @@ export async function createRoleAction(formData: FormData): Promise<ActionRespon
 
     // Check if role already exists
     const { data: existingRole } = await supabase
-      .from('roles')
+      .from('user_roles')
       .select('id')
       .eq('name', name)
       .single()
@@ -349,7 +349,7 @@ export async function createRoleAction(formData: FormData): Promise<ActionRespon
 
     // Create role using admin client
     const { data: role, error } = await adminClient
-      .from('roles')
+      .from('user_roles')
       .insert({
         name,
         description: description || null,
@@ -373,7 +373,7 @@ export async function createRoleAction(formData: FormData): Promise<ActionRespon
     } = await supabase.auth.getUser()
 
     if (currentUser) {
-      await adminClient.from('audit_logs').insert({
+      await adminClient.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'role.create',
         target_type: 'role',
@@ -411,7 +411,7 @@ export async function updateRoleAction(
 
     // Check if this is a super admin role
     const { data: role } = await supabase
-      .from('roles')
+      .from('user_roles')
       .select('is_super_admin, name')
       .eq('id', roleId)
       .single()
@@ -435,7 +435,7 @@ export async function updateRoleAction(
 
     // Check if another role with this name exists
     const { data: existingRole } = await supabase
-      .from('roles')
+      .from('user_roles')
       .select('id')
       .eq('name', name)
       .neq('id', roleId)
@@ -450,7 +450,7 @@ export async function updateRoleAction(
 
     // Update role
     const { error } = await adminClient
-      .from('roles')
+      .from('user_roles')
       .update({
         name,
         description: description || null,
@@ -472,7 +472,7 @@ export async function updateRoleAction(
     } = await supabase.auth.getUser()
 
     if (currentUser) {
-      await adminClient.from('audit_logs').insert({
+      await adminClient.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'role.update',
         target_type: 'role',
@@ -507,7 +507,7 @@ export async function deleteRoleAction(roleId: string): Promise<ActionResponse> 
 
     // Check if this is a super admin or system role
     const { data: role } = await supabase
-      .from('roles')
+      .from('user_roles')
       .select('is_super_admin, is_system, name')
       .eq('id', roleId)
       .single()
@@ -521,7 +521,7 @@ export async function deleteRoleAction(roleId: string): Promise<ActionResponse> 
 
     // Check if any users are assigned to this role
     const { count } = await supabase
-      .from('profiles')
+      .from('users')
       .select('*', { count: 'exact', head: true })
       .eq('role_id', roleId)
       .neq('status', 'deleted')
@@ -534,10 +534,10 @@ export async function deleteRoleAction(roleId: string): Promise<ActionResponse> 
     }
 
     // Delete role permissions first
-    await adminClient.from('role_permissions').delete().eq('role_id', roleId)
+    await adminClient.from('user_role_permissions').delete().eq('role_id', roleId)
 
     // Delete role
-    const { error } = await adminClient.from('roles').delete().eq('id', roleId)
+    const { error } = await adminClient.from('user_user_roles').delete().eq('id', roleId)
 
     if (error) {
       console.error('Error deleting role:', error)
@@ -553,7 +553,7 @@ export async function deleteRoleAction(roleId: string): Promise<ActionResponse> 
     } = await supabase.auth.getUser()
 
     if (currentUser) {
-      await adminClient.from('audit_logs').insert({
+      await adminClient.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'role.delete',
         target_type: 'role',
@@ -590,7 +590,7 @@ export async function updateRolePermissionsAction(
 
     // Check if this is a super admin role
     const { data: role } = await supabase
-      .from('roles')
+      .from('user_roles')
       .select('is_super_admin')
       .eq('id', roleId)
       .single()
@@ -604,7 +604,7 @@ export async function updateRolePermissionsAction(
 
     // Get current permissions
     const { data: currentPerms } = await supabase
-      .from('role_permissions')
+      .from('user_role_permissions')
       .select('permission_key')
       .eq('role_id', roleId)
 
@@ -618,7 +618,7 @@ export async function updateRolePermissionsAction(
     // Remove old permissions
     if (toRemove.length > 0) {
       const { error: removeError } = await adminClient
-        .from('role_permissions')
+        .from('user_role_permissions')
         .delete()
         .eq('role_id', roleId)
         .in('permission_key', toRemove)
@@ -634,7 +634,7 @@ export async function updateRolePermissionsAction(
 
     // Add new permissions
     if (toAdd.length > 0) {
-      const { error: addError } = await adminClient.from('role_permissions').insert(
+      const { error: addError } = await adminClient.from('user_role_permissions').insert(
         toAdd.map((key) => ({
           role_id: roleId,
           permission_key: key,
@@ -656,7 +656,7 @@ export async function updateRolePermissionsAction(
     } = await supabase.auth.getUser()
 
     if (currentUser) {
-      await adminClient.from('audit_logs').insert({
+      await adminClient.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'role.permissions_update',
         target_type: 'role',

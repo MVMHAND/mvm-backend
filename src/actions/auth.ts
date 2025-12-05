@@ -55,7 +55,7 @@ export async function loginAction(formData: FormData): Promise<ActionResponse> {
   // Update last login timestamp
   if (data.user) {
     await supabase
-      .from('profiles')
+      .from('users')
       .update({ last_login: new Date().toISOString() })
       .eq('id', data.user.id)
 
@@ -129,7 +129,7 @@ export async function forgotPasswordAction(formData: FormData): Promise<ActionRe
 
     // Check if user exists in profiles
     const { data: profile } = await adminClient
-      .from('profiles')
+      .from('users')
       .select('id, name, status')
       .eq('email', email)
       .single()
@@ -152,7 +152,7 @@ export async function forgotPasswordAction(formData: FormData): Promise<ActionRe
 
     // Invalidate any existing reset tokens for this user
     await adminClient
-      .from('password_reset_tokens')
+      .from('user_password_reset_tokens')
       .delete()
       .eq('user_id', profile.id)
 
@@ -166,7 +166,7 @@ export async function forgotPasswordAction(formData: FormData): Promise<ActionRe
 
     // Store token in database
     const { error: insertError } = await adminClient
-      .from('password_reset_tokens')
+      .from('user_password_reset_tokens')
       .insert({
         user_id: profile.id,
         email: email,
@@ -227,8 +227,8 @@ export async function verifyResetTokenAction(
 
     // Find the token
     const { data: resetToken, error } = await adminClient
-      .from('password_reset_tokens')
-      .select('*, profile:profiles(name)')
+      .from('user_password_reset_tokens')
+      .select('*, profile:users(name)')
       .eq('token_hash', tokenHash)
       .is('used_at', null)
       .single()
@@ -279,7 +279,7 @@ export async function resetPasswordAction(
 
     // Find and validate the token
     const { data: resetToken, error: tokenError } = await adminClient
-      .from('password_reset_tokens')
+      .from('user_password_reset_tokens')
       .select('*')
       .eq('token_hash', tokenHash)
       .is('used_at', null)
@@ -324,7 +324,7 @@ export async function resetPasswordAction(
 
     // Mark token as used
     await adminClient
-      .from('password_reset_tokens')
+      .from('user_password_reset_tokens')
       .update({ used_at: new Date().toISOString() })
       .eq('id', resetToken.id)
 
@@ -364,8 +364,8 @@ export async function getCurrentUser() {
   }
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('*, role:roles(*)')
+    .from('user_profiles')
+    .select('*, role:user_roles(*)')
     .eq('id', user.id)
     .single()
 

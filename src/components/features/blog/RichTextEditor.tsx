@@ -118,6 +118,27 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
 
         <div className="w-px h-8 bg-gray-300 mx-1" />
 
+        {/* Text Color */}
+        <div className="relative inline-block">
+          <input
+            type="color"
+            onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
+            value={editor.getAttributes('textStyle').color || '#000000'}
+            className="w-8 h-8 rounded cursor-pointer border border-gray-300"
+            title="Text Color"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().unsetColor().run()}
+          className="px-3 py-1.5 rounded text-sm bg-white text-gray-700 hover:bg-gray-100"
+          title="Clear Color"
+        >
+          ✕
+        </button>
+
+        <div className="w-px h-8 bg-gray-300 mx-1" />
+
         {/* Lists */}
         <button
           type="button"

@@ -119,7 +119,7 @@ export async function acceptInvitationAction(
     }
 
     // Create profile
-    const { error: profileError } = await adminClient.from('profiles').insert({
+    const { error: profileError } = await adminClient.from('users').insert({
       id: authData.user.id,
       name: invitation.name,
       email: invitation.email,
@@ -144,7 +144,7 @@ export async function acceptInvitationAction(
       .eq('id', invitation.id)
 
     // Create audit log
-    await adminClient.from('audit_logs').insert({
+    await adminClient.from('user_audit_logs').insert({
       actor_id: authData.user.id,
       action_type: 'user.invitation_accepted',
       target_type: 'user',

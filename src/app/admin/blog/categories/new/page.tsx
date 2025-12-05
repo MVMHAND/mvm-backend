@@ -6,7 +6,7 @@ export default function NewCategoryPage() {
     <PageContainer>
       <PageHeader title="Create Category" description="Add a new blog category" />
 
-      <FormContainer maxWidth="2xl">
+      <FormContainer>
         <CategoryForm />
       </FormContainer>
     </PageContainer>

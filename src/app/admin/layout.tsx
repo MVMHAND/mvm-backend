@@ -22,14 +22,14 @@ export default async function AdminLayout({
 
   // Get user profile with role
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('users')
     .select(
       `
       id,
       name,
       email,
       avatar_url,
-      role:roles (
+      role:user_roles (
         name,
         is_super_admin
       )

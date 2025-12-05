@@ -9,8 +9,8 @@ export default async function AdminDashboard() {
 
   // Get current user's profile
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('name, role:roles(name)')
+    .from('users')
+    .select('name, role:user_roles(name)')
     .eq('id', user?.id ?? '')
     .single()
 

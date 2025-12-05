@@ -120,8 +120,8 @@ export async function deleteOldAuditLogsAction(daysToKeep: number = 90): Promise
 
   // Get user profile with role
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('*, role:roles(*)')
+    .from('users')
+    .select('*, role:user_roles(*)')
     .eq('id', user.id)
     .single()
 

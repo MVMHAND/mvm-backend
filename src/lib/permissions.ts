@@ -19,12 +19,12 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
 
     // Get user's profile with role
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select(
         `
         id,
         role_id,
-        role:roles (
+        role:user_roles (
           id,
           is_super_admin
         )
@@ -44,7 +44,7 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
 
     // Check if user's role has the permission
     const { data: rolePermission } = await supabase
-      .from('role_permissions')
+      .from('user_role_permissions')
       .select('permission_key')
       .eq('role_id', profile.role_id)
       .eq('permission_key', permissionKey)
@@ -75,12 +75,12 @@ export async function getUserPermissions(): Promise<string[]> {
 
     // Get user's profile with role
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select(
         `
         id,
         role_id,
-        role:roles (
+        role:user_roles (
           id,
           is_super_admin
         )
@@ -96,7 +96,7 @@ export async function getUserPermissions(): Promise<string[]> {
     // Super Admin has all permissions - return all permission keys
     if (profile.role && (profile.role as unknown as { is_super_admin: boolean }).is_super_admin) {
       const { data: allPermissions } = await supabase
-        .from('permissions')
+        .from('user_permissions')
         .select('permission_key')
 
       return allPermissions?.map((p) => p.permission_key) || []
@@ -104,7 +104,7 @@ export async function getUserPermissions(): Promise<string[]> {
 
     // Get role permissions
     const { data: rolePermissions } = await supabase
-      .from('role_permissions')
+      .from('user_role_permissions')
       .select('permission_key')
       .eq('role_id', profile.role_id)
 
@@ -131,10 +131,10 @@ export async function isSuperAdmin(): Promise<boolean> {
     }
 
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select(
         `
-        role:roles (
+        role:user_roles (
           is_super_admin
         )
       `

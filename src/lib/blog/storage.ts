@@ -68,7 +68,7 @@ export async function uploadBlogCover(
   
   // Upload file
   const { error: uploadError } = await supabase.storage
-    .from('blog-covers')
+    .from('blog-cover-images')
     .upload(filePath, file, {
       cacheControl: '3600',
       upsert: false,
@@ -80,7 +80,7 @@ export async function uploadBlogCover(
   
   // Get public URL
   const { data: urlData } = supabase.storage
-    .from('blog-covers')
+    .from('blog-cover-images')
     .getPublicUrl(filePath)
   
   return {
@@ -115,7 +115,7 @@ export async function uploadContributorAvatar(
   
   // Upload file
   const { error: uploadError } = await supabase.storage
-    .from('contributor-avatars')
+    .from('blog-contributor-avatars')
     .upload(filePath, file, {
       cacheControl: '3600',
       upsert: false,
@@ -127,7 +127,7 @@ export async function uploadContributorAvatar(
   
   // Get public URL
   const { data: urlData } = supabase.storage
-    .from('contributor-avatars')
+    .from('blog-contributor-avatars')
     .getPublicUrl(filePath)
   
   return {
@@ -147,7 +147,7 @@ export async function deleteBlogCover(url: string): Promise<{
     const supabase = await createClient()
     
     // Extract file path from URL
-    const urlParts = url.split('/blog-covers/')
+    const urlParts = url.split('/blog-cover-images/')
     if (urlParts.length < 2) {
       return { success: false, error: 'Invalid URL format' }
     }
@@ -155,7 +155,7 @@ export async function deleteBlogCover(url: string): Promise<{
     const filePath = urlParts[1]
     
     const { error } = await supabase.storage
-      .from('blog-covers')
+      .from('blog-cover-images')
       .remove([filePath])
     
     if (error) {
@@ -182,7 +182,7 @@ export async function deleteContributorAvatar(url: string): Promise<{
     const supabase = await createClient()
     
     // Extract file path from URL
-    const urlParts = url.split('/contributor-avatars/')
+    const urlParts = url.split('/blog-contributor-avatars/')
     if (urlParts.length < 2) {
       return { success: false, error: 'Invalid URL format' }
     }
@@ -190,7 +190,7 @@ export async function deleteContributorAvatar(url: string): Promise<{
     const filePath = urlParts[1]
     
     const { error } = await supabase.storage
-      .from('contributor-avatars')
+      .from('blog-contributor-avatars')
       .remove([filePath])
     
     if (error) {

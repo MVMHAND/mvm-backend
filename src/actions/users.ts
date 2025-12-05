@@ -44,7 +44,7 @@ export async function getUsersAction(
     if (status === 'invited') {
       let invitationQuery = adminClient
         .from('user_invitations')
-        .select('*, role:roles(*)', { count: 'exact' })
+        .select('*, role:user_roles(*)', { count: 'exact' })
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
@@ -86,8 +86,8 @@ export async function getUsersAction(
     // Get profiles (active/inactive users)
     const offset = (page - 1) * limit
     let query = supabase
-      .from('profiles')
-      .select('*, role:roles(*)', { count: 'exact' })
+      .from('users')
+      .select('*, role:user_roles(*)', { count: 'exact' })
       .order('created_at', { ascending: false })
 
     // Filter by status if provided, otherwise filter out deleted users
@@ -127,7 +127,7 @@ export async function getUsersAction(
     if (!status) {
       const { data: invitations, count: invCount } = await adminClient
         .from('user_invitations')
-        .select('*, role:roles(*)', { count: 'exact' })
+        .select('*, role:user_roles(*)', { count: 'exact' })
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
@@ -175,8 +175,8 @@ export async function getUserByIdAction(
     const supabase = await createClient()
 
     const { data: user, error } = await supabase
-      .from('profiles')
-      .select('*, role:roles(*)')
+      .from('users')
+      .select('*, role:user_roles(*)')
       .eq('id', userId)
       .single()
 
@@ -219,9 +219,9 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
       }
     }
 
-    // Check if user already exists in profiles
+    // Check if user already exists in user_profiles
     const { data: existingUser } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id')
       .eq('email', email)
       .single()
@@ -272,7 +272,7 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
     if (currentUser) {
       inviterId = currentUser.id
       const { data: currentProfile } = await supabase
-        .from('profiles')
+        .from('users')
         .select('name')
         .eq('id', currentUser.id)
         .single()
@@ -364,8 +364,8 @@ export async function updateUserAction(
 
     // Check if user is trying to edit Super Admin
     const { data: user } = await supabase
-      .from('profiles')
-      .select('role:roles(is_super_admin)')
+      .from('users')
+      .select('role:user_roles(is_super_admin)')
       .eq('id', userId)
       .single()
 
@@ -388,7 +388,7 @@ export async function updateUserAction(
 
     // Use admin client to bypass RLS for updating other users
     const { error } = await adminClient
-      .from('profiles')
+      .from('users')
       .update({
         name,
         role_id: roleId,
@@ -410,7 +410,7 @@ export async function updateUserAction(
     } = await supabase.auth.getUser()
 
     if (currentUser) {
-      await supabase.from('audit_logs').insert({
+      await supabase.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'user.update',
         target_type: 'user',
@@ -448,8 +448,8 @@ export async function toggleUserStatusAction(
 
     // Check if user is trying to modify Super Admin or an invited user
     const { data: user } = await supabase
-      .from('profiles')
-      .select('status, role:roles(is_super_admin)')
+      .from('users')
+      .select('status, role:user_roles(is_super_admin)')
       .eq('id', userId)
       .single()
 
@@ -470,7 +470,7 @@ export async function toggleUserStatusAction(
 
     // Use admin client to bypass RLS
     const { error } = await adminClient
-      .from('profiles')
+      .from('users')
       .update({
         status: newStatus,
         updated_at: new Date().toISOString(),
@@ -491,7 +491,7 @@ export async function toggleUserStatusAction(
     } = await supabase.auth.getUser()
 
     if (currentUser) {
-      await supabase.from('audit_logs').insert({
+      await supabase.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'user.status_change',
         target_type: 'user',
@@ -526,8 +526,8 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
 
     // Check if user is trying to delete Super Admin
     const { data: user } = await supabase
-      .from('profiles')
-      .select('role:roles(is_super_admin)')
+      .from('users')
+      .select('role:user_roles(is_super_admin)')
       .eq('id', userId)
       .single()
 
@@ -538,9 +538,9 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
       }
     }
 
-    // Soft delete in profiles (use admin client to bypass RLS)
+    // Soft delete in user_profiles (use admin client to bypass RLS)
     const { error: profileError } = await adminClient
-      .from('profiles')
+      .from('users')
       .update({
         status: 'deleted',
         updated_at: new Date().toISOString(),
@@ -570,7 +570,7 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
     } = await supabase.auth.getUser()
 
     if (currentUser) {
-      await supabase.from('audit_logs').insert({
+      await supabase.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'user.delete',
         target_type: 'user',
@@ -616,7 +616,7 @@ export async function activateUserAfterSetupAction(): Promise<ActionResponse> {
 
     // Update user status to active
     const { error } = await adminClient
-      .from('profiles')
+      .from('users')
       .update({
         status: 'active',
         updated_at: new Date().toISOString(),
@@ -632,7 +632,7 @@ export async function activateUserAfterSetupAction(): Promise<ActionResponse> {
     }
 
     // Create audit log
-    await adminClient.from('audit_logs').insert({
+    await adminClient.from('user_audit_logs').insert({
       actor_id: user.id,
       action_type: 'user.activated',
       target_type: 'user',
@@ -695,14 +695,14 @@ export async function uploadAvatarAction(
 
     // Check if the user already has avatar files stored
     const { data: existingAvatar } = await supabase.storage
-      .from('avatars')
+      .from('user-avatars')
       .list(userId)
 
     // Remove every existing avatar object to avoid leaving stale files behind
     if (existingAvatar && existingAvatar.length > 0) {
       const avatarPaths = existingAvatar.map((avatar) => `${userId}/${avatar.name}`)
       const { error: removeError } = await supabase.storage
-        .from('avatars')
+        .from('user-avatars')
         .remove(avatarPaths)
 
       if (removeError) {
@@ -716,7 +716,7 @@ export async function uploadAvatarAction(
 
     // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
-      .from('avatars')
+      .from('user-avatars')
       .upload(filePath, file, {
         upsert: true,
       })
@@ -732,11 +732,11 @@ export async function uploadAvatarAction(
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabase.storage.from('avatars').getPublicUrl(filePath)
+    } = supabase.storage.from('user-avatars').getPublicUrl(filePath)
 
     // Update profile with new avatar URL using admin client (to bypass RLS)
     const { error: updateError } = await adminClient
-      .from('profiles')
+      .from('users')
       .update({
         avatar_url: publicUrl,
         updated_at: new Date().toISOString(),

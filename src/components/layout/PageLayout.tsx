@@ -126,16 +126,16 @@ export function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
 // ============================================================================
 interface FormContainerProps {
   children: ReactNode
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl'
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | 'full'
   className?: string
 }
 
 export function FormContainer({
   children,
-  maxWidth = '4xl',
+  maxWidth = 'full',
   className = '',
 }: FormContainerProps) {
-  const maxWidthClass = `max-w-${maxWidth}`
+  const maxWidthClass = maxWidth === 'full' ? 'w-full' : `max-w-${maxWidth}`
   return <div className={`${maxWidthClass} ${className}`}>{children}</div>
 }
 

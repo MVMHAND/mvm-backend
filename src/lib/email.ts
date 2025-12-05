@@ -177,18 +177,21 @@ function getEmailWrapper(content: string): string {
       border-radius: 0 0 8px 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+    a.button,
     .button {
       display: inline-block;
       padding: 12px 30px;
       background-color: ${BRAND_COLORS.blue};
-      color: white;
+      color: #ffffff !important;
       text-decoration: none;
       border-radius: 6px;
       font-weight: 600;
       margin: 20px 0;
     }
+    a.button:hover,
     .button:hover {
       background-color: #014a9e;
+      color: #ffffff !important;
     }
     .footer {
       text-align: center;

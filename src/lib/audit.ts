@@ -90,7 +90,7 @@ export async function createAuditLog({
     const adminClient = await createAdminClient()
 
     const { data, error } = await adminClient
-      .from('audit_logs')
+      .from('user_audit_logs')
       .insert({
         actor_id: actorId,
         action_type: actionType,
@@ -163,11 +163,11 @@ export async function getAuditLogs(params: {
 
     // Build query
     let query = supabase
-      .from('audit_logs')
+      .from('user_audit_logs')
       .select(
         `
         *,
-        actor:profiles!audit_logs_actor_id_fkey(name, email)
+        actor:users!user_audit_logs_actor_id_fkey(name, email)
       `,
         { count: 'exact' }
       )
@@ -247,11 +247,11 @@ export async function getAuditLogsForTarget(
     const supabase = await createClient()
 
     const { data, error } = await supabase
-      .from('audit_logs')
+      .from('user_audit_logs')
       .select(
         `
         *,
-        actor:profiles!audit_logs_actor_id_fkey(name, email)
+        actor:users!user_audit_logs_actor_id_fkey(name, email)
       `
       )
       .eq('target_type', targetType)
@@ -298,14 +298,14 @@ export async function getAuditLogStats(): Promise<{
 
     // Get total logs
     const { count: totalLogs } = await supabase
-      .from('audit_logs')
+      .from('user_audit_logs')
       .select('*', { count: 'exact', head: true })
 
     // Get today's logs
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const { count: todayLogs } = await supabase
-      .from('audit_logs')
+      .from('user_audit_logs')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', today.toISOString())
 
@@ -313,14 +313,14 @@ export async function getAuditLogStats(): Promise<{
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)
     const { count: weekLogs } = await supabase
-      .from('audit_logs')
+      .from('user_audit_logs')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', weekAgo.toISOString())
 
     // Get top action types (using RPC for aggregation)
     // Note: This is a simple version. For production, create a Postgres function
     const { data: allLogs } = await supabase
-      .from('audit_logs')
+      .from('user_audit_logs')
       .select('action_type')
       .limit(1000)
 
@@ -367,7 +367,7 @@ export async function deleteOldAuditLogs(daysToKeep: number = 90): Promise<{
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
 
     const { data, error } = await adminClient
-      .from('audit_logs')
+      .from('user_audit_logs')
       .delete()
       .lt('created_at', cutoffDate.toISOString())
       .select('id')
