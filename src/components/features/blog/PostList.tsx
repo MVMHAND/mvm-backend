@@ -101,7 +101,7 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         options: [
           { value: 'draft', label: 'Draft' },
           { value: 'published', label: 'Published' },
-          { value: 'archived', label: 'Archived' },
+          { value: 'unpublished', label: 'Unpublished' },
         ],
         placeholder: 'All statuses',
       },
@@ -181,14 +181,18 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
                 Edit
               </Button>
             </Link>
-            {post.status === 'draft' && (
+            {(post.status === 'draft' || post.status === 'unpublished') && (
               <Button
                 size="sm"
                 variant="secondary"
                 onClick={() => handlePublish(post.id)}
                 disabled={isPending && actioningId === post.id}
               >
-                {isPending && actioningId === post.id ? 'Publishing...' : 'Publish'}
+                {isPending && actioningId === post.id
+                  ? 'Publishing...'
+                  : post.status === 'unpublished'
+                    ? 'Republish'
+                    : 'Publish'}
               </Button>
             )}
             {post.status === 'published' && (

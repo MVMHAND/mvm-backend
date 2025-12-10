@@ -77,7 +77,7 @@ This directory contains clean, efficient Supabase migrations organized by domain
 - Categories with colors
 - Contributors with social links
 - Posts with SEO metadata
-- Draft/Published/Archived status
+- Draft/Published/Unpublished status
 
 ## Running Migrations
 

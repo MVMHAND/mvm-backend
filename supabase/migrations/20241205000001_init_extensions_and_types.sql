@@ -10,4 +10,4 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TYPE user_status AS ENUM ('invited', 'active', 'inactive', 'deleted');
 
 -- Blog post status enum
-CREATE TYPE post_status AS ENUM ('draft', 'published', 'archived');
+CREATE TYPE post_status AS ENUM ('draft', 'published', 'unpublished');
