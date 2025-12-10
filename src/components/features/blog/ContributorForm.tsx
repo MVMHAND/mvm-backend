@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -29,25 +29,30 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
   const [stats, setStats] = useState<string[]>(
     contributor?.stats && contributor.stats.length > 0 ? contributor.stats : ['']
   )
+  
+  // Store pending avatar file for new contributors
+  const pendingAvatarFileRef = useRef<File | null>(null)
 
   const handleAvatarUpload = async (file: File) => {
-    const formData = new FormData()
-    formData.append('avatar', file)
-
-    // For new contributors, we'll need to save the file temporarily
-    // or handle it after creation
-    if (contributor?.id) {
-      const result = await uploadContributorAvatarAction(contributor.id, formData)
-
-      if (result.success && result.data) {
-        setAvatarUrl(result.data)
-      }
-
-      return result
+    // For new contributors, store file and show local preview
+    if (!contributor?.id) {
+      pendingAvatarFileRef.current = file
+      // Create local preview URL
+      const previewUrl = URL.createObjectURL(file)
+      setAvatarUrl(previewUrl)
+      return { success: true, url: previewUrl }
     }
 
-    // For new contributors, just show preview and save file for later
-    return { success: true }
+    // For existing contributors, upload immediately
+    const formData = new FormData()
+    formData.append('avatar', file)
+    const result = await uploadContributorAvatarAction(contributor.id, formData)
+
+    if (result.success && result.data) {
+      setAvatarUrl(result.data)
+    }
+
+    return result
   }
 
   const handleSubmit = (formData: FormData) => {
@@ -82,15 +87,25 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
         full_name: formData.get('full_name') as string,
         position: formData.get('position') as string,
         bio: formData.get('bio') as string,
-        avatar_url: avatarUrl,
+        avatar_url: isEditing ? avatarUrl : null, // Will be updated after upload for new contributors
         expertise: filteredExpertise,
         stats: filteredStats,
       }
 
-      const result =
-        isEditing && contributor
-          ? await updateContributorAction(contributor.id, data)
-          : await createContributorAction(data)
+      let result
+      if (isEditing && contributor) {
+        result = await updateContributorAction(contributor.id, data)
+      } else {
+        result = await createContributorAction(data)
+        
+        // If contributor created successfully and we have a pending avatar file, upload it
+        if (result.success && result.data && pendingAvatarFileRef.current) {
+          const avatarFormData = new FormData()
+          avatarFormData.append('avatar', pendingAvatarFileRef.current)
+          await uploadContributorAvatarAction(result.data.id, avatarFormData)
+          pendingAvatarFileRef.current = null
+        }
+      }
 
       if (result.success) {
         router.push('/admin/blog/contributors')

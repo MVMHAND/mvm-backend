@@ -20,7 +20,6 @@ interface InviteUserFormProps {
 
 export function InviteUserForm({ roles }: InviteUserFormProps) {
   const router = useRouter()
-  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [roleId, setRoleId] = useState('')
   const [error, setError] = useState('')
@@ -35,7 +34,6 @@ export function InviteUserForm({ roles }: InviteUserFormProps) {
 
     try {
       const formData = new FormData()
-      formData.append('name', name)
       formData.append('email', email)
       formData.append('role_id', roleId)
 
@@ -67,23 +65,13 @@ export function InviteUserForm({ roles }: InviteUserFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Input
-        label="Full Name"
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="John Doe"
-        required
-        disabled={isLoading}
-      />
-
-      <Input
         label="Email Address"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="john@example.com"
         required
-        helperText="The user will receive an invitation email at this address"
+        helperText="The user will receive an invitation email and provide their name during account setup"
         disabled={isLoading}
       />
 

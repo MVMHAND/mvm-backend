@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { verifySession } from '@/lib/dal'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import {
@@ -133,59 +134,85 @@ export async function getPostByIdAction(
 }
 
 /**
+ * Check if a slug already exists (for duplicate prevention)
+ */
+export async function checkSlugExistsAction(
+  slug: string,
+  excludePostId?: string
+): Promise<{ exists: boolean }> {
+  try {
+    const supabase = await createClient()
+    
+    let query = supabase
+      .from('blog_posts')
+      .select('id')
+      .eq('slug', slug)
+    
+    if (excludePostId) {
+      query = query.neq('id', excludePostId)
+    }
+    
+    const { data } = await query.single()
+    
+    return { exists: !!data }
+  } catch {
+    // If no match found, single() throws - which means slug doesn't exist
+    return { exists: false }
+  }
+}
+
+/**
  * Create a new blog post
  */
 export async function createPostAction(
   formData: BlogPostFormData
 ): Promise<ActionResponse<BlogPost>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
     
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
-    
-    // Validate required fields
+    // Validate required fields - only title is always required
     if (!formData.title || formData.title.trim() === '') {
       return { success: false, error: 'Title is required' }
     }
     
-    if (!formData.content || formData.content.trim() === '') {
-      return { success: false, error: 'Content is required' }
+    // For published posts, require all fields
+    const isDraft = formData.status === 'draft'
+    if (!isDraft) {
+      if (!formData.content || formData.content.trim() === '') {
+        return { success: false, error: 'Content is required for publishing' }
+      }
+      
+      if (!formData.category_id) {
+        return { success: false, error: 'Category is required for publishing' }
+      }
+      
+      if (!formData.contributor_id) {
+        return { success: false, error: 'Contributor is required for publishing' }
+      }
     }
     
-    if (!formData.category_id) {
-      return { success: false, error: 'Category is required' }
-    }
+    // Use provided slug directly (duplicate check should be done before calling this action)
+    const slug = formData.slug && formData.slug.trim()
+      ? formData.slug.trim()
+      : await generateSlugFromTitle(formData.title)
     
-    if (!formData.contributor_id) {
-      return { success: false, error: 'Contributor is required' }
-    }
-    
-    // Generate slug
-    const slug = await generateSlugFromTitle(formData.title)
-    
-    // Calculate reading time if not provided
-    const reading_time = formData.reading_time || calculateReadingTime(formData.content)
+    // Calculate reading time if not provided (handle empty content for drafts)
+    const reading_time = formData.reading_time || (formData.content ? calculateReadingTime(formData.content) : 1)
     
     // Create post
     const { data: post, error } = await supabase
       .from('blog_posts')
       .insert({
-        seo_meta_title: formData.seo_meta_title.trim(),
-        seo_meta_description: formData.seo_meta_description.trim(),
+        seo_meta_title: formData.seo_meta_title?.trim() || '',
+        seo_meta_description: formData.seo_meta_description?.trim() || '',
         title: formData.title.trim(),
         slug,
         cover_image_url: formData.cover_image_url || null,
-        category_id: formData.category_id,
-        contributor_id: formData.contributor_id,
-        content: formData.content.trim(),
+        category_id: formData.category_id || null,
+        contributor_id: formData.contributor_id || null,
+        content: formData.content?.trim() || '',
         reading_time,
         status: formData.status || 'draft',
         created_by: user.id,
@@ -239,17 +266,9 @@ export async function updatePostAction(
   formData: BlogPostFormData
 ): Promise<ActionResponse<BlogPost>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Get existing post
     const { data: existingPost, error: fetchError } = await supabase
@@ -283,9 +302,9 @@ export async function updatePostAction(
         title: formData.title.trim(),
         slug,
         cover_image_url: formData.cover_image_url || null,
-        category_id: formData.category_id,
-        contributor_id: formData.contributor_id,
-        content: formData.content.trim(),
+        category_id: formData.category_id || null,
+        contributor_id: formData.contributor_id || null,
+        content: formData.content?.trim() || '',
         reading_time,
         status: formData.status,
       })
@@ -336,17 +355,9 @@ export async function updatePostAction(
  */
 export async function publishPostAction(postId: string): Promise<ActionResponse<BlogPost>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Get post
     const { data: post, error: fetchError } = await supabase
@@ -424,17 +435,9 @@ export async function publishPostAction(postId: string): Promise<ActionResponse<
  */
 export async function unpublishPostAction(postId: string): Promise<ActionResponse<BlogPost>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Unpublish post
     const { data: post, error } = await supabase
@@ -487,17 +490,9 @@ export async function unpublishPostAction(postId: string): Promise<ActionRespons
  */
 export async function deletePostAction(postId: string): Promise<ActionResponse<null>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Get post
     const { data: post, error: fetchError } = await supabase
@@ -577,6 +572,7 @@ export async function uploadPostCoverAction(
   formData: FormData
 ): Promise<ActionResponse<string>> {
   try {
+    const supabase = await createClient()
     const file = formData.get('cover') as File
     
     if (!file) {
@@ -593,6 +589,20 @@ export async function uploadPostCoverAction(
       return {
         success: false,
         error: result.error || 'Failed to upload cover image',
+      }
+    }
+    
+    // Update the post with the new cover image URL
+    const { error: updateError } = await supabase
+      .from('blog_posts')
+      .update({ cover_image_url: result.url })
+      .eq('id', postId)
+    
+    if (updateError) {
+      console.error('Error updating post with cover image:', updateError)
+      return {
+        success: false,
+        error: 'Failed to update post with cover image',
       }
     }
     

@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { verifySession } from '@/lib/dal'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { SetupPasswordForm } from '@/components/features/auth/SetupPasswordForm'
 
@@ -9,15 +8,8 @@ export const metadata = {
 }
 
 export default async function SetupPasswordPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // If not authenticated, redirect to login
-  if (!user) {
-    redirect('/admin/login')
-  }
+  // SECURITY: Validate authentication with DAL
+  const user = await verifySession()
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-mvm p-4">

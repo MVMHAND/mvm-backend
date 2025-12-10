@@ -119,8 +119,9 @@ my-virtual-mate/
 │   │   ├── supabase/           # Supabase client configurations
 │   │   ├── audit.ts            # Audit logging utilities
 │   │   ├── constants.ts        # App constants
+│   │   ├── dal.ts              # ⭐ Data Access Layer (Auth/Authz)
 │   │   ├── email.ts            # Email templates and sending
-│   │   ├── permissions.ts      # Permission utilities
+│   │   ├── permissions.ts      # Permission utilities (deprecated)
 │   │   └── utils.ts            # General utilities
 │   ├── store/                  # Zustand state management
 │   │   ├── slices/             # Store slices
@@ -133,7 +134,9 @@ my-virtual-mate/
 ├── supabase/
 │   └── migrations/             # Database migration files
 ├── public/                     # Static assets
-└── middleware.ts               # Route protection middleware
+├── middleware.ts               # Route protection middleware
+├── SECURITY_IMPLEMENTATION.md  # Security architecture guide
+└── DAL_MIGRATION_GUIDE.md      # DAL migration & usage guide
 ```
 
 ## Scripts
@@ -175,10 +178,46 @@ my-virtual-mate/
 
 ## Security
 
-- **Row Level Security (RLS)** enabled on all tables
+This project implements **industry-standard authentication and authorization** following Next.js 15 and Supabase best practices:
+
+- **Data Access Layer (DAL)** - Centralized auth verification with JWT validation
+- **Multi-layered Security** - Middleware (UX) → DAL (Security) → RLS (Data)
+- **JWT Validation** - Always uses `getUser()` to validate with Auth server (never trusts cookies)
+- **Row Level Security (RLS)** - Enabled on all tables with proper policies
 - **Immutable Super Admin** - Cannot be edited or deleted
 - **Server-side mutations** - All data changes go through Server Actions
 - **Secure tokens** - Invitation and password reset tokens with expiration
+- **React cache()** - Optimized performance with memoized auth checks
+
+### Security Documentation
+
+- **`SECURITY_IMPLEMENTATION.md`** - Complete security architecture and patterns
+- **`DAL_MIGRATION_GUIDE.md`** - Migration guide for using the DAL
+- **`DAL_IMPLEMENTATION_SUMMARY.md`** - Implementation overview and status
+
+### Quick Security Example
+
+```typescript
+// Server Component
+import { verifySessionWithProfile, hasPermission } from '@/lib/dal'
+
+export default async function UsersPage() {
+  const profile = await verifySessionWithProfile() // Validates JWT
+  const canCreate = await hasPermission('users.create')
+  
+  return <UsersList currentUser={profile} canCreate={canCreate} />
+}
+
+// Server Action
+'use server'
+import { verifySession, requirePermission } from '@/lib/dal'
+
+export async function deleteUser(userId: string) {
+  await verifySession()
+  await requirePermission('users.delete')
+  // Proceed with deletion
+}
+```
 
 ## License
 

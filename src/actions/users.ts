@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { verifySession } from '@/lib/dal'
 import { revalidatePath } from 'next/cache'
 import { sendInvitationEmail } from '@/lib/email'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
@@ -209,13 +210,12 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
     const adminClient = await createAdminClient()
 
     const email = formData.get('email') as string
-    const name = formData.get('name') as string
     const roleId = formData.get('role_id') as string
 
-    if (!email || !name || !roleId) {
+    if (!email || !roleId) {
       return {
         success: false,
-        error: 'Email, name, and role are required',
+        error: 'Email and role are required',
       }
     }
 
@@ -261,36 +261,30 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + 12)
 
-    // Get current user for audit log and email
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
+    // SECURITY: Validate authentication with DAL
+    const currentUser = await verifySession()
+    
+    // Get inviter profile for email
     let inviterName = 'Admin'
-    let inviterId: string | null = null
+    const { data: currentUserProfile } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', currentUser.id)
+      .single()
 
-    if (currentUser) {
-      inviterId = currentUser.id
-      const { data: currentProfile } = await supabase
-        .from('users')
-        .select('name')
-        .eq('id', currentUser.id)
-        .single()
-      
-      if (currentProfile) {
-        inviterName = currentProfile.name
-      }
+    if (currentUserProfile) {
+      inviterName = currentUserProfile.name
     }
 
-    // Create invitation record in database
+    // Create invitation record in database (without name - will be provided during setup)
     const { data: invitation, error: invitationError } = await adminClient
       .from('user_invitations')
       .insert({
         email,
-        name,
+        name: email.split('@')[0], // Temporary name, will be updated during account setup
         role_id: roleId,
         token_hash: tokenHash,
-        invited_by: inviterId,
+        invited_by: currentUser.id,
         expires_at: expiresAt.toISOString(),
       })
       .select()
@@ -305,22 +299,20 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
     }
 
     // Create audit log
-    if (currentUser) {
-      await createAuditLog({
-        actorId: currentUser.id,
-        actionType: AUDIT_ACTION_TYPES.USER_INVITE,
-        targetType: 'user_invitation',
-        targetId: invitation.id,
-        metadata: { email, name, role_id: roleId },
-      })
-    }
+    await createAuditLog({
+      actorId: currentUser.id,
+      actionType: AUDIT_ACTION_TYPES.USER_INVITE,
+      targetType: 'user_invitation',
+      targetId: invitation.id,
+      metadata: { email, role_id: roleId },
+    })
 
     // Send invitation email with unhashed token
     const siteUrl = getSiteUrl()
     const setupLink = `${siteUrl}/auth/accept-invitation?token=${token}`
     const emailResult = await sendInvitationEmail({
       to: email,
-      userName: name,
+      userName: email.split('@')[0], // Use email prefix as temporary name for email
       inviterName,
       setupLink,
       expiresAt,
@@ -405,19 +397,14 @@ export async function updateUserAction(
     }
 
     // Create audit log
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    if (currentUser) {
-      await supabase.from('user_audit_logs').insert({
+    const currentUser = await verifySession()
+    await supabase.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'user.update',
         target_type: 'user',
         target_id: userId,
         metadata: { name, role_id: roleId },
       })
-    }
 
     revalidatePath('/admin/users')
     revalidatePath(`/admin/users/${userId}`)
@@ -486,19 +473,14 @@ export async function toggleUserStatusAction(
     }
 
     // Create audit log
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    if (currentUser) {
-      await supabase.from('user_audit_logs').insert({
+    const currentUser = await verifySession()
+    await supabase.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'user.status_change',
         target_type: 'user',
         target_id: userId,
         metadata: { new_status: newStatus },
       })
-    }
 
     revalidatePath('/admin/users')
     revalidatePath(`/admin/users/${userId}`)
@@ -565,19 +547,14 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
     }
 
     // Create audit log
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    if (currentUser) {
-      await supabase.from('user_audit_logs').insert({
+    const currentUser = await verifySession()
+    await supabase.from('user_audit_logs').insert({
         actor_id: currentUser.id,
         action_type: 'user.delete',
         target_type: 'user',
         target_id: userId,
         metadata: {},
       })
-    }
 
     revalidatePath('/admin/users')
 
@@ -599,20 +576,9 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
  */
 export async function activateUserAfterSetupAction(): Promise<ActionResponse> {
   try {
-    const supabase = await createClient()
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const adminClient = await createAdminClient()
-
-    // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return {
-        success: false,
-        error: 'Not authenticated',
-      }
-    }
 
     // Update user status to active
     const { error } = await adminClient

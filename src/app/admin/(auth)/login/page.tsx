@@ -1,18 +1,23 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/dal'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { LoginForm } from '@/components/features/auth/LoginForm'
 import { APP_NAME } from '@/lib/constants'
 
-export default async function LoginPage() {
-  // Check if user is already authenticated
-  const supabase = await createClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+interface LoginPageProps {
+  searchParams: Promise<{ message?: string; redirect?: string }>
+}
 
-  if (session) {
-    redirect('/admin')
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams
+  const message = params.message
+  const redirectTo = params.redirect
+
+  // Check if user is already authenticated (optional check - doesn't redirect if not)
+  const user = await getCurrentUser()
+
+  if (user) {
+    redirect(redirectTo || '/admin')
   }
 
   return (
@@ -25,6 +30,13 @@ export default async function LoginPage() {
           </div>
         </div>
 
+        {/* Auth Message */}
+        {message && (
+          <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-4 text-center">
+            <p className="text-sm text-amber-800">{message}</p>
+          </div>
+        )}
+
         {/* Login Card */}
         <Card className="shadow-xl">
           <CardHeader className="text-center">
@@ -34,7 +46,7 @@ export default async function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <LoginForm />
+            <LoginForm redirectTo={redirectTo} />
           </CardContent>
         </Card>
 

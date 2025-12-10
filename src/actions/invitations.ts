@@ -61,6 +61,7 @@ export async function verifyInvitationTokenAction(
  */
 export async function acceptInvitationAction(
   token: string,
+  name: string,
   password: string
 ): Promise<ActionResponse> {
   try {
@@ -92,6 +93,14 @@ export async function acceptInvitationAction(
       }
     }
 
+    // Validate name
+    if (!name || name.trim().length === 0) {
+      return {
+        success: false,
+        error: 'Name is required',
+      }
+    }
+
     // Validate password strength
     if (password.length < 8) {
       return {
@@ -106,7 +115,7 @@ export async function acceptInvitationAction(
       password,
       email_confirm: true, // Auto-confirm email since invitation was sent
       user_metadata: {
-        name: invitation.name,
+        name: name.trim(),
       },
     })
 
@@ -121,7 +130,7 @@ export async function acceptInvitationAction(
     // Create profile
     const { error: profileError } = await adminClient.from('users').insert({
       id: authData.user.id,
-      name: invitation.name,
+      name: name.trim(),
       email: invitation.email,
       role_id: invitation.role_id,
       status: 'active', // Set to active immediately after password setup

@@ -25,6 +25,7 @@ export function ImageUploader({
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback(
@@ -45,24 +46,30 @@ export function ImageUploader({
         return
       }
 
-      // Show preview
+      // Show preview immediately from local file
       const reader = new FileReader()
       reader.onload = (e) => {
         setPreview(e.target?.result as string)
       }
       reader.readAsDataURL(file)
 
-      // Upload file
+      // Store pending file for upload on save
+      setPendingFile(file)
+
+      // Upload file immediately (for existing posts that need immediate upload)
+      // For new posts, this will just validate and show preview
       setIsUploading(true)
       try {
         const result = await onUpload(file)
         if (!result.success) {
           setError(result.error || 'Upload failed')
           setPreview(currentUrl || null)
+          setPendingFile(null)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed')
         setPreview(currentUrl || null)
+        setPendingFile(null)
       } finally {
         setIsUploading(false)
       }
@@ -106,6 +113,7 @@ export function ImageUploader({
   const handleRemove = useCallback(() => {
     setPreview(null)
     setError(null)
+    setPendingFile(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -130,6 +138,11 @@ export function ImageUploader({
               alt="Preview"
               className="h-48 w-full object-cover"
             />
+            {pendingFile && !currentUrl && (
+              <div className="absolute top-2 right-2 rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                Will upload on save
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <Button
@@ -153,35 +166,42 @@ export function ImageUploader({
           </div>
         </div>
       ) : hidePreview ? (
-        <div className="flex gap-2">
-          {isUploading ? (
-            <div className="flex items-center gap-2">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-mvm-blue" />
-              <span className="text-sm text-gray-600">Uploading...</span>
-            </div>
-          ) : (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                {preview ? 'Change Image' : 'Upload Image'}
-              </Button>
-              {preview && (
+        <div className="space-y-2">
+          <div className="flex gap-2 items-center">
+            {isUploading ? (
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-mvm-blue" />
+                <span className="text-sm text-gray-600">Uploading...</span>
+              </div>
+            ) : (
+              <>
                 <Button
                   type="button"
-                  variant="danger"
+                  variant="outline"
                   size="sm"
-                  onClick={handleRemove}
+                  onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
                 >
-                  Remove
+                  {preview ? 'Change Image' : 'Upload Image'}
                 </Button>
-              )}
-            </>
+                {preview && (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    onClick={handleRemove}
+                    disabled={isUploading}
+                  >
+                    Remove
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+          {pendingFile && !currentUrl && (
+            <p className="text-xs text-amber-600 font-medium">
+              ✓ Image selected - will upload on save
+            </p>
           )}
         </div>
       ) : (

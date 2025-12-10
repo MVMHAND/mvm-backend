@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { verifySession } from '@/lib/dal'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import {
@@ -161,17 +162,9 @@ export async function createContributorAction(
   formData: BlogContributorFormData
 ): Promise<ActionResponse<BlogContributor>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Validate input
     if (!formData.full_name || formData.full_name.trim() === '') {
@@ -273,17 +266,9 @@ export async function updateContributorAction(
   formData: BlogContributorFormData
 ): Promise<ActionResponse<BlogContributor>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Validate input
     if (!formData.full_name || formData.full_name.trim() === '') {
@@ -406,17 +391,9 @@ export async function deleteContributorAction(
   contributorId: string
 ): Promise<ActionResponse<null>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Get contributor
     const { data: contributor, error: fetchError } = await supabase
@@ -497,6 +474,7 @@ export async function uploadContributorAvatarAction(
   formData: FormData
 ): Promise<ActionResponse<string>> {
   try {
+    const supabase = await createClient()
     const file = formData.get('avatar') as File
     
     if (!file) {
@@ -513,6 +491,20 @@ export async function uploadContributorAvatarAction(
       return {
         success: false,
         error: result.error || 'Failed to upload avatar',
+      }
+    }
+    
+    // Update the contributor with the new avatar URL
+    const { error: updateError } = await supabase
+      .from('blog_contributors')
+      .update({ avatar_url: result.url })
+      .eq('id', contributorId)
+    
+    if (updateError) {
+      console.error('Error updating contributor with avatar:', updateError)
+      return {
+        success: false,
+        error: 'Failed to update contributor with avatar',
       }
     }
     

@@ -181,11 +181,14 @@ export function RoleCreateForm({ groupedPermissions }: RoleCreateFormProps) {
                   <div className="divide-y divide-gray-100">
                     {permissions.map((permission) => {
                       const isSelected = selectedPermissions.has(permission.permission_key)
+                      const isSensitive = permission.description?.includes('⚠️') || permission.permission_key.includes('audit')
 
                       return (
                         <label
                           key={permission.permission_key}
-                          className="flex cursor-pointer items-center gap-4 px-4 py-3 hover:bg-gray-50"
+                          className={`flex cursor-pointer items-center gap-4 px-4 py-3 hover:bg-gray-50 ${
+                            isSensitive ? 'bg-amber-50/50 border-l-4 border-amber-400' : ''
+                          }`}
                         >
                           <input
                             type="checkbox"
@@ -194,11 +197,13 @@ export function RoleCreateForm({ groupedPermissions }: RoleCreateFormProps) {
                             className="h-4 w-4 rounded border-gray-300 text-mvm-blue focus:ring-mvm-blue"
                           />
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className={`text-sm font-medium ${isSensitive ? 'text-amber-900' : 'text-gray-900'}`}>
                               {permission.label}
                             </p>
                             {permission.description && (
-                              <p className="text-sm text-gray-500">{permission.description}</p>
+                              <p className={`text-sm ${isSensitive ? 'text-amber-700 font-medium' : 'text-gray-500'}`}>
+                                {permission.description}
+                              </p>
                             )}
                           </div>
                           <code className="text-xs text-gray-400">

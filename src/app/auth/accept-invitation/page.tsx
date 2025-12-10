@@ -20,6 +20,7 @@ function AcceptInvitationForm() {
     roleId: string
   } | null>(null)
 
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -56,6 +57,12 @@ function AcceptInvitationForm() {
     setError('')
     setSuccess('')
 
+    // Validate name
+    if (!name.trim()) {
+      setError('Name is required')
+      return
+    }
+
     // Validate passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -76,7 +83,7 @@ function AcceptInvitationForm() {
     setIsLoading(true)
 
     try {
-      const result = await acceptInvitationAction(token, password)
+      const result = await acceptInvitationAction(token, name.trim(), password)
 
       if (!result.success) {
         setError(result.error || 'Failed to create account')
@@ -154,14 +161,23 @@ function AcceptInvitationForm() {
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">Set Up Your Account</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Welcome, <strong>{invitationData.name}</strong>! Create a password to complete your
-            account setup.
+            Welcome! Complete your account setup by providing your name and creating a password.
           </p>
           <p className="mt-1 text-xs text-gray-500">{invitationData.email}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4 rounded-md shadow-sm">
+            <Input
+              label="Full Name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your full name"
+              required
+              disabled={isLoading}
+            />
+
             <Input
               label="Password"
               type="password"

@@ -102,9 +102,9 @@ export const MENU_CONFIG: MenuItem[] = [
     label: 'Audit Logs',
     path: '/admin/audit-logs',
     icon: 'FileText',
-    permissionKey: 'super_admin_only',
+    permissionKey: 'audit.view',
     relatedPermissions: [
-      { key: 'audit.view', label: 'View Audit Logs', group: 'Audit', description: 'View system audit logs (Super Admin only)' },
+      { key: 'audit.view', label: 'View Audit Logs', group: 'Audit', description: '⚠️ CAUTION: Access to audit logs can reveal sensitive information about all system activities, user actions, and changes. Grant this permission carefully.' },
     ],
   },
 ]

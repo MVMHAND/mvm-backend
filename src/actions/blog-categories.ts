@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { verifySession } from '@/lib/dal'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import { getCategoryWithUsers, validateCategoryDeletion } from '@/lib/blog/categories'
@@ -147,17 +148,9 @@ export async function createCategoryAction(
   formData: BlogCategoryFormData
 ): Promise<ActionResponse<BlogCategory>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Validate input
     if (!formData.name || formData.name.trim() === '') {
@@ -236,17 +229,9 @@ export async function updateCategoryAction(
   formData: BlogCategoryFormData
 ): Promise<ActionResponse<BlogCategory>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Validate input
     if (!formData.name || formData.name.trim() === '') {
@@ -341,17 +326,9 @@ export async function updateCategoryAction(
  */
 export async function deleteCategoryAction(categoryId: string): Promise<ActionResponse<null>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      }
-    }
     
     // Get category
     const { data: category, error: fetchError } = await supabase

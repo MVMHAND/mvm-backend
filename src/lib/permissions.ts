@@ -1,150 +1,31 @@
-import { createClient } from '@/lib/supabase/server'
+/**
+ * @deprecated This file is deprecated. Use functions from @/lib/dal instead.
+ * 
+ * Migration guide:
+ * - hasPermission() -> import { hasPermission } from '@/lib/dal'
+ * - getUserPermissions() -> import { getUserPermissions } from '@/lib/dal'
+ * - isSuperAdmin() -> import { isSuperAdmin } from '@/lib/dal'
+ * 
+ * The DAL provides better security, performance (with React cache), and type safety.
+ */
+
+import {
+  hasPermission as dalHasPermission,
+  getUserPermissions as dalGetUserPermissions,
+  isSuperAdmin as dalIsSuperAdmin,
+} from '@/lib/dal'
 
 /**
- * Check if a user has a specific permission
- * Super Admin always has all permissions
+ * @deprecated Use hasPermission from @/lib/dal instead
  */
-export async function hasPermission(permissionKey: string): Promise<boolean> {
-  try {
-    const supabase = await createClient()
-
-    // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return false
-    }
-
-    // Get user's profile with role
-    const { data: profile } = await supabase
-      .from('users')
-      .select(
-        `
-        id,
-        role_id,
-        role:user_roles (
-          id,
-          is_super_admin
-        )
-      `
-      )
-      .eq('id', user.id)
-      .single()
-
-    if (!profile) {
-      return false
-    }
-
-    // Super Admin has all permissions
-    if (profile.role && (profile.role as unknown as { is_super_admin: boolean }).is_super_admin) {
-      return true
-    }
-
-    // Check if user's role has the permission
-    const { data: rolePermission } = await supabase
-      .from('user_role_permissions')
-      .select('permission_key')
-      .eq('role_id', profile.role_id)
-      .eq('permission_key', permissionKey)
-      .single()
-
-    return !!rolePermission
-  } catch (error) {
-    console.error('Error checking permission:', error)
-    return false
-  }
-}
+export const hasPermission = dalHasPermission
 
 /**
- * Get all permissions for the current user
+ * @deprecated Use getUserPermissions from @/lib/dal instead
  */
-export async function getUserPermissions(): Promise<string[]> {
-  try {
-    const supabase = await createClient()
-
-    // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return []
-    }
-
-    // Get user's profile with role
-    const { data: profile } = await supabase
-      .from('users')
-      .select(
-        `
-        id,
-        role_id,
-        role:user_roles (
-          id,
-          is_super_admin
-        )
-      `
-      )
-      .eq('id', user.id)
-      .single()
-
-    if (!profile) {
-      return []
-    }
-
-    // Super Admin has all permissions - return all permission keys
-    if (profile.role && (profile.role as unknown as { is_super_admin: boolean }).is_super_admin) {
-      const { data: allPermissions } = await supabase
-        .from('user_permissions')
-        .select('permission_key')
-
-      return allPermissions?.map((p) => p.permission_key) || []
-    }
-
-    // Get role permissions
-    const { data: rolePermissions } = await supabase
-      .from('user_role_permissions')
-      .select('permission_key')
-      .eq('role_id', profile.role_id)
-
-    return rolePermissions?.map((rp) => rp.permission_key) || []
-  } catch (error) {
-    console.error('Error getting user permissions:', error)
-    return []
-  }
-}
+export const getUserPermissions = dalGetUserPermissions
 
 /**
- * Check if user is Super Admin
+ * @deprecated Use isSuperAdmin from @/lib/dal instead
  */
-export async function isSuperAdmin(): Promise<boolean> {
-  try {
-    const supabase = await createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return false
-    }
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select(
-        `
-        role:user_roles (
-          is_super_admin
-        )
-      `
-      )
-      .eq('id', user.id)
-      .single()
-
-    return !!(profile?.role as unknown as { is_super_admin: boolean })?.is_super_admin
-  } catch (error) {
-    console.error('Error checking super admin:', error)
-    return false
-  }
-}
+export const isSuperAdmin = dalIsSuperAdmin

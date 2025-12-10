@@ -1,11 +1,12 @@
 'use server'
 
-import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
+import { randomBytes, createHash } from 'crypto'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getCurrentUser as getDALCurrentUser } from '@/lib/dal'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import { sendPasswordResetEmail } from '@/lib/email'
-import { randomBytes, createHash } from 'crypto'
 import type { ActionResponse } from '@/types'
 import { getSiteUrl } from '@/lib/utils'
 
@@ -82,10 +83,8 @@ export async function loginAction(formData: FormData): Promise<ActionResponse> {
 export async function logoutAction(): Promise<ActionResponse> {
   const supabase = await createClient()
 
-  // Get user before logging out
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Get user before logging out (optional for audit log)
+  const user = await getDALCurrentUser()
 
   const { error } = await supabase.auth.signOut()
 
@@ -351,33 +350,8 @@ export async function resetPasswordAction(
 
 /**
  * Get current authenticated user with profile
+ * @deprecated Use getCurrentUser from @/lib/dal instead
  */
 export async function getCurrentUser() {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return null
-  }
-
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('*, role:user_roles(*)')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) {
-    return null
-  }
-
-  return {
-    id: user.id,
-    email: user.email!,
-    name: profile.name,
-    avatar_url: profile.avatar_url,
-    role: profile.role,
-  }
+  return getDALCurrentUser()
 }

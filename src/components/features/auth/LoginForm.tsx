@@ -6,7 +6,11 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { loginAction } from '@/actions/auth'
 
-export function LoginForm() {
+interface LoginFormProps {
+  redirectTo?: string
+}
+
+export function LoginForm({ redirectTo }: LoginFormProps) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,8 +35,8 @@ export function LoginForm() {
         return
       }
 
-      // Redirect to admin dashboard
-      router.push('/admin')
+      // Redirect to the original page or admin dashboard
+      router.push(redirectTo || '/admin')
       router.refresh()
     } catch {
       setError('An unexpected error occurred. Please try again.')

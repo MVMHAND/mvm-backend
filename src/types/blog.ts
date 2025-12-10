@@ -116,8 +116,8 @@ export interface BlogPostFormData {
   title: string
   slug: string
   cover_image_url?: string | null
-  category_id: string
-  contributor_id: string
+  category_id: string | null
+  contributor_id: string | null
   content: string
   reading_time: number
   status: BlogPostStatus

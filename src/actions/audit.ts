@@ -1,7 +1,6 @@
 'use server'
 
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { verifySession, isSuperAdmin } from '@/lib/dal'
 import {
   getAuditLogs,
   getAuditLogsForTarget,
@@ -22,14 +21,8 @@ export async function getAuditLogsAction(params: {
   startDate?: string
   endDate?: string
 }): Promise<ActionResponse<PaginatedAuditLogs>> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/admin/login')
-  }
+  // SECURITY: Validate authentication with DAL
+  await verifySession()
 
   const result = await getAuditLogs(params)
 
@@ -53,14 +46,8 @@ export async function getAuditLogsForTargetAction(
   targetType: string,
   targetId: string
 ): Promise<ActionResponse> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/admin/login')
-  }
+  // SECURITY: Validate authentication with DAL
+  await verifySession()
 
   const result = await getAuditLogsForTarget(targetType, targetId)
 
@@ -81,14 +68,8 @@ export async function getAuditLogsForTargetAction(
  * Get audit log statistics
  */
 export async function getAuditLogStatsAction(): Promise<ActionResponse<AuditLogStats>> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/admin/login')
-  }
+  // SECURITY: Validate authentication with DAL
+  await verifySession()
 
   const result = await getAuditLogStats()
 
@@ -109,24 +90,12 @@ export async function getAuditLogStatsAction(): Promise<ActionResponse<AuditLogS
  * Delete old audit logs (cleanup) - Super Admin only
  */
 export async function deleteOldAuditLogsAction(daysToKeep: number = 90): Promise<ActionResponse> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/admin/login')
-  }
-
-  // Get user profile with role
-  const { data: profile } = await supabase
-    .from('users')
-    .select('*, role:user_roles(*)')
-    .eq('id', user.id)
-    .single()
-
+  // SECURITY: Validate authentication with DAL
+  await verifySession()
+  
   // Only Super Admin can delete audit logs
-  if (!profile?.role?.is_super_admin) {
+  const isAdmin = await isSuperAdmin()
+  if (!isAdmin) {
     return {
       success: false,
       error: 'Only Super Admin can delete audit logs',

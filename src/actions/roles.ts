@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { verifySession } from '@/lib/dal'
 import { revalidatePath } from 'next/cache'
 import type { ActionResponse, Role, Permission, RoleWithPermissions } from '@/types'
 
@@ -320,6 +321,8 @@ export async function getRolePermissionsAction(
  */
 export async function createRoleAction(formData: FormData): Promise<ActionResponse<Role>> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -368,19 +371,13 @@ export async function createRoleAction(formData: FormData): Promise<ActionRespon
     }
 
     // Create audit log
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    if (currentUser) {
-      await adminClient.from('user_audit_logs').insert({
-        actor_id: currentUser.id,
-        action_type: 'role.create',
-        target_type: 'role',
-        target_id: role.id,
-        metadata: { name, description },
-      })
-    }
+    await adminClient.from('user_audit_logs').insert({
+      actor_id: user.id,
+      action_type: 'role.create',
+      target_type: 'role',
+      target_id: role.id,
+      metadata: { name, description },
+    })
 
     revalidatePath('/admin/roles')
 
@@ -406,6 +403,8 @@ export async function updateRoleAction(
   formData: FormData
 ): Promise<ActionResponse> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -467,19 +466,13 @@ export async function updateRoleAction(
     }
 
     // Create audit log
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    if (currentUser) {
-      await adminClient.from('user_audit_logs').insert({
-        actor_id: currentUser.id,
-        action_type: 'role.update',
-        target_type: 'role',
-        target_id: roleId,
-        metadata: { name, description, previous_name: role?.name },
-      })
-    }
+    await adminClient.from('user_audit_logs').insert({
+      actor_id: user.id,
+      action_type: 'role.update',
+      target_type: 'role',
+      target_id: roleId,
+      metadata: { name, description, previous_name: role?.name },
+    })
 
     revalidatePath('/admin/roles')
     revalidatePath(`/admin/roles/${roleId}`)
@@ -502,6 +495,8 @@ export async function updateRoleAction(
  */
 export async function deleteRoleAction(roleId: string): Promise<ActionResponse> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -548,19 +543,13 @@ export async function deleteRoleAction(roleId: string): Promise<ActionResponse> 
     }
 
     // Create audit log
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    if (currentUser) {
-      await adminClient.from('user_audit_logs').insert({
-        actor_id: currentUser.id,
-        action_type: 'role.delete',
-        target_type: 'role',
-        target_id: roleId,
-        metadata: { name: role?.name },
-      })
-    }
+    await adminClient.from('user_audit_logs').insert({
+      actor_id: user.id,
+      action_type: 'role.delete',
+      target_type: 'role',
+      target_id: roleId,
+      metadata: { name: role?.name },
+    })
 
     revalidatePath('/admin/roles')
 
@@ -585,6 +574,8 @@ export async function updateRolePermissionsAction(
   permissionKeys: string[]
 ): Promise<ActionResponse> {
   try {
+    // SECURITY: Validate authentication with DAL
+    const user = await verifySession()
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -651,23 +642,17 @@ export async function updateRolePermissionsAction(
     }
 
     // Create audit log
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    if (currentUser) {
-      await adminClient.from('user_audit_logs').insert({
-        actor_id: currentUser.id,
-        action_type: 'role.permissions_update',
-        target_type: 'role',
-        target_id: roleId,
-        metadata: {
-          added: toAdd,
-          removed: toRemove,
-          total_permissions: permissionKeys.length,
-        },
-      })
-    }
+    await adminClient.from('user_audit_logs').insert({
+      actor_id: user.id,
+      action_type: 'role.permissions_update',
+      target_type: 'role',
+      target_id: roleId,
+      metadata: {
+        added: toAdd,
+        removed: toRemove,
+        total_permissions: permissionKeys.length,
+      },
+    })
 
     revalidatePath('/admin/roles')
     revalidatePath(`/admin/roles/${roleId}`)

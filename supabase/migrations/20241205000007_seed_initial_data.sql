@@ -43,7 +43,7 @@ VALUES
 -- Audit permissions
 INSERT INTO user_permissions (permission_key, label, description, "group")
 VALUES
-    ('audit.view', 'View Audit Logs', 'View system audit logs (Super Admin only)', 'Audit');
+    ('audit.view', 'View Audit Logs', '⚠️ CAUTION: Access to audit logs can reveal sensitive information about all system activities, user actions, and changes. Grant this permission carefully.', 'Audit');
 
 -- ================================================
 -- ASSIGN PERMISSIONS TO ROLES
