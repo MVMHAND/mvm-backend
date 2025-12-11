@@ -9,12 +9,15 @@ import type { BlogPost, BlogPostWithRelations, BlogPostFilters, BlogPostStatus }
 /**
  * Get blog post by slug
  */
-export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+export async function getPostBySlug(slug: string): Promise<BlogPostWithRelations | null> {
   const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('*')
+    .select(`
+      *,
+      contributor:blog_contributors(full_name)
+    `)
     .eq('slug', slug)
     .single()
   
@@ -23,7 +26,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     throw error
   }
   
-  return data as BlogPost
+  return data as unknown as BlogPostWithRelations
 }
 
 /**
@@ -245,6 +248,10 @@ export function canPublishPost(post: BlogPost): {
 } {
   if (!post.title || post.title.trim() === '') {
     return { canPublish: false, reason: 'Title is required' }
+  }
+  
+  if (!post.description || post.description.trim() === '') {
+    return { canPublish: false, reason: 'Description is required for publishing' }
   }
   
   if (!post.content || post.content.trim() === '') {

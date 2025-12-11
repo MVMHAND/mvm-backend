@@ -118,3 +118,10 @@ export type {
   PostValidationResult,
   SEOValidation,
 } from './blog'
+
+// Allowed domains types
+export type {
+  AllowedDomain,
+  AllowedDomainWithUsers,
+  AllowedDomainFormData,
+} from './allowed-domains'

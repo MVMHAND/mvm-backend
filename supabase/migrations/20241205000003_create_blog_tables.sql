@@ -49,8 +49,10 @@ CREATE TABLE blog_posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     seo_meta_title TEXT DEFAULT '',
     seo_meta_description TEXT DEFAULT '',
+    seo_keywords TEXT,
     title TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
+    description TEXT,
     cover_image_url TEXT,
     category_id UUID REFERENCES blog_categories(id) ON DELETE RESTRICT,
     contributor_id UUID REFERENCES blog_contributors(id) ON DELETE RESTRICT,
@@ -70,5 +72,8 @@ CREATE INDEX idx_blog_posts_status ON blog_posts(status);
 CREATE INDEX idx_blog_posts_category_id ON blog_posts(category_id);
 CREATE INDEX idx_blog_posts_contributor_id ON blog_posts(contributor_id);
 CREATE INDEX idx_blog_posts_published_date ON blog_posts(published_date DESC);
+CREATE INDEX idx_blog_posts_description ON blog_posts(description);
 
 COMMENT ON TABLE blog_posts IS 'Blog posts with full content and metadata';
+COMMENT ON COLUMN blog_posts.description IS 'Short summary displayed below title on frontend. Optional for drafts, required when published.';
+COMMENT ON COLUMN blog_posts.seo_keywords IS 'SEO keywords for meta tags';

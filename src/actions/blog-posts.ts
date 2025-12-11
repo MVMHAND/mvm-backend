@@ -59,7 +59,7 @@ export async function getPostsAction(
 
     // Add search filter
     if (search) {
-      query = query.or(`title.ilike.%${search}%,seo_meta_description.ilike.%${search}%`)
+      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`)
     }
 
     // Add status filter
@@ -180,6 +180,10 @@ export async function createPostAction(
     // For published posts, require all fields including cover image
     const isDraft = formData.status === 'draft'
     if (!isDraft) {
+      if (!formData.description || formData.description.trim() === '') {
+        return { success: false, error: 'Description is required for publishing' }
+      }
+      
       if (!formData.content || formData.content.trim() === '') {
         return { success: false, error: 'Content is required for publishing' }
       }
@@ -213,6 +217,7 @@ export async function createPostAction(
         seo_meta_description: formData.seo_meta_description?.trim() || '',
         title: formData.title.trim(),
         slug,
+        description: formData.description?.trim() || null,
         cover_image_url: formData.cover_image_url || null,
         category_id: formData.category_id || null,
         contributor_id: formData.contributor_id || null,
@@ -305,6 +310,7 @@ export async function updatePostAction(
         seo_meta_description: formData.seo_meta_description.trim(),
         title: formData.title.trim(),
         slug,
+        description: formData.description?.trim() || null,
         cover_image_url: formData.cover_image_url || null,
         category_id: formData.category_id || null,
         contributor_id: formData.contributor_id || null,

@@ -106,6 +106,26 @@ export const MENU_CONFIG: MenuItem[] = [
     relatedPermissions: [
       { key: 'audit.view', label: 'View Audit Logs', group: 'Audit', description: '⚠️ CAUTION: Access to audit logs can reveal sensitive information about all system activities, user actions, and changes. Grant this permission carefully.' },
     ],
+    
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: 'Settings',
+    permissionKey: 'settings.view',
+    relatedPermissions: [
+      { key: 'settings.view', label: 'View Settings', group: 'Settings', description: 'View and manage system settings' },
+      { key: 'settings.manage', label: 'Manage Settings', group: 'Settings', description: 'Full settings management access' },
+    ],
+    children: [
+      {
+        id: 'allowed-domains',
+        label: 'Allowed Domains',
+        path: '/admin/settings/allowed-domains',
+        icon: 'Globe',
+        permissionKey: 'settings.view',
+      },
+    ],
   },
 ]
 

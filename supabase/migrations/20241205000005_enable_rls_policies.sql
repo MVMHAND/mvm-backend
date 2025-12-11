@@ -211,11 +211,6 @@ CREATE POLICY "Allow authenticated users to delete posts"
     TO authenticated
     USING (true);
 
-CREATE POLICY "Allow public to read published posts"
-    ON blog_posts FOR SELECT
-    TO anon
-    USING (status = 'published' AND published_date IS NOT NULL);
-
 CREATE POLICY "Allow service role full access to posts"
     ON blog_posts FOR ALL
     TO service_role

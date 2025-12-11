@@ -62,8 +62,10 @@ export interface BlogPost {
   id: string
   seo_meta_title: string
   seo_meta_description: string
+  seo_keywords: string | null
   title: string
   slug: string
+  description: string | null
   cover_image_url: string | null
   category_id: string
   contributor_id: string
@@ -113,8 +115,10 @@ export interface BlogContributorFormData {
 export interface BlogPostFormData {
   seo_meta_title: string
   seo_meta_description: string
+  seo_keywords?: string | null
   title: string
   slug: string
+  description: string
   cover_image_url?: string | null
   category_id: string | null
   contributor_id: string | null

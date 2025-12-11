@@ -42,8 +42,10 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
 
   // Form state
   const [title, setTitle] = useState(post?.title || '')
+  const [description, setDescription] = useState(post?.description || '')
   const [seoTitle, setSeoTitle] = useState(post?.seo_meta_title || '')
   const [seoDescription, setSeoDescription] = useState(post?.seo_meta_description || '')
+  const [seoKeywords, setSeoKeywords] = useState(post?.seo_keywords || '')
   const [slug, setSlug] = useState(post?.slug || '')
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(post?.cover_image_url || null)
   const [categoryId, setCategoryId] = useState(post?.category_id || '')
@@ -127,6 +129,11 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
 
     // For non-draft posts (publishing), require all fields
     if (!isDraft && post?.status !== 'draft') {
+      if (!description.trim()) {
+        setError('Description is required for publishing')
+        return
+      }
+
       if (!seoTitle.trim()) {
         setError('SEO meta title is required')
         return
@@ -173,9 +180,11 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
 
       const data = {
         title: title.trim(),
+        description: description.trim() || '',
         // For drafts, leave SEO fields empty if not provided (don't auto-fill from title)
         seo_meta_title: seoTitle.trim() || '',
         seo_meta_description: seoDescription.trim() || '',
+        seo_keywords: seoKeywords.trim() || '',
         slug: slug.trim(),
         cover_image_url: isEditing ? coverImageUrl : null, // Will be updated after upload for new posts
         category_id: categoryId || null,
@@ -236,40 +245,6 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
             required
           />
 
-          {/* SEO Meta Title */}
-          <div>
-            <Input
-              label={`SEO Meta Title ${post?.status !== 'draft' ? '' : '(optional for drafts)'}`}
-              type="text"
-              value={seoTitle}
-              onChange={(e) => setSeoTitle(e.target.value)}
-              placeholder="SEO-optimized title (max 60 chars)"
-              maxLength={60}
-            />
-            <p className="mt-1 text-sm text-gray-500">
-              {seoTitle.length}/60 characters
-            </p>
-          </div>
-
-          {/* SEO Meta Description */}
-          <div>
-            <label htmlFor="seo-description" className="mb-1 block text-sm font-medium text-gray-700">
-              SEO Meta Description {post?.status !== 'draft' ? '' : <span className="text-gray-400 font-normal">(optional for drafts)</span>}
-            </label>
-            <textarea
-              id="seo-description"
-              rows={3}
-              value={seoDescription}
-              onChange={(e) => setSeoDescription(e.target.value)}
-              placeholder="SEO-optimized description (max 160 chars)"
-              maxLength={160}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
-            />
-            <p className="mt-1 text-sm text-gray-500">
-              {seoDescription.length}/160 characters
-            </p>
-          </div>
-
           {/* Slug */}
           <div>
             <Input
@@ -283,6 +258,24 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
             <p className="mt-1 text-sm text-gray-500">
               URL: /blog/{slug || 'post-slug-here'}
               {slugManuallyEdited && <span className="ml-2 text-amber-600">(custom slug)</span>}
+            </p>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
+              Description {post?.status !== 'draft' ? '' : <span className="text-gray-400 font-normal">(optional for drafts)</span>}
+            </label>
+            <textarea
+              id="description"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Brief summary displayed below the title on the blog page"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              This appears directly below the blog title on the frontend
             </p>
           </div>
 
@@ -348,6 +341,65 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
               Estimated reading time: {calculateReadingTime(content)} min
             </p>
           </div>
+
+          {/* SEO Configuration Section */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">SEO Configuration</h3>
+            <div className="space-y-6">
+              {/* SEO Meta Title */}
+              <div>
+                <Input
+                  label={`SEO Meta Title ${post?.status !== 'draft' ? '' : '(optional for drafts)'}`}
+                  type="text"
+                  value={seoTitle}
+                  onChange={(e) => setSeoTitle(e.target.value)}
+                  placeholder="SEO-optimized title (max 60 chars)"
+                  maxLength={60}
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  {seoTitle.length}/60 characters
+                </p>
+              </div>
+
+              {/* SEO Meta Description */}
+              <div>
+                <label htmlFor="seo-description" className="mb-1 block text-sm font-medium text-gray-700">
+                  SEO Meta Description {post?.status !== 'draft' ? '' : <span className="text-gray-400 font-normal">(optional for drafts)</span>}
+                </label>
+                <textarea
+                  id="seo-description"
+                  rows={3}
+                  value={seoDescription}
+                  onChange={(e) => setSeoDescription(e.target.value)}
+                  placeholder="SEO-optimized description (max 160 chars)"
+                  maxLength={160}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  {seoDescription.length}/160 characters
+                </p>
+              </div>
+
+              {/* SEO Keywords */}
+              <div>
+                <label htmlFor="seo-keywords" className="mb-1 block text-sm font-medium text-gray-700">
+                  SEO Keywords <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <Input
+                  id="seo-keywords"
+                  type="text"
+                  value={seoKeywords}
+                  onChange={(e) => setSeoKeywords(e.target.value)}
+                  placeholder="keyword1, keyword2, keyword3"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  Comma-separated keywords for search engines
+                </p>
+              </div>
+            </div>
+          </div>
+
+
 
           {/* Actions */}
           <div className="flex gap-4 border-t pt-6">
