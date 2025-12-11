@@ -177,11 +177,15 @@ export async function createPostAction(
       return { success: false, error: 'Title is required' }
     }
     
-    // For published posts, require all fields
+    // For published posts, require all fields including cover image
     const isDraft = formData.status === 'draft'
     if (!isDraft) {
       if (!formData.content || formData.content.trim() === '') {
         return { success: false, error: 'Content is required for publishing' }
+      }
+      
+      if (!formData.cover_image_url || formData.cover_image_url.trim() === '') {
+        return { success: false, error: 'Cover image is required for publishing' }
       }
       
       if (!formData.category_id) {

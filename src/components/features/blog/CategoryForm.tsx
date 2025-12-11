@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { createCategoryAction, updateCategoryAction } from '@/actions/blog-categories'
 import type { BlogCategory } from '@/types'
 
@@ -40,7 +41,8 @@ export function CategoryForm({ category, isEditing = false }: CategoryFormProps)
   }
 
   return (
-    <Card>
+    <Card className="relative">
+      <LoadingOverlay isLoading={isPending} message={isEditing ? 'Saving...' : 'Creating...'} />
       <CardHeader>
         <CardTitle>{isEditing ? 'Edit Category' : 'Create New Category'}</CardTitle>
       </CardHeader>

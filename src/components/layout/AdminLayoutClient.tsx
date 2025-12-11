@@ -3,6 +3,7 @@
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { StoreProvider, useSidebar } from '@/store/provider'
+import { ToastProvider } from '@/contexts/ToastContext'
 import type { MenuItem } from '@/config/menu'
 import type { AuthUser } from '@/store/types'
 
@@ -49,7 +50,9 @@ export function AdminLayoutClient({
         menuItems,
       }}
     >
-      <AdminLayoutContent>{children}</AdminLayoutContent>
+      <ToastProvider>
+        <AdminLayoutContent>{children}</AdminLayoutContent>
+      </ToastProvider>
     </StoreProvider>
   )
 }

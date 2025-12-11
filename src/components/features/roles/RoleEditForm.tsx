@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { updateRoleAction, updateRolePermissionsAction } from '@/actions/roles'
 import type { Role, Permission } from '@/types'
 
@@ -106,7 +107,8 @@ export function RoleEditForm({
   const groups = Object.entries(groupedPermissions)
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <LoadingOverlay isLoading={isPending} message="Saving changes..." />
       {/* Messages */}
       {error && (
         <div className="rounded-lg bg-red-50 p-4 text-red-800">

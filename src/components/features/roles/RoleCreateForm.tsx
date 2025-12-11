@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { createRoleAction, updateRolePermissionsAction } from '@/actions/roles'
 import type { Permission } from '@/types'
 
@@ -87,7 +88,8 @@ export function RoleCreateForm({ groupedPermissions }: RoleCreateFormProps) {
   const groups = Object.entries(groupedPermissions)
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <LoadingOverlay isLoading={isPending} message="Creating role..." />
       {/* Error message */}
       {error && (
         <div className="rounded-lg bg-red-50 p-4 text-red-800">

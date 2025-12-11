@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/Button'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { updateRolePermissionsAction } from '@/actions/roles'
 import type { Permission } from '@/types'
 
@@ -73,7 +74,8 @@ export function PermissionMatrix({
   const groups = Object.entries(groupedPermissions)
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      <LoadingOverlay isLoading={isPending} message="Saving permissions..." />
       {/* Header with save button */}
       <div className="flex items-center justify-between">
         <div>

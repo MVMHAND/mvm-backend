@@ -122,6 +122,10 @@ CREATE POLICY "Allow service role full access to password reset tokens"
 -- ================================================
 -- RLS POLICIES: blog_categories
 -- ================================================
+-- SECURITY: Admin panel only - no public access
+-- Categories are managed by authenticated admin users only
+COMMENT ON TABLE blog_categories IS 'Blog post categories - admin panel only, no public access';
+
 CREATE POLICY "Allow authenticated users to read categories"
     ON blog_categories FOR SELECT
     TO authenticated
@@ -143,11 +147,6 @@ CREATE POLICY "Allow authenticated users to delete categories"
     TO authenticated
     USING (true);
 
-CREATE POLICY "Allow public to read categories"
-    ON blog_categories FOR SELECT
-    TO anon
-    USING (true);
-
 CREATE POLICY "Allow service role full access to categories"
     ON blog_categories FOR ALL
     TO service_role
@@ -157,6 +156,10 @@ CREATE POLICY "Allow service role full access to categories"
 -- ================================================
 -- RLS POLICIES: blog_contributors
 -- ================================================
+-- SECURITY: Admin panel only - no public access
+-- Contributors are managed by authenticated admin users only
+COMMENT ON TABLE blog_contributors IS 'Blog post authors/contributors - admin panel only, no public access';
+
 CREATE POLICY "Allow authenticated users to read contributors"
     ON blog_contributors FOR SELECT
     TO authenticated
@@ -176,11 +179,6 @@ CREATE POLICY "Allow authenticated users to update contributors"
 CREATE POLICY "Allow authenticated users to delete contributors"
     ON blog_contributors FOR DELETE
     TO authenticated
-    USING (true);
-
-CREATE POLICY "Allow public to read contributors"
-    ON blog_contributors FOR SELECT
-    TO anon
     USING (true);
 
 CREATE POLICY "Allow service role full access to contributors"

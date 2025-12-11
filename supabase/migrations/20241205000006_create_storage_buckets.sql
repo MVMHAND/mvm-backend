@@ -6,32 +6,48 @@
 -- ================================================
 -- USER AVATARS BUCKET
 -- ================================================
+-- SECURITY: Private bucket with ownership-based access control
+-- Users can only manage their own avatars (path: {user_id}/...)
+-- Authenticated users can view all avatars (for admin panel)
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('user-avatars', 'user-avatars', true)
+VALUES ('user-avatars', 'user-avatars', false)
 ON CONFLICT (id) DO NOTHING;
 
--- Allow authenticated users to upload avatars
-CREATE POLICY "Authenticated users can upload avatars"
+-- Users can upload their own avatar (path must match their user ID)
+CREATE POLICY "Users can upload their own avatar"
     ON storage.objects FOR INSERT
     TO authenticated
-    WITH CHECK (bucket_id = 'user-avatars');
+    WITH CHECK (
+        bucket_id = 'user-avatars' 
+        AND (storage.foldername(name))[1] = (SELECT auth.uid()::text)
+    );
 
--- Allow authenticated users to update avatars
-CREATE POLICY "Authenticated users can update avatars"
+-- Users can update their own avatar (path must match their user ID)
+CREATE POLICY "Users can update their own avatar"
     ON storage.objects FOR UPDATE
     TO authenticated
-    USING (bucket_id = 'user-avatars');
+    USING (
+        bucket_id = 'user-avatars' 
+        AND (storage.foldername(name))[1] = (SELECT auth.uid()::text)
+    )
+    WITH CHECK (
+        bucket_id = 'user-avatars' 
+        AND (storage.foldername(name))[1] = (SELECT auth.uid()::text)
+    );
 
--- Allow authenticated users to delete avatars
-CREATE POLICY "Authenticated users can delete avatars"
+-- Users can delete their own avatar (path must match their user ID)
+CREATE POLICY "Users can delete their own avatar"
     ON storage.objects FOR DELETE
     TO authenticated
-    USING (bucket_id = 'user-avatars');
+    USING (
+        bucket_id = 'user-avatars' 
+        AND (storage.foldername(name))[1] = (SELECT auth.uid()::text)
+    );
 
--- Allow public read access to avatars (bucket is public)
-CREATE POLICY "Public read access to avatars"
+-- Authenticated users can view all avatars (for admin panel user profiles)
+CREATE POLICY "Authenticated users can view all avatars"
     ON storage.objects FOR SELECT
-    TO public
+    TO authenticated
     USING (bucket_id = 'user-avatars');
 
 -- ================================================

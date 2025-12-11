@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { ImageUploader } from './ImageUploader'
 import { RichTextEditor } from './RichTextEditor'
 import { StatusBadge } from './StatusBadge'
@@ -209,7 +210,8 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
   }
 
   return (
-    <Card>
+    <Card className="relative">
+      <LoadingOverlay isLoading={isPending} message="Saving post..." />
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>{isEditing ? 'Edit Post' : 'Create New Post'}</CardTitle>
@@ -286,7 +288,7 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
 
           {/* Cover Image */}
           <ImageUploader
-            label="Cover Image (optional)"
+            label="Cover Image"
             onUpload={handleCoverUpload}
             currentUrl={coverImageUrl}
             maxSizeMB={5}

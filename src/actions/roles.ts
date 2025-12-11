@@ -532,7 +532,7 @@ export async function deleteRoleAction(roleId: string): Promise<ActionResponse> 
     await adminClient.from('user_role_permissions').delete().eq('role_id', roleId)
 
     // Delete role
-    const { error } = await adminClient.from('user_user_roles').delete().eq('id', roleId)
+    const { error } = await adminClient.from('user_roles').delete().eq('id', roleId)
 
     if (error) {
       console.error('Error deleting role:', error)

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { ImageUploader } from './ImageUploader'
 import {
   createContributorAction,
@@ -155,7 +156,8 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
   }
 
   return (
-    <Card>
+    <Card className="relative">
+      <LoadingOverlay isLoading={isPending} message={isEditing ? 'Saving...' : 'Creating...'} />
       <CardHeader>
         <CardTitle>{isEditing ? 'Edit Contributor' : 'Create New Contributor'}</CardTitle>
       </CardHeader>

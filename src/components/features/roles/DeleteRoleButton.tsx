@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/contexts/ToastContext'
 import { deleteRoleAction } from '@/actions/roles'
 
 interface DeleteRoleButtonProps {
@@ -18,6 +20,7 @@ export function DeleteRoleButton({
   userCount,
 }: DeleteRoleButtonProps) {
   const router = useRouter()
+  const { success, error: showError } = useToast()
   const [isPending, startTransition] = useTransition()
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,8 +33,11 @@ export function DeleteRoleButton({
     startTransition(async () => {
       const result = await deleteRoleAction(roleId)
       if (result.success) {
+        success('Role deleted successfully')
+        setShowConfirm(false)
         router.push('/admin/roles')
       } else {
+        showError(result.error || 'Failed to delete role')
         setError(result.error || 'Failed to delete role')
         setShowConfirm(false)
       }
@@ -57,30 +63,20 @@ export function DeleteRoleButton({
         </div>
       )}
 
-      {!showConfirm ? (
-        <Button variant="danger" onClick={() => setShowConfirm(true)}>
-          Delete Role
-        </Button>
-      ) : (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="font-medium text-red-800">
-            Are you sure you want to delete &quot;{roleName}&quot;?
-          </p>
-          <p className="mt-1 text-sm text-red-600">This action cannot be undone.</p>
-          <div className="mt-4 flex gap-3">
-            <Button variant="danger" onClick={handleDelete} disabled={isPending}>
-              {isPending ? 'Deleting...' : 'Yes, Delete'}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowConfirm(false)}
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
+      <Button variant="danger" onClick={() => setShowConfirm(true)}>
+        Delete Role
+      </Button>
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Role"
+        message={`Are you sure you want to delete "${roleName}"? This action cannot be undone.`}
+        confirmText="Yes, Delete"
+        variant="danger"
+        isLoading={isPending}
+      />
     </div>
   )
 }

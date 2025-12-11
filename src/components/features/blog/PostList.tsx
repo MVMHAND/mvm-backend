@@ -4,7 +4,10 @@ import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/contexts/ToastContext'
 import { AdminTable, Column, TableBadge, DateCell, TableError, FilterConfig } from '@/components/ui/AdminTable'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { StatusBadge } from './StatusBadge'
 import { deletePostAction, publishPostAction, unpublishPostAction } from '@/actions/blog-posts'
 import { formatDateTime } from '@/lib/utils'
@@ -34,23 +37,34 @@ interface PostListProps {
 
 export function PostList({ posts, categories, contributors, pagination }: PostListProps) {
   const router = useRouter()
+  const { success, error: showError } = useToast()
   const [isPending, startTransition] = useTransition()
   const [actioningId, setActioningId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    type: 'delete' | 'unpublish'
+    postId: string
+    postTitle: string
+  }>({ isOpen: false, type: 'delete', postId: '', postTitle: '' })
 
   const handleDelete = (postId: string, postTitle: string) => {
-    if (!confirm(`Are you sure you want to delete "${postTitle}"?`)) {
-      return
-    }
+    setConfirmDialog({ isOpen: true, type: 'delete', postId, postTitle })
+  }
 
+  const confirmDelete = () => {
+    const { postId } = confirmDialog
     setError(null)
     setActioningId(postId)
     startTransition(async () => {
       const result = await deletePostAction(postId)
 
       if (result.success) {
+        success('Post deleted successfully')
+        setConfirmDialog({ isOpen: false, type: 'delete', postId: '', postTitle: '' })
         router.refresh()
       } else {
+        showError(result.error || 'Failed to delete post')
         setError(result.error || 'Failed to delete post')
       }
       setActioningId(null)
@@ -64,27 +78,33 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
       const result = await publishPostAction(postId)
 
       if (result.success) {
+        success('Post published successfully')
         router.refresh()
       } else {
+        showError(result.error || 'Failed to publish post')
         setError(result.error || 'Failed to publish post')
       }
       setActioningId(null)
     })
   }
 
-  const handleUnpublish = (postId: string) => {
-    if (!confirm('Are you sure you want to unpublish this post?')) {
-      return
-    }
+  const handleUnpublish = (postId: string, postTitle: string) => {
+    setConfirmDialog({ isOpen: true, type: 'unpublish', postId, postTitle })
+  }
 
+  const confirmUnpublish = () => {
+    const { postId } = confirmDialog
     setError(null)
     setActioningId(postId)
     startTransition(async () => {
       const result = await unpublishPostAction(postId)
 
       if (result.success) {
+        success('Post unpublished successfully')
+        setConfirmDialog({ isOpen: false, type: 'unpublish', postId: '', postTitle: '' })
         router.refresh()
       } else {
+        showError(result.error || 'Failed to unpublish post')
         setError(result.error || 'Failed to unpublish post')
       }
       setActioningId(null)
@@ -199,7 +219,7 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => handleUnpublish(post.id)}
+                onClick={() => handleUnpublish(post.id, post.title)}
                 disabled={isPending && actioningId === post.id}
               >
                 {isPending && actioningId === post.id ? 'Unpublishing...' : 'Unpublish'}
@@ -225,7 +245,8 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
   )
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-4">
+      <LoadingOverlay isLoading={isPending} message="Processing..." />
       {error && <TableError message={error} />}
 
       <AdminTable
@@ -242,6 +263,21 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
           </Link>
         }
         emptyMessage="No posts yet. Create your first one!"
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, type: 'delete', postId: '', postTitle: '' })}
+        onConfirm={confirmDialog.type === 'delete' ? confirmDelete : confirmUnpublish}
+        title={confirmDialog.type === 'delete' ? 'Delete Post' : 'Unpublish Post'}
+        message={
+          confirmDialog.type === 'delete'
+            ? `Are you sure you want to delete "${confirmDialog.postTitle}"? This action cannot be undone.`
+            : `Are you sure you want to unpublish "${confirmDialog.postTitle}"?`
+        }
+        confirmText={confirmDialog.type === 'delete' ? 'Delete' : 'Unpublish'}
+        variant="danger"
+        isLoading={isPending && actioningId === confirmDialog.postId}
       />
     </div>
   )

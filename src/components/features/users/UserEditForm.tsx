@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { updateUserAction } from '@/actions/users'
 
 interface UserEditFormProps {
@@ -64,7 +65,8 @@ export function UserEditForm({ user, roles, disabled = false }: UserEditFormProp
   const selectableRoles = roles.filter((role) => !role.is_super_admin)
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <LoadingOverlay isLoading={isLoading} message="Saving changes..." />
       <div>
         <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700">
           Full Name <span className="text-red-500">*</span>

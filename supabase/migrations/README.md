@@ -38,12 +38,13 @@ This directory contains clean, efficient Supabase migrations organized by domain
 **Row Level Security:**
 - Enable RLS on all tables
 - Policies for authenticated users
-- Policies for public access (blog content)
+- **SECURITY**: No public access to `blog_categories` and `blog_contributors` (admin only)
+- Public can read published `blog_posts` only
 - Service role policies for admin operations
 
 ### 6. `20241205000006_create_storage_buckets.sql`
 **Storage Buckets:**
-- `user-avatars` - User profile avatars (public)
+- `user-avatars` - **Private** bucket with ownership-based RLS (users can only manage their own avatars)
 - `blog-cover-images` - Blog post cover images (public)
 - `blog-contributor-avatars` - Blog contributor avatars (public)
 

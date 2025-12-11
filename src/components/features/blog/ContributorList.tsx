@@ -4,7 +4,10 @@ import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/contexts/ToastContext'
 import { AdminTable, Column, AvatarCell, DateCell, TableError } from '@/components/ui/AdminTable'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { deleteContributorAction } from '@/actions/blog-contributors'
 import { formatDateTime } from '@/lib/utils'
 import type { BlogContributor } from '@/types'
@@ -21,23 +24,33 @@ interface ContributorListProps {
 
 export function ContributorList({ contributors, pagination }: ContributorListProps) {
   const router = useRouter()
+  const { success, error: showError } = useToast()
   const [isPending, startTransition] = useTransition()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    contributorId: string
+    contributorName: string
+  }>({ isOpen: false, contributorId: '', contributorName: '' })
 
   const handleDelete = (contributorId: string, contributorName: string) => {
-    if (!confirm(`Are you sure you want to delete "${contributorName}"?`)) {
-      return
-    }
+    setConfirmDialog({ isOpen: true, contributorId, contributorName })
+  }
 
+  const confirmDelete = () => {
+    const { contributorId } = confirmDialog
     setError(null)
     setDeletingId(contributorId)
     startTransition(async () => {
       const result = await deleteContributorAction(contributorId)
 
       if (result.success) {
+        success('Contributor deleted successfully')
+        setConfirmDialog({ isOpen: false, contributorId: '', contributorName: '' })
         router.refresh()
       } else {
+        showError(result.error || 'Failed to delete contributor')
         setError(result.error || 'Failed to delete contributor')
       }
       setDeletingId(null)
@@ -105,7 +118,8 @@ export function ContributorList({ contributors, pagination }: ContributorListPro
   )
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-4">
+      <LoadingOverlay isLoading={isPending} message="Deleting..." />
       {error && <TableError message={error} />}
 
       <AdminTable
@@ -121,6 +135,17 @@ export function ContributorList({ contributors, pagination }: ContributorListPro
           </Link>
         }
         emptyMessage="No contributors yet. Create your first one!"
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, contributorId: '', contributorName: '' })}
+        onConfirm={confirmDelete}
+        title="Delete Contributor"
+        message={`Are you sure you want to delete "${confirmDialog.contributorName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+        isLoading={isPending && deletingId === confirmDialog.contributorId}
       />
     </div>
   )

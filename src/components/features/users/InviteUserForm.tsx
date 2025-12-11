@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { inviteUserAction } from '@/actions/users'
 
 interface Role {
@@ -63,7 +64,8 @@ export function InviteUserForm({ roles }: InviteUserFormProps) {
   const selectableRoles = roles.filter((role) => !role.is_super_admin)
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <LoadingOverlay isLoading={isLoading} message="Sending invitation..." />
       <Input
         label="Email Address"
         type="email"

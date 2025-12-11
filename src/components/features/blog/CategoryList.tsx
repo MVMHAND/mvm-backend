@@ -4,7 +4,10 @@ import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/contexts/ToastContext'
 import { AdminTable, Column, DateCell, TableError } from '@/components/ui/AdminTable'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { deleteCategoryAction } from '@/actions/blog-categories'
 import { formatDateTime } from '@/lib/utils'
 import type { BlogCategory } from '@/types'
@@ -21,23 +24,33 @@ interface CategoryListProps {
 
 export function CategoryList({ categories, pagination }: CategoryListProps) {
   const router = useRouter()
+  const { success, error: showError } = useToast()
   const [isPending, startTransition] = useTransition()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    categoryId: string
+    categoryName: string
+  }>({ isOpen: false, categoryId: '', categoryName: '' })
 
   const handleDelete = (categoryId: string, categoryName: string) => {
-    if (!confirm(`Are you sure you want to delete "${categoryName}"?`)) {
-      return
-    }
+    setConfirmDialog({ isOpen: true, categoryId, categoryName })
+  }
 
+  const confirmDelete = () => {
+    const { categoryId } = confirmDialog
     setError(null)
     setDeletingId(categoryId)
     startTransition(async () => {
       const result = await deleteCategoryAction(categoryId)
 
       if (result.success) {
+        success('Category deleted successfully')
+        setConfirmDialog({ isOpen: false, categoryId: '', categoryName: '' })
         router.refresh()
       } else {
+        showError(result.error || 'Failed to delete category')
         setError(result.error || 'Failed to delete category')
       }
       setDeletingId(null)
@@ -96,7 +109,8 @@ export function CategoryList({ categories, pagination }: CategoryListProps) {
   )
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-4">
+      <LoadingOverlay isLoading={isPending} message="Deleting..." />
       {error && <TableError message={error} />}
 
       <AdminTable
@@ -112,6 +126,17 @@ export function CategoryList({ categories, pagination }: CategoryListProps) {
           </Link>
         }
         emptyMessage="No categories yet. Create your first one!"
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, categoryId: '', categoryName: '' })}
+        onConfirm={confirmDelete}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${confirmDialog.categoryName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+        isLoading={isPending && deletingId === confirmDialog.categoryId}
       />
     </div>
   )

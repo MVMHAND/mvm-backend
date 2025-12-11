@@ -251,6 +251,10 @@ export function canPublishPost(post: BlogPost): {
     return { canPublish: false, reason: 'Content is required' }
   }
   
+  if (!post.cover_image_url || post.cover_image_url.trim() === '') {
+    return { canPublish: false, reason: 'Cover image is required for publishing' }
+  }
+  
   if (!post.category_id) {
     return { canPublish: false, reason: 'Category is required' }
   }

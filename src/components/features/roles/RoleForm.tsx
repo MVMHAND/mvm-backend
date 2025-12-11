@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { createRoleAction, updateRoleAction } from '@/actions/roles'
 import type { Role } from '@/types'
 
@@ -40,7 +41,8 @@ export function RoleForm({ role, isEditing = false }: RoleFormProps) {
   const isSuperAdmin = role?.is_super_admin || false
 
   return (
-    <Card>
+    <Card className="relative">
+      <LoadingOverlay isLoading={isPending} message={isEditing ? 'Saving...' : 'Creating...'} />
       <CardHeader>
         <CardTitle>{isEditing ? 'Edit Role' : 'Create New Role'}</CardTitle>
       </CardHeader>

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/contexts/ToastContext'
 import { toggleUserStatusAction } from '@/actions/users'
 
 interface UserStatusToggleProps {
@@ -15,17 +17,11 @@ interface UserStatusToggleProps {
 
 export function UserStatusToggle({ user }: UserStatusToggleProps) {
   const router = useRouter()
+  const { success, error } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
-  async function handleToggle() {
-    if (
-      !confirm(
-        `Are you sure you want to ${user.status === 'active' ? 'deactivate' : 'activate'} ${user.name}?`
-      )
-    ) {
-      return
-    }
-
+  async function handleConfirm() {
     setIsLoading(true)
 
     try {
@@ -33,13 +29,15 @@ export function UserStatusToggle({ user }: UserStatusToggleProps) {
       const result = await toggleUserStatusAction(user.id, newStatus)
 
       if (!result.success) {
-        alert(`Error: ${result.error}`)
+        error(result.error || 'Failed to update user status')
         return
       }
 
+      success(`User ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`)
+      setShowConfirm(false)
       router.refresh()
     } catch {
-      alert('An unexpected error occurred')
+      error('An unexpected error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -52,12 +50,24 @@ export function UserStatusToggle({ user }: UserStatusToggleProps) {
   }
 
   return (
-    <Button
-      variant={user.status === 'active' ? 'outline' : 'primary'}
-      onClick={handleToggle}
-      isLoading={isLoading}
-    >
-      {user.status === 'active' ? 'Deactivate' : 'Activate'}
-    </Button>
+    <>
+      <Button
+        variant={user.status === 'active' ? 'outline' : 'primary'}
+        onClick={() => setShowConfirm(true)}
+      >
+        {user.status === 'active' ? 'Deactivate' : 'Activate'}
+      </Button>
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirm}
+        title={`${user.status === 'active' ? 'Deactivate' : 'Activate'} User`}
+        message={`Are you sure you want to ${user.status === 'active' ? 'deactivate' : 'activate'} ${user.name}?`}
+        confirmText={user.status === 'active' ? 'Deactivate' : 'Activate'}
+        variant={user.status === 'active' ? 'danger' : 'primary'}
+        isLoading={isLoading}
+      />
+    </>
   )
 }

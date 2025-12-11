@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { useToast } from '@/contexts/ToastContext'
 import { uploadAvatarAction } from '@/actions/users'
 import { getInitials } from '@/lib/utils'
 
@@ -17,6 +18,7 @@ interface AvatarUploadProps {
 
 export function AvatarUpload({ user, disabled = false }: AvatarUploadProps) {
   const router = useRouter()
+  const { success, error, warning } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
@@ -27,13 +29,13 @@ export function AvatarUpload({ user, disabled = false }: AvatarUploadProps) {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file')
+      warning('Please select an image file')
       return
     }
 
     // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
-      alert('File size must be less than 2MB')
+      warning('File size must be less than 2MB')
       return
     }
 
@@ -57,11 +59,12 @@ export function AvatarUpload({ user, disabled = false }: AvatarUploadProps) {
       const result = await uploadAvatarAction(user.id, formData)
 
       if (!result.success) {
-        alert(`Error: ${result.error}`)
+        error(result.error || 'Failed to upload avatar')
         setIsLoading(false)
         return
       }
 
+      success('Avatar uploaded successfully')
       setPreview(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -69,7 +72,7 @@ export function AvatarUpload({ user, disabled = false }: AvatarUploadProps) {
       router.refresh()
       setIsLoading(false)
     } catch {
-      alert('An unexpected error occurred')
+      error('An unexpected error occurred')
       setIsLoading(false)
     }
   }
