@@ -39,11 +39,16 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   if (!blogPreviewBaseUrl) {
     throw new Error('BLOG_PREVIEW_URL is not defined')
   }
-  const blogPreviewUrl = `${blogPreviewBaseUrl}/blog/${postResult.data?.slug || ''}`
 
   if (!postResult.success || !postResult.data) {
     notFound()
   }
+
+  const blogPreviewUrlBase = `${blogPreviewBaseUrl}/blog/${postResult.data.slug}`
+  const blogPreviewUrl =
+    postResult.data.status === 'published'
+      ? blogPreviewUrlBase
+      : `${blogPreviewUrlBase}${blogPreviewUrlBase.includes('?') ? '&' : '?'}preview=true`
 
   if (!categoriesResult.success || !categoriesResult.data) {
     return (

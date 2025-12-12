@@ -79,7 +79,7 @@ serve(async (req) => {
         created_at,
         updated_at,
         category:blog_categories(id, name),
-        contributor:blog_contributors(id, full_name, position, avatar_url, bio)
+        contributor:blog_contributors(id, full_name, position, avatar_url, bio, expertise, stats)
       `)
       .eq('slug', slug)
       .single()
