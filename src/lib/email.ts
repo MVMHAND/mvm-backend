@@ -58,7 +58,6 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
       }
     }
 
-    console.log('Email sent successfully:', data?.id)
     return {
       success: true,
       messageId: data?.id,

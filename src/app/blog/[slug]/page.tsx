@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { getPostBySlug } from '@/lib/blog/posts'
+import { getPublicPostBySlug } from '@/lib/blog/public-posts'
 
 interface PageProps {
   params: Promise<{
@@ -59,8 +59,8 @@ function isCrawlerBot(userAgent: string): boolean {
  */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const post = await getPostBySlug(slug)
-  
+  const post = await getPublicPostBySlug(slug)
+
   if (!post || post.status !== 'published') {
     return {
       title: 'Blog Post Not Found',
@@ -96,7 +96,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: postUrl,
       images: post.cover_image_url ? [
         {
-          url: post.cover_image_url.replace('127.0.0.1:54321', '1hrcwqdr-54321.inc1.devtunnels.ms'),
+          url: post.cover_image_url,
           width: 1200,
           height: 630,
           alt: post.title,
@@ -135,8 +135,8 @@ export default async function BlogPreviewPage({ params }: PageProps) {
   
   // For bots/crawlers, return minimal HTML
   // The metadata is already rendered in the <head> by Next.js
-  const post = await getPostBySlug(slug)
-  
+  const post = await getPublicPostBySlug(slug)
+
   if (!post || post.status !== 'published') {
     return (
       <div style={{ 
