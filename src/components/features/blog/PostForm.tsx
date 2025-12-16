@@ -55,8 +55,10 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
   // Track if slug was manually edited
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEditing)
 
-  // Store pending cover file for new posts
+  // Store pending cover file for new and existing posts
   const pendingCoverFileRef = useRef<File | null>(null)
+  // Track if cover image has changed for existing posts
+  const [coverImageChanged, setCoverImageChanged] = useState(false)
 
   // Auto-generate slug from title only if not manually edited
   useEffect(() => {
@@ -81,25 +83,19 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
   }
 
   const handleCoverUpload = async (file: File) => {
-    // For new posts, store the file and show preview
-    if (!post?.id) {
-      pendingCoverFileRef.current = file
-      // Create local preview URL
-      const previewUrl = URL.createObjectURL(file)
-      setCoverImageUrl(previewUrl)
-      return { success: true, url: previewUrl }
+    // Store the file and show preview for both new and existing posts
+    pendingCoverFileRef.current = file
+
+    // Create local preview URL
+    const previewUrl = URL.createObjectURL(file)
+    setCoverImageUrl(previewUrl)
+
+    // Mark that cover image has changed for existing posts
+    if (post?.id) {
+      setCoverImageChanged(true)
     }
 
-    // For existing posts, upload immediately
-    const formData = new FormData()
-    formData.append('cover', file)
-    const result = await uploadPostCoverAction(post.id, formData)
-
-    if (result.success && result.data) {
-      setCoverImageUrl(result.data)
-    }
-
-    return result
+    return { success: true, url: previewUrl }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -197,6 +193,15 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
       let result
       if (isEditing && post) {
         result = await updatePostAction(post.id, data)
+
+        // If post updated successfully and cover image changed, upload it
+        if (result.success && coverImageChanged && pendingCoverFileRef.current) {
+          const formData = new FormData()
+          formData.append('cover', pendingCoverFileRef.current)
+          await uploadPostCoverAction(post.id, formData)
+          pendingCoverFileRef.current = null
+          setCoverImageChanged(false)
+        }
       } else {
         result = await createPostAction(data)
 
