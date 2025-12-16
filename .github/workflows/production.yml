@@ -149,12 +149,81 @@ jobs:
           exit 1
 
   # ============================================================================
-  # Phase 3: Vercel Deployment
+  # Phase 3: Edge Functions Deployment
+  # ============================================================================
+  deploy-functions:
+    name: Deploy Supabase Edge Functions
+    runs-on: ubuntu-latest
+    needs: [validate, migrate]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link to Supabase project
+        run: |
+          set -euo pipefail
+          supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        shell: bash
+
+      - name: Deploy Edge Functions
+        id: functions
+        run: |
+          set -euo pipefail
+          echo "Starting Edge Functions deployment..."
+          
+          # Deploy all functions (Deploys all functions in supabase/functions/)
+          supabase functions deploy --no-verify-jwt 2>&1 | tee functions_output.txt
+          
+          # Check if deployment was successful
+          if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            echo "✅ All Edge Functions deployed successfully"
+            echo "functions_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Edge Functions deployment failed"
+            echo "functions_status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        shell: bash
+
+      - name: Display deployment results
+        if: always()
+        run: |
+          echo "=== Edge Functions Deployment Output ==="
+          cat functions_output.txt || echo "No deployment output available"
+        shell: bash
+
+      - name: Upload deployment logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge-functions-logs
+          path: functions_output.txt
+          retention-days: 30
+
+      - name: ❌ Edge Functions deployment failed - STOPPING deployment
+        if: steps.functions.outputs.functions_status == 'failed'
+        run: |
+          echo "::error::Edge Functions deployment failed. Deployment aborted."
+          echo "Check the edge-functions-logs artifact for details."
+          exit 1
+
+  # ============================================================================
+  # Phase 4: Vercel Deployment
   # ============================================================================
   deploy:
     name: Deploy to Vercel Production
     runs-on: ubuntu-latest
-    needs: [validate, migrate]
+    needs: [validate, migrate, deploy-functions]
     
     steps:
       - name: Checkout code
@@ -236,7 +305,7 @@ jobs:
   notify-failure:
     name: Notify on Failure
     runs-on: ubuntu-latest
-    needs: [validate, migrate, deploy]
+    needs: [validate, migrate, deploy-functions, deploy]
     if: failure()
     
     steps:

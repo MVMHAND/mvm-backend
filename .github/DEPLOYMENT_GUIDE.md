@@ -213,7 +213,7 @@ Deployments run **automatically** when:
 
 ### Deployment Phases
 
-The workflow runs in **3 sequential phases**:
+The workflow runs in **4 sequential phases**:
 
 #### Phase 1: Build Validation (2-4 minutes)
 
@@ -232,9 +232,18 @@ The workflow runs in **3 sequential phases**:
 - ✅ Log migration results
 - ✅ Upload migration logs as artifact
 
-**If this fails:** Deployment stops. Vercel deployment is NOT triggered. Database may be partially migrated (see rollback section).
+**If this fails:** Deployment stops. Edge Functions and Vercel deployment are NOT triggered. Database may be partially migrated (see rollback section).
 
-#### Phase 3: Vercel Deployment (3-5 minutes)
+#### Phase 3: Edge Functions Deployment (1-2 minutes)
+
+- ✅ Link to Supabase project
+- ✅ Deploy all Edge Functions
+- ✅ Log deployment results
+- ✅ Upload deployment logs as artifact
+
+**If this fails:** Deployment stops. Vercel deployment is NOT triggered. Database migrations are already applied.
+
+#### Phase 4: Vercel Deployment (3-5 minutes)
 
 - ✅ Pull Vercel environment configuration
 - ✅ Build production artifacts
@@ -242,7 +251,7 @@ The workflow runs in **3 sequential phases**:
 - ✅ Post deployment URL as commit comment
 - ✅ Upload deployment logs
 
-**If this fails:** Database migrations are already applied. You'll need to rollback manually (see below).
+**If this fails:** Database migrations and Edge Functions are already deployed. You'll need to rollback manually (see below).
 
 ### Monitoring a Deployment
 
@@ -281,6 +290,9 @@ After workflow completes:
    - Go to Supabase Dashboard → Database → Migrations
    - Verify latest migrations are applied
    - Check timestamp matches deployment time
+   - Go to Supabase Dashboard → Edge Functions
+   - Verify all Edge Functions are deployed
+   - Check deployment timestamp matches workflow time
 
 ---
 
@@ -402,6 +414,45 @@ supabase db push
    SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 5;
    ```
 
+#### Option D: Rollback Edge Functions (For Edge Function Issues)
+
+**Method 1: Redeploy Previous Version**
+
+Edge Functions don't have built-in versioning, so you'll need to redeploy from a previous commit:
+
+```bash
+# Checkout the last working commit
+git checkout <previous-commit-sha>
+
+# Link to Supabase project
+supabase link --project-ref YOUR_PROJECT_REF
+
+# Redeploy the functions
+supabase functions deploy
+
+# Return to main branch
+git checkout main
+```
+
+**Method 2: Delete Problematic Function**
+
+If a function is causing issues:
+
+```bash
+# Delete the function
+supabase functions delete blog-get-post
+
+# Or delete via Supabase Dashboard:
+# Dashboard → Edge Functions → Select function → Delete
+```
+
+**Method 3: Via Supabase Dashboard**
+
+1. Go to Supabase Dashboard → **Edge Functions**
+2. Select the problematic function
+3. Click **Delete** or manually redeploy from the UI
+4. Upload the previous version of the function code
+
 ### Post-Rollback Steps
 
 After any rollback:
@@ -436,10 +487,24 @@ To avoid needing rollbacks:
    # Verify app works with new schema
    ```
 
-3. **Use feature flags** for risky changes
-4. **Deploy during low-traffic hours**
-5. **Monitor deployment logs** in real-time
-6. **Have a rollback plan** before deploying
+3. **Test Edge Functions locally:**
+
+   ```bash
+   # Start Supabase locally
+   supabase start
+
+   # Serve functions locally
+   supabase functions serve
+
+   # Test the functions (replace with actual function names)
+   curl http://localhost:54321/functions/v1/your-function-name?param=value
+   curl http://localhost:54321/functions/v1/another-function
+   ```
+
+4. **Use feature flags** for risky changes
+5. **Deploy during low-traffic hours**
+6. **Monitor deployment logs** in real-time
+7. **Have a rollback plan** before deploying
 
 ---
 
@@ -541,6 +606,45 @@ supabase migration list
 2. Check Vercel Dashboard for stuck deployments
 3. Cancel any stuck deployments in Vercel
 4. Re-run the workflow
+
+#### Issue 9: "Edge Functions deployment failed"
+
+**Cause:** Function code error, missing dependencies, or Supabase CLI issue
+
+**Fix:**
+
+1. Check the `edge-functions-logs` artifact in GitHub Actions
+2. Verify function code syntax is correct
+3. Test functions locally:
+   ```bash
+   supabase functions serve
+   ```
+4. Check Supabase Dashboard → Edge Functions for error details
+5. Verify `_shared/blog-utils.ts` is accessible to both functions
+6. Ensure Deno import URLs are valid and accessible
+
+#### Issue 10: "Edge Function returns 403 Forbidden"
+
+**Cause:** Domain not in allowed domains list or CORS issue
+
+**Fix:**
+
+1. Go to Supabase Dashboard → SQL Editor
+2. Check `allowed_domains` table:
+   ```sql
+   SELECT * FROM allowed_domains WHERE is_active = true;
+   ```
+3. Add missing domain:
+   ```sql
+   INSERT INTO allowed_domains (domain, is_active)
+   VALUES ('https://your-domain.com', true);
+   ```
+4. Verify the Edge Function's CORS headers are correct
+5. Test with curl:
+   ```bash
+   curl -H "Origin: https://your-domain.com" \
+        https://YOUR_PROJECT_REF.supabase.co/functions/v1/your-function-name?param=value
+   ```
 
 ### Getting Help
 
