@@ -206,6 +206,7 @@ export async function createPostAction(
       .insert({
         seo_meta_title: formData.seo_meta_title?.trim() || '',
         seo_meta_description: formData.seo_meta_description?.trim() || '',
+        seo_keywords: formData.seo_keywords ? formData.seo_keywords.trim() : null,
         title: formData.title.trim(),
         slug,
         description: formData.description?.trim() || null,
@@ -299,6 +300,7 @@ export async function updatePostAction(
       .update({
         seo_meta_title: formData.seo_meta_title.trim(),
         seo_meta_description: formData.seo_meta_description.trim(),
+        seo_keywords: formData.seo_keywords ? formData.seo_keywords.trim() : null,
         title: formData.title.trim(),
         slug,
         description: formData.description?.trim() || null,
