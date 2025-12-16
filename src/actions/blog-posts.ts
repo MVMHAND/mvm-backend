@@ -582,7 +582,7 @@ export async function uploadPostCoverAction(
       }
     }
 
-    // Upload cover
+    // Upload cover (will automatically delete old images)
     const result = await uploadBlogCover(file, postId)
 
     if (!result.success || !result.url) {

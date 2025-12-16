@@ -478,7 +478,7 @@ export async function uploadContributorAvatarAction(
       }
     }
 
-    // Upload avatar
+    // Upload avatar (will automatically delete old avatars)
     const result = await uploadContributorAvatar(file, contributorId)
 
     if (!result.success || !result.url) {

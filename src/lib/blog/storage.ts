@@ -44,6 +44,7 @@ export function validateImageFile(
 
 /**
  * Upload blog cover image
+ * Automatically deletes old images for the same post
  */
 export async function uploadBlogCover(
   file: File,
@@ -61,9 +62,18 @@ export async function uploadBlogCover(
 
   const supabase = await createClient()
 
-  // Generate unique filename
+  // Delete all old images for this post
+  const folderPath = `covers/${postId}`
+  const { data: existingFiles } = await supabase.storage.from('blog-cover-images').list(folderPath)
+
+  if (existingFiles && existingFiles.length > 0) {
+    const filesToDelete = existingFiles.map((file) => `${folderPath}/${file.name}`)
+    await supabase.storage.from('blog-cover-images').remove(filesToDelete)
+  }
+
+  // Generate unique filename with folder structure
   const fileExt = file.name.split('.').pop()
-  const fileName = `${postId}-${Date.now()}.${fileExt}`
+  const fileName = `${postId}/${Date.now()}.${fileExt}`
   const filePath = `covers/${fileName}`
 
   // Upload file
@@ -89,6 +99,7 @@ export async function uploadBlogCover(
 
 /**
  * Upload contributor avatar
+ * Automatically deletes old avatars for the same contributor
  */
 export async function uploadContributorAvatar(
   file: File,
@@ -106,9 +117,20 @@ export async function uploadContributorAvatar(
 
   const supabase = await createClient()
 
-  // Generate unique filename
+  // Delete all old avatars for this contributor
+  const folderPath = `avatars/${contributorId}`
+  const { data: existingFiles } = await supabase.storage
+    .from('blog-contributor-avatars')
+    .list(folderPath)
+
+  if (existingFiles && existingFiles.length > 0) {
+    const filesToDelete = existingFiles.map((file) => `${folderPath}/${file.name}`)
+    await supabase.storage.from('blog-contributor-avatars').remove(filesToDelete)
+  }
+
+  // Generate unique filename with folder structure
   const fileExt = file.name.split('.').pop()
-  const fileName = `${contributorId}-${Date.now()}.${fileExt}`
+  const fileName = `${contributorId}/${Date.now()}.${fileExt}`
   const filePath = `avatars/${fileName}`
 
   // Upload file
