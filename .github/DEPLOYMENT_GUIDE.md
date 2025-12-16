@@ -28,6 +28,7 @@ Complete guide for deploying My Virtual Mate admin panel to Vercel with Supabase
 | `SUPABASE_DB_PASSWORD`          | GitHub Secrets   | Supabase Dashboard → Project Settings → Database → Password        | Your database password        | ✅ Yes   |
 | `NEXT_PUBLIC_SUPABASE_URL`      | GitHub Secrets   | Supabase Dashboard → Project Settings → API → Project URL          | `https://abcdefg.supabase.co` | ✅ Yes   |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets   | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT)       | ✅ Yes   |
+| `MAIN_SITE_URL`                 | GitHub Secrets   | Your public main site domain(s)                                    | `["https://myvirtualmate.com"]` | ✅ Yes   |
 
 ### Environment Variables for Vercel
 
@@ -40,8 +41,15 @@ These should be set in **Vercel Dashboard** → Your Project → Settings → En
 | `SUPABASE_SERVICE_ROLE_KEY`     | Production  | Supabase Dashboard → API Keys → Secret key               | ⚠️ Keep secret, server-only       |
 | `RESEND_API_KEY`                | Production  | Resend Dashboard → API Keys                              | For email functionality           |
 | `NEXT_PUBLIC_SITE_URL`          | Production  | Your production domain                                   | `https://admin.myvirtualmate.com` |
-| `MAIN_SITE_URL`                 | Production  | `https://myvirtualmate.com,https://myvirtualmate.com.au` | Array of main site URLs           |
+| `MAIN_SITE_URL`                 | Production  | Your public main site domain(s)                          | String URL or JSON array string   |
 | `BLOG_PREVIEW_URL`              | Production  | `https://preview--mvm-official.lovable.app`              | Blog preview URL                  |
+
+`MAIN_SITE_URL` is required at build/runtime by `src/app/blog/[slug]/page.tsx`.
+
+Accepted formats:
+
+- `["https://myvirtualmate.com"]`
+- `["https://myvirtualmate.com", "https://myvirtualmate.com.au"]`
 
 ---
 
@@ -476,7 +484,18 @@ supabase migration list
 4. Commit `package-lock.json` if updated
 5. Push to trigger new deployment
 
-#### Issue 4: "Deployment succeeded but app shows 500 error"
+#### Issue 4: "Failed to collect configuration for /blog/[slug]" (MAIN_SITE_URL is not defined)
+
+**Cause:** `MAIN_SITE_URL` is missing during the build, but `/blog/[slug]` requires it to generate metadata and redirect non-bot traffic.
+
+**Fix:**
+
+1. Add `MAIN_SITE_URL` to **GitHub Repository Secrets** (Actions).
+2. Add `MAIN_SITE_URL` to **Vercel Environment Variables** (Production).
+3. Use a supported format (JSON array string).
+4. Re-run the workflow / redeploy.
+
+#### Issue 5: "Deployment succeeded but app shows 500 error"
 
 **Cause:** Runtime environment variable missing or incorrect
 
@@ -487,7 +506,7 @@ supabase migration list
 3. Click **Redeploy** in Vercel Dashboard
 4. Or push a new commit to trigger redeployment
 
-#### Issue 5: "Supabase connection failed"
+#### Issue 6: "Supabase connection failed"
 
 **Cause:** Wrong credentials or network issue
 
@@ -501,7 +520,7 @@ supabase migration list
    curl https://YOUR_PROJECT_REF.supabase.co/rest/v1/
    ```
 
-#### Issue 6: "Workflow stuck on 'Waiting for deployment'"
+#### Issue 7: "Workflow stuck on 'Waiting for deployment'"
 
 **Cause:** Vercel deployment hanging
 

@@ -66,6 +66,7 @@ jobs:
           # Required for build-time environment variables
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          MAIN_SITE_URL: ${{ secrets.MAIN_SITE_URL }}
         shell: bash
 
       - name: ✅ Validation complete
