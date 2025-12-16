@@ -57,22 +57,25 @@ export function AllowedDomainsList({ domains, pagination }: AllowedDomainsListPr
     })
   }
 
-  const handleToggleStatus = useCallback((domainId: string, currentStatus: boolean) => {
-    setError(null)
-    setTogglingId(domainId)
-    startTransition(async () => {
-      const result = await toggleDomainStatusAction(domainId, !currentStatus)
+  const handleToggleStatus = useCallback(
+    (domainId: string, currentStatus: boolean) => {
+      setError(null)
+      setTogglingId(domainId)
+      startTransition(async () => {
+        const result = await toggleDomainStatusAction(domainId, !currentStatus)
 
-      if (result.success) {
-        success(`Domain ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
-        router.refresh()
-      } else {
-        showError(result.error || 'Failed to toggle domain status')
-        setError(result.error || 'Failed to toggle domain status')
-      }
-      setTogglingId(null)
-    })
-  }, [startTransition, success, showError, router])
+        if (result.success) {
+          success(`Domain ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
+          router.refresh()
+        } else {
+          showError(result.error || 'Failed to toggle domain status')
+          setError(result.error || 'Failed to toggle domain status')
+        }
+        setTogglingId(null)
+      })
+    },
+    [startTransition, success, showError, router]
+  )
 
   const columns: Column<AllowedDomain>[] = useMemo(
     () => [
