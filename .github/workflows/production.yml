@@ -6,6 +6,11 @@ on:
     branches:
       - main
 
+# Permissions for GitHub API access
+permissions:
+  contents: write
+  pull-requests: write
+
 # Prevent concurrent deployments
 concurrency:
   group: production-deployment
