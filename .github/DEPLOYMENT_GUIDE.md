@@ -18,31 +18,31 @@ Complete guide for deploying My Virtual Mate admin panel to Vercel with Supabase
 
 ### Required Secrets Table
 
-| Secret Name                     | Storage Location | How to Obtain                                                      | Example Format                | Required |
-| ------------------------------- | ---------------- | ------------------------------------------------------------------ | ----------------------------- | -------- |
-| `VERCEL_TOKEN`                  | GitHub Secrets   | Vercel Dashboard → Settings → Tokens → Create Token                | `abc123def456...` (72 chars)  | ✅ Yes   |
-| `VERCEL_ORG_ID`                 | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `team_abc123def456`           | ✅ Yes   |
-| `VERCEL_PROJECT_ID`             | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `prj_abc123def456`            | ✅ Yes   |
-| `SUPABASE_ACCESS_TOKEN`         | GitHub Secrets   | Supabase Dashboard → Account → Access Tokens → Generate New Token  | `sbp_abc123...`               | ✅ Yes   |
-| `SUPABASE_PROJECT_ID`           | GitHub Secrets   | Supabase Dashboard → Project Settings → General → Project ID       | `abcdefghijklmnop` (16 chars) | ✅ Yes   |
-| `SUPABASE_DB_PASSWORD`          | GitHub Secrets   | Supabase Dashboard → Project Settings → Database → Password        | Your database password        | ✅ Yes   |
-| `NEXT_PUBLIC_SUPABASE_URL`      | GitHub Secrets   | Supabase Dashboard → Project Settings → API → Project URL          | `https://abcdefg.supabase.co` | ✅ Yes   |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets   | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT)       | ✅ Yes   |
+| Secret Name                     | Storage Location | How to Obtain                                                      | Example Format                  | Required |
+| ------------------------------- | ---------------- | ------------------------------------------------------------------ | ------------------------------- | -------- |
+| `VERCEL_TOKEN`                  | GitHub Secrets   | Vercel Dashboard → Settings → Tokens → Create Token                | `abc123def456...` (72 chars)    | ✅ Yes   |
+| `VERCEL_ORG_ID`                 | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `team_abc123def456`             | ✅ Yes   |
+| `VERCEL_PROJECT_ID`             | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `prj_abc123def456`              | ✅ Yes   |
+| `SUPABASE_ACCESS_TOKEN`         | GitHub Secrets   | Supabase Dashboard → Account → Access Tokens → Generate New Token  | `sbp_abc123...`                 | ✅ Yes   |
+| `SUPABASE_PROJECT_ID`           | GitHub Secrets   | Supabase Dashboard → Project Settings → General → Project ID       | `abcdefghijklmnop` (16 chars)   | ✅ Yes   |
+| `SUPABASE_DB_PASSWORD`          | GitHub Secrets   | Supabase Dashboard → Project Settings → Database → Password        | Your database password          | ✅ Yes   |
+| `NEXT_PUBLIC_SUPABASE_URL`      | GitHub Secrets   | Supabase Dashboard → Project Settings → API → Project URL          | `https://abcdefg.supabase.co`   | ✅ Yes   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets   | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT)         | ✅ Yes   |
 | `MAIN_SITE_URL`                 | GitHub Secrets   | Your public main site domain(s)                                    | `["https://myvirtualmate.com"]` | ✅ Yes   |
 
 ### Environment Variables for Vercel
 
 These should be set in **Vercel Dashboard** → Your Project → Settings → Environment Variables:
 
-| Variable Name                   | Environment | Value Source                                             | Notes                             |
-| ------------------------------- | ----------- | -------------------------------------------------------- | --------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Production  | From Supabase Dashboard                                  | Must match GitHub secret          |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production  | From Supabase Dashboard                                  | Must match GitHub secret          |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Production  | Supabase Dashboard → API Keys → Secret key               | ⚠️ Keep secret, server-only       |
-| `RESEND_API_KEY`                | Production  | Resend Dashboard → API Keys                              | For email functionality           |
-| `NEXT_PUBLIC_SITE_URL`          | Production  | Your production domain                                   | `https://admin.myvirtualmate.com` |
-| `MAIN_SITE_URL`                 | Production  | Your public main site domain(s)                          | String URL or JSON array string   |
-| `BLOG_PREVIEW_URL`              | Production  | `https://preview--mvm-official.lovable.app`              | Blog preview URL                  |
+| Variable Name                   | Environment | Value Source                                | Notes                             |
+| ------------------------------- | ----------- | ------------------------------------------- | --------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Production  | From Supabase Dashboard                     | Must match GitHub secret          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production  | From Supabase Dashboard                     | Must match GitHub secret          |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Production  | Supabase Dashboard → API Keys → Secret key  | ⚠️ Keep secret, server-only       |
+| `RESEND_API_KEY`                | Production  | Resend Dashboard → API Keys                 | For email functionality           |
+| `NEXT_PUBLIC_SITE_URL`          | Production  | Your production domain                      | `https://admin.myvirtualmate.com` |
+| `MAIN_SITE_URL`                 | Production  | Your public main site domain(s)             | String URL or JSON array string   |
+| `BLOG_PREVIEW_URL`              | Production  | `https://preview--mvm-official.lovable.app` | Blog preview URL                  |
 
 `MAIN_SITE_URL` is required at build/runtime by `src/app/blog/[slug]/page.tsx`.
 
