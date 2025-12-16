@@ -29,6 +29,7 @@ Complete guide for deploying My Virtual Mate admin panel to Vercel with Supabase
 | `NEXT_PUBLIC_SUPABASE_URL`      | GitHub Secrets   | Supabase Dashboard → Project Settings → API → Project URL          | `https://abcdefg.supabase.co`   | ✅ Yes   |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets   | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT)         | ✅ Yes   |
 | `MAIN_SITE_URL`                 | GitHub Secrets   | Your public main site domain(s)                                    | `["https://myvirtualmate.com"]` | ✅ Yes   |
+| `RESEND_API_KEY`                | GitHub Secrets   | Resend Dashboard → API Keys                                        | `re_abc123...`                  | ✅ Yes   |
 
 ### Environment Variables for Vercel
 
@@ -156,7 +157,7 @@ Get-Content .vercel\project.json
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
 4. Add each secret from the table above
-5. Verify all 8 secrets are added
+5. Verify all 9 secrets are added
 
 ### Step 9: Configure Vercel Environment Variables
 
@@ -495,7 +496,17 @@ supabase migration list
 3. Use a supported format (JSON array string).
 4. Re-run the workflow / redeploy.
 
-#### Issue 5: "Deployment succeeded but app shows 500 error"
+#### Issue 5: "Failed to collect configuration for /admin/users/[id]" (Missing API key for Resend)
+
+**Cause:** `RESEND_API_KEY` is missing during the build, but server-side modules can still be evaluated during `next build` when Next.js collects route configuration/page data.
+
+**Fix:**
+
+1. Add `RESEND_API_KEY` to **GitHub Repository Secrets** (Actions).
+2. Add `RESEND_API_KEY` to **Vercel Environment Variables** (Production).
+3. Re-run the workflow / redeploy.
+
+#### Issue 6: "Deployment succeeded but app shows 500 error"
 
 **Cause:** Runtime environment variable missing or incorrect
 
@@ -506,7 +517,7 @@ supabase migration list
 3. Click **Redeploy** in Vercel Dashboard
 4. Or push a new commit to trigger redeployment
 
-#### Issue 6: "Supabase connection failed"
+#### Issue 7: "Supabase connection failed"
 
 **Cause:** Wrong credentials or network issue
 
@@ -520,7 +531,7 @@ supabase migration list
    curl https://YOUR_PROJECT_REF.supabase.co/rest/v1/
    ```
 
-#### Issue 7: "Workflow stuck on 'Waiting for deployment'"
+#### Issue 8: "Workflow stuck on 'Waiting for deployment'"
 
 **Cause:** Vercel deployment hanging
 

@@ -1,8 +1,13 @@
 import { Resend } from 'resend'
 import { getSiteUrl } from '@/lib/utils'
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy initialization of Resend client
+function getResendClient(): Resend {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not configured')
+  }
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 // Email configuration
 const FROM_EMAIL = 'My Virtual Mate <onboarding@resend.dev>' // Update with your verified domain
@@ -42,6 +47,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
       }
     }
 
+    const resend = getResendClient()
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: Array.isArray(to) ? to : [to],
