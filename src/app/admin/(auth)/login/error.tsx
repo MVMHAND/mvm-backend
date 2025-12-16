@@ -27,9 +27,7 @@ export default function Error({
               <p className="text-sm text-red-800">
                 <strong>Error:</strong> {error.message}
               </p>
-              {error.digest && (
-                <p className="mt-2 text-xs text-red-600">Digest: {error.digest}</p>
-              )}
+              {error.digest && <p className="mt-2 text-xs text-red-600">Digest: {error.digest}</p>}
             </div>
             <Button onClick={reset} className="w-full">
               Try again

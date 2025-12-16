@@ -45,8 +45,8 @@ export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
   return (
     <div>
       <p className="mb-4 text-sm text-gray-600">
-        Deleting a user will soft-delete their account. They will no longer be able to access
-        the admin panel. This action can be reversed by reactivating the user.
+        Deleting a user will soft-delete their account. They will no longer be able to access the
+        admin panel. This action can be reversed by reactivating the user.
       </p>
       <Button variant="danger" onClick={() => setShowConfirm(true)}>
         Delete User

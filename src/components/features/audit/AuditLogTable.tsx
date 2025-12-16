@@ -156,7 +156,9 @@ export function AuditLogTable({ page, filters }: AuditLogTableProps) {
                       {log.target_type.charAt(0).toUpperCase() + log.target_type.slice(1)}
                     </p>
                     {log.target_id && (
-                      <p className="font-mono text-xs text-gray-500">{log.target_id.slice(0, 8)}...</p>
+                      <p className="font-mono text-xs text-gray-500">
+                        {log.target_id.slice(0, 8)}...
+                      </p>
                     )}
                   </div>
                 </td>

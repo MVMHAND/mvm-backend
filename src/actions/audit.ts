@@ -92,7 +92,7 @@ export async function getAuditLogStatsAction(): Promise<ActionResponse<AuditLogS
 export async function deleteOldAuditLogsAction(daysToKeep: number = 90): Promise<ActionResponse> {
   // SECURITY: Validate authentication with DAL
   await verifySession()
-  
+
   // Only Super Admin can delete audit logs
   const isAdmin = await isSuperAdmin()
   if (!isAdmin) {

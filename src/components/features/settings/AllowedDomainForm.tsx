@@ -6,10 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
-import {
-  createAllowedDomainAction,
-  updateAllowedDomainAction,
-} from '@/actions/allowed-domains'
+import { createAllowedDomainAction, updateAllowedDomainAction } from '@/actions/allowed-domains'
 import type { AllowedDomain } from '@/types'
 
 interface AllowedDomainFormProps {
@@ -47,9 +44,10 @@ export function AllowedDomainForm({ domain, isEditing = false }: AllowedDomainFo
         is_active: isActive,
       }
 
-      const result = isEditing && domain
-        ? await updateAllowedDomainAction(domain.id, data)
-        : await createAllowedDomainAction(data)
+      const result =
+        isEditing && domain
+          ? await updateAllowedDomainAction(domain.id, data)
+          : await createAllowedDomainAction(data)
 
       if (result.success) {
         router.push('/admin/settings/allowed-domains')
@@ -86,7 +84,7 @@ export function AllowedDomainForm({ domain, isEditing = false }: AllowedDomainFo
 
           <div>
             <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
-              Description <span className="text-gray-400 font-normal">(optional)</span>
+              Description <span className="font-normal text-gray-400">(optional)</span>
             </label>
             <textarea
               id="description"

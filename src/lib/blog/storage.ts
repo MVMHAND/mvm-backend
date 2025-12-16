@@ -29,7 +29,7 @@ export function validateImageFile(
       error: 'Invalid file type. Only JPG, PNG, and WebP are allowed.',
     }
   }
-  
+
   // Check file size
   if (file.size > maxSize) {
     const maxSizeMB = maxSize / (1024 * 1024)
@@ -38,7 +38,7 @@ export function validateImageFile(
       error: `File size exceeds ${maxSizeMB}MB limit.`,
     }
   }
-  
+
   return { isValid: true }
 }
 
@@ -58,14 +58,14 @@ export async function uploadBlogCover(
   if (!validation.isValid) {
     return { success: false, error: validation.error }
   }
-  
+
   const supabase = await createClient()
-  
+
   // Generate unique filename
   const fileExt = file.name.split('.').pop()
   const fileName = `${postId}-${Date.now()}.${fileExt}`
   const filePath = `covers/${fileName}`
-  
+
   // Upload file
   const { error: uploadError } = await supabase.storage
     .from('blog-cover-images')
@@ -73,16 +73,14 @@ export async function uploadBlogCover(
       cacheControl: '3600',
       upsert: false,
     })
-  
+
   if (uploadError) {
     return { success: false, error: uploadError.message }
   }
-  
+
   // Get public URL
-  const { data: urlData } = supabase.storage
-    .from('blog-cover-images')
-    .getPublicUrl(filePath)
-  
+  const { data: urlData } = supabase.storage.from('blog-cover-images').getPublicUrl(filePath)
+
   return {
     success: true,
     url: urlData.publicUrl,
@@ -105,14 +103,14 @@ export async function uploadContributorAvatar(
   if (!validation.isValid) {
     return { success: false, error: validation.error }
   }
-  
+
   const supabase = await createClient()
-  
+
   // Generate unique filename
   const fileExt = file.name.split('.').pop()
   const fileName = `${contributorId}-${Date.now()}.${fileExt}`
   const filePath = `avatars/${fileName}`
-  
+
   // Upload file
   const { error: uploadError } = await supabase.storage
     .from('blog-contributor-avatars')
@@ -120,16 +118,14 @@ export async function uploadContributorAvatar(
       cacheControl: '3600',
       upsert: false,
     })
-  
+
   if (uploadError) {
     return { success: false, error: uploadError.message }
   }
-  
+
   // Get public URL
-  const { data: urlData } = supabase.storage
-    .from('blog-contributor-avatars')
-    .getPublicUrl(filePath)
-  
+  const { data: urlData } = supabase.storage.from('blog-contributor-avatars').getPublicUrl(filePath)
+
   return {
     success: true,
     url: urlData.publicUrl,
@@ -145,23 +141,21 @@ export async function deleteBlogCover(url: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
-    
+
     // Extract file path from URL
     const urlParts = url.split('/blog-cover-images/')
     if (urlParts.length < 2) {
       return { success: false, error: 'Invalid URL format' }
     }
-    
+
     const filePath = urlParts[1]
-    
-    const { error } = await supabase.storage
-      .from('blog-cover-images')
-      .remove([filePath])
-    
+
+    const { error } = await supabase.storage.from('blog-cover-images').remove([filePath])
+
     if (error) {
       return { success: false, error: error.message }
     }
-    
+
     return { success: true }
   } catch (error) {
     return {
@@ -180,23 +174,21 @@ export async function deleteContributorAvatar(url: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
-    
+
     // Extract file path from URL
     const urlParts = url.split('/blog-contributor-avatars/')
     if (urlParts.length < 2) {
       return { success: false, error: 'Invalid URL format' }
     }
-    
+
     const filePath = urlParts[1]
-    
-    const { error } = await supabase.storage
-      .from('blog-contributor-avatars')
-      .remove([filePath])
-    
+
+    const { error } = await supabase.storage.from('blog-contributor-avatars').remove([filePath])
+
     if (error) {
       return { success: false, error: error.message }
     }
-    
+
     return { success: true }
   } catch (error) {
     return {
@@ -211,11 +203,9 @@ export async function deleteContributorAvatar(url: string): Promise<{
  */
 export async function getPublicUrl(bucket: string, path: string): Promise<string> {
   const supabase = await createClient()
-  
-  const { data } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(path)
-  
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+
   return data.publicUrl
 }
 

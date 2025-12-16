@@ -32,7 +32,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         {/* Auth Message */}
         {message && (
-          <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-4 text-center">
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
             <p className="text-sm text-amber-800">{message}</p>
           </div>
         )}

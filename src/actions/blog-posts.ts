@@ -11,16 +11,8 @@ import {
   canPublishPost,
   canDeletePost,
 } from '@/lib/blog/posts'
-import {
-  uploadBlogCover,
-  deleteBlogCover,
-} from '@/lib/blog/storage'
-import type {
-  ActionResponse,
-  BlogPost,
-  BlogPostFormData,
-  BlogPostWithRelations,
-} from '@/types'
+import { uploadBlogCover, deleteBlogCover } from '@/lib/blog/storage'
+import type { ActionResponse, BlogPost, BlogPostFormData, BlogPostWithRelations } from '@/types'
 
 interface GetPostsParams {
   page?: number
@@ -112,14 +104,14 @@ export async function getPostByIdAction(
 ): Promise<ActionResponse<BlogPostWithRelations>> {
   try {
     const post = await getPostWithRelations(postId)
-    
+
     if (!post) {
       return {
         success: false,
         error: 'Post not found',
       }
     }
-    
+
     return {
       success: true,
       data: post,
@@ -142,18 +134,15 @@ export async function checkSlugExistsAction(
 ): Promise<{ exists: boolean }> {
   try {
     const supabase = await createClient()
-    
-    let query = supabase
-      .from('blog_posts')
-      .select('id')
-      .eq('slug', slug)
-    
+
+    let query = supabase.from('blog_posts').select('id').eq('slug', slug)
+
     if (excludePostId) {
       query = query.neq('id', excludePostId)
     }
-    
+
     const { data } = await query.single()
-    
+
     return { exists: !!data }
   } catch {
     // If no match found, single() throws - which means slug doesn't exist
@@ -171,44 +160,46 @@ export async function createPostAction(
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Validate required fields - only title is always required
     if (!formData.title || formData.title.trim() === '') {
       return { success: false, error: 'Title is required' }
     }
-    
+
     // For published posts, require all fields including cover image
     const isDraft = formData.status === 'draft'
     if (!isDraft) {
       if (!formData.description || formData.description.trim() === '') {
         return { success: false, error: 'Description is required for publishing' }
       }
-      
+
       if (!formData.content || formData.content.trim() === '') {
         return { success: false, error: 'Content is required for publishing' }
       }
-      
+
       if (!formData.cover_image_url || formData.cover_image_url.trim() === '') {
         return { success: false, error: 'Cover image is required for publishing' }
       }
-      
+
       if (!formData.category_id) {
         return { success: false, error: 'Category is required for publishing' }
       }
-      
+
       if (!formData.contributor_id) {
         return { success: false, error: 'Contributor is required for publishing' }
       }
     }
-    
+
     // Use provided slug directly (duplicate check should be done before calling this action)
-    const slug = formData.slug && formData.slug.trim()
-      ? formData.slug.trim()
-      : await generateSlugFromTitle(formData.title)
-    
+    const slug =
+      formData.slug && formData.slug.trim()
+        ? formData.slug.trim()
+        : await generateSlugFromTitle(formData.title)
+
     // Calculate reading time if not provided (handle empty content for drafts)
-    const reading_time = formData.reading_time || (formData.content ? calculateReadingTime(formData.content) : 1)
-    
+    const reading_time =
+      formData.reading_time || (formData.content ? calculateReadingTime(formData.content) : 1)
+
     // Create post
     const { data: post, error } = await supabase
       .from('blog_posts')
@@ -229,7 +220,7 @@ export async function createPostAction(
       })
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error creating post:', error)
       return {
@@ -237,7 +228,7 @@ export async function createPostAction(
         error: 'Failed to create post',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -249,10 +240,10 @@ export async function createPostAction(
         status: post.status,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/posts')
-    
+
     return {
       success: true,
       data: post as BlogPost,
@@ -278,30 +269,30 @@ export async function updatePostAction(
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Get existing post
     const { data: existingPost, error: fetchError } = await supabase
       .from('blog_posts')
       .select('*')
       .eq('id', postId)
       .single()
-    
+
     if (fetchError || !existingPost) {
       return {
         success: false,
         error: 'Post not found',
       }
     }
-    
+
     // Generate new slug if title changed
     let slug = existingPost.slug
     if (formData.title !== existingPost.title) {
       slug = await generateSlugFromTitle(formData.title, postId)
     }
-    
+
     // Calculate reading time
     const reading_time = formData.reading_time || calculateReadingTime(formData.content)
-    
+
     // Update post
     const { data: post, error } = await supabase
       .from('blog_posts')
@@ -321,7 +312,7 @@ export async function updatePostAction(
       .eq('id', postId)
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error updating post:', error)
       return {
@@ -329,7 +320,7 @@ export async function updatePostAction(
         error: 'Failed to update post',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -341,11 +332,11 @@ export async function updatePostAction(
         status: post.status,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/posts')
     revalidatePath(`/admin/blog/posts/${postId}`)
-    
+
     return {
       success: true,
       data: post as BlogPost,
@@ -368,21 +359,21 @@ export async function publishPostAction(postId: string): Promise<ActionResponse<
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Get post
     const { data: post, error: fetchError } = await supabase
       .from('blog_posts')
       .select('*')
       .eq('id', postId)
       .single()
-    
+
     if (fetchError || !post) {
       return {
         success: false,
         error: 'Post not found',
       }
     }
-    
+
     // Validate post can be published
     const validation = canPublishPost(post as BlogPost)
     if (!validation.canPublish) {
@@ -391,7 +382,7 @@ export async function publishPostAction(postId: string): Promise<ActionResponse<
         error: validation.reason || 'Cannot publish post',
       }
     }
-    
+
     // Publish post
     const { data: publishedPost, error } = await supabase
       .from('blog_posts')
@@ -403,7 +394,7 @@ export async function publishPostAction(postId: string): Promise<ActionResponse<
       .eq('id', postId)
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error publishing post:', error)
       return {
@@ -411,7 +402,7 @@ export async function publishPostAction(postId: string): Promise<ActionResponse<
         error: 'Failed to publish post',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -422,10 +413,10 @@ export async function publishPostAction(postId: string): Promise<ActionResponse<
         post_title: publishedPost.title,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/posts')
-    
+
     return {
       success: true,
       data: publishedPost as BlogPost,
@@ -448,7 +439,7 @@ export async function unpublishPostAction(postId: string): Promise<ActionRespons
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Unpublish post
     const { data: post, error } = await supabase
       .from('blog_posts')
@@ -458,7 +449,7 @@ export async function unpublishPostAction(postId: string): Promise<ActionRespons
       .eq('id', postId)
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error unpublishing post:', error)
       return {
@@ -466,7 +457,7 @@ export async function unpublishPostAction(postId: string): Promise<ActionRespons
         error: 'Failed to unpublish post',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -477,10 +468,10 @@ export async function unpublishPostAction(postId: string): Promise<ActionRespons
         post_title: post.title,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/posts')
-    
+
     return {
       success: true,
       data: post as BlogPost,
@@ -503,21 +494,21 @@ export async function deletePostAction(postId: string): Promise<ActionResponse<n
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Get post
     const { data: post, error: fetchError } = await supabase
       .from('blog_posts')
       .select('*')
       .eq('id', postId)
       .single()
-    
+
     if (fetchError || !post) {
       return {
         success: false,
         error: 'Post not found',
       }
     }
-    
+
     // Validate deletion
     const validation = canDeletePost(post as BlogPost)
     if (!validation.canDelete) {
@@ -526,18 +517,15 @@ export async function deletePostAction(postId: string): Promise<ActionResponse<n
         error: validation.reason || 'Cannot delete post',
       }
     }
-    
+
     // Delete cover image if exists
     if (post.cover_image_url) {
       await deleteBlogCover(post.cover_image_url)
     }
-    
+
     // Delete post
-    const { error } = await supabase
-      .from('blog_posts')
-      .delete()
-      .eq('id', postId)
-    
+    const { error } = await supabase.from('blog_posts').delete().eq('id', postId)
+
     if (error) {
       console.error('Error deleting post:', error)
       return {
@@ -545,7 +533,7 @@ export async function deletePostAction(postId: string): Promise<ActionResponse<n
         error: 'Failed to delete post',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -556,10 +544,10 @@ export async function deletePostAction(postId: string): Promise<ActionResponse<n
         post_title: post.title,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/posts')
-    
+
     return {
       success: true,
       data: null,
@@ -584,30 +572,30 @@ export async function uploadPostCoverAction(
   try {
     const supabase = await createClient()
     const file = formData.get('cover') as File
-    
+
     if (!file) {
       return {
         success: false,
         error: 'No file provided',
       }
     }
-    
+
     // Upload cover
     const result = await uploadBlogCover(file, postId)
-    
+
     if (!result.success || !result.url) {
       return {
         success: false,
         error: result.error || 'Failed to upload cover image',
       }
     }
-    
+
     // Update the post with the new cover image URL
     const { error: updateError } = await supabase
       .from('blog_posts')
       .update({ cover_image_url: result.url })
       .eq('id', postId)
-    
+
     if (updateError) {
       console.error('Error updating post with cover image:', updateError)
       return {
@@ -615,7 +603,7 @@ export async function uploadPostCoverAction(
         error: 'Failed to update post with cover image',
       }
     }
-    
+
     return {
       success: true,
       data: result.url,

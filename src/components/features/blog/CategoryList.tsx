@@ -62,9 +62,7 @@ export function CategoryList({ categories, pagination }: CategoryListProps) {
       {
         key: 'name',
         header: 'Name',
-        render: (category) => (
-          <div className="font-medium text-gray-900">{category.name}</div>
-        ),
+        render: (category) => <div className="font-medium text-gray-900">{category.name}</div>,
       },
       {
         key: 'posts',

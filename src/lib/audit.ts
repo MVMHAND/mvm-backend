@@ -151,15 +151,7 @@ export async function getAuditLogs(params: {
 }> {
   try {
     const supabase = await createClient()
-    const {
-      page = 1,
-      limit = 50,
-      actionType,
-      actorId,
-      targetType,
-      startDate,
-      endDate,
-    } = params
+    const { page = 1, limit = 50, actionType, actorId, targetType, startDate, endDate } = params
 
     // Build query
     let query = supabase

@@ -24,9 +24,10 @@ export function CategoryForm({ category, isEditing = false }: CategoryFormProps)
     startTransition(async () => {
       const name = formData.get('name') as string
 
-      const result = isEditing && category
-        ? await updateCategoryAction(category.id, { name })
-        : await createCategoryAction({ name })
+      const result =
+        isEditing && category
+          ? await updateCategoryAction(category.id, { name })
+          : await createCategoryAction({ name })
 
       if (result.success) {
         if (isEditing) {

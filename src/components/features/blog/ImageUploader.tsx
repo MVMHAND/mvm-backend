@@ -123,23 +123,15 @@ export function ImageUploader({
     <div className="space-y-4">
       <label className="block text-sm font-medium text-gray-700">{label}</label>
 
-      {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</div>}
 
       {preview && !hidePreview ? (
         <div className="space-y-3">
           <div className="relative overflow-hidden rounded-lg border border-gray-200">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={preview}
-              alt="Preview"
-              className="h-48 w-full object-cover"
-            />
+            <img src={preview} alt="Preview" className="h-48 w-full object-cover" />
             {pendingFile && !currentUrl && (
-              <div className="absolute top-2 right-2 rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+              <div className="absolute right-2 top-2 rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
                 Will upload on save
               </div>
             )}
@@ -167,7 +159,7 @@ export function ImageUploader({
         </div>
       ) : hidePreview ? (
         <div className="space-y-2">
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             {isUploading ? (
               <div className="flex items-center gap-2">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-mvm-blue" />
@@ -199,7 +191,7 @@ export function ImageUploader({
             )}
           </div>
           {pendingFile && !currentUrl && (
-            <p className="text-xs text-amber-600 font-medium">
+            <p className="text-xs font-medium text-amber-600">
               ✓ Image selected - will upload on save
             </p>
           )}
@@ -240,9 +232,7 @@ export function ImageUploader({
               <div className="text-sm text-gray-600">
                 <span className="font-medium text-mvm-blue">Click to upload</span> or drag and drop
               </div>
-              <p className="text-xs text-gray-500">
-                JPG, PNG, WebP up to {maxSizeMB}MB
-              </p>
+              <p className="text-xs text-gray-500">JPG, PNG, WebP up to {maxSizeMB}MB</p>
             </div>
           )}
         </div>

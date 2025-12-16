@@ -28,8 +28,8 @@ export function RoleSearch({ initialSearch }: RoleSearchProps) {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="relative flex-1 max-w">
-        <input 
+      <div className="max-w relative flex-1">
+        <input
           type="text"
           value={search}
           onChange={(e) => handleSearch(e.target.value)}

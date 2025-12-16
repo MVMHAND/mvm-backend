@@ -16,10 +16,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
   const { id } = await params
 
   // Get user data and roles
-  const [userResult, rolesResult] = await Promise.all([
-    getUserByIdAction(id),
-    getRolesAction(),
-  ])
+  const [userResult, rolesResult] = await Promise.all([getUserByIdAction(id), getRolesAction()])
 
   if (!userResult.success) {
     return (
@@ -63,9 +60,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
             <div className="mt-2 flex items-center gap-2">
               <span
                 className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                  isSuperAdmin
-                    ? 'bg-purple-100 text-purple-800'
-                    : 'bg-blue-100 text-blue-800'
+                  isSuperAdmin ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                 }`}
               >
                 {user.role?.name}
@@ -93,8 +88,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
       {isSuperAdmin && (
         <InfoMessage variant="warning" className="mb-6">
           <p className="font-medium">
-            🔒 This is the Super Admin user. This account cannot be edited, deactivated, or
-            deleted.
+            🔒 This is the Super Admin user. This account cannot be edited, deactivated, or deleted.
           </p>
         </InfoMessage>
       )}

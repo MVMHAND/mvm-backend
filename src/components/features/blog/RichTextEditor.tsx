@@ -18,7 +18,11 @@ interface RichTextEditorProps {
   placeholder?: string
 }
 
-export function RichTextEditor({ value, onChange, placeholder: _placeholder }: RichTextEditorProps) {
+export function RichTextEditor({
+  value,
+  onChange,
+  placeholder: _placeholder,
+}: RichTextEditorProps) {
   const [showColorPicker, setShowColorPicker] = useState(false)
 
   const editor = useEditor({
@@ -49,7 +53,8 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[300px] max-w-none p-4',
+        class:
+          'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[300px] max-w-none p-4',
       },
     },
   })
@@ -70,14 +75,14 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
   const MVM_YELLOW = '#ba9309'
 
   return (
-    <div className="tiptap-editor border border-gray-300 rounded-lg overflow-hidden focus-within:border-mvm-blue focus-within:ring-2 focus-within:ring-mvm-blue focus-within:ring-opacity-20">
+    <div className="tiptap-editor overflow-hidden rounded-lg border border-gray-300 focus-within:border-mvm-blue focus-within:ring-2 focus-within:ring-mvm-blue focus-within:ring-opacity-20">
       {/* Toolbar - Sticky at top */}
-      <div className="flex flex-wrap gap-1 p-2 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+      <div className="sticky top-0 z-10 flex flex-wrap gap-1 border-b border-gray-200 bg-gray-50 p-2">
         {/* Headings */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
             editor.isActive('heading', { level: 2 })
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -88,7 +93,7 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
             editor.isActive('heading', { level: 3 })
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -97,13 +102,13 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
           H3
         </button>
 
-        <div className="w-px h-8 bg-gray-300 mx-1" />
+        <div className="mx-1 h-8 w-px bg-gray-300" />
 
         {/* Text formatting */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`px-3 py-1.5 rounded text-sm font-bold transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm font-bold transition-colors ${
             editor.isActive('bold')
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -114,7 +119,7 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`px-3 py-1.5 rounded text-sm italic transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm italic transition-colors ${
             editor.isActive('italic')
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -125,7 +130,7 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={`px-3 py-1.5 rounded text-sm line-through transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm line-through transition-colors ${
             editor.isActive('strike')
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -134,49 +139,62 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
           S
         </button>
 
-        <div className="w-px h-8 bg-gray-300 mx-1" />
+        <div className="mx-1 h-8 w-px bg-gray-300" />
 
         {/* Text Color with Brand Colors */}
         <div className="relative inline-block">
           <button
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className="px-3 py-1.5 rounded text-sm bg-white text-gray-700 hover:bg-gray-100 flex items-center gap-1"
+            className="flex items-center gap-1 rounded bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
             title="Text Color"
           >
-            <span className="w-4 h-4 rounded border border-gray-300" style={{ backgroundColor: editor.getAttributes('textStyle').color || '#000000' }} />
+            <span
+              className="h-4 w-4 rounded border border-gray-300"
+              style={{ backgroundColor: editor.getAttributes('textStyle').color || '#000000' }}
+            />
             Color
           </button>
           {showColorPicker && (
-            <div className="absolute z-10 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3 space-y-2">
-              <div className="text-xs font-medium text-gray-700 mb-2">Brand Colors</div>
-              <div className="flex gap-2 mb-2">
+            <div className="absolute z-10 mt-1 space-y-2 rounded-lg border border-gray-300 bg-white p-3 shadow-lg">
+              <div className="mb-2 text-xs font-medium text-gray-700">Brand Colors</div>
+              <div className="mb-2 flex gap-2">
                 <button
                   type="button"
-                  onClick={() => { editor.chain().focus().setColor(MVM_BLUE).run(); setShowColorPicker(false); }}
-                  className="w-8 h-8 rounded border-2 border-gray-300 hover:border-mvm-blue"
+                  onClick={() => {
+                    editor.chain().focus().setColor(MVM_BLUE).run()
+                    setShowColorPicker(false)
+                  }}
+                  className="h-8 w-8 rounded border-2 border-gray-300 hover:border-mvm-blue"
                   style={{ backgroundColor: MVM_BLUE }}
                   title="MVM Blue"
                 />
                 <button
                   type="button"
-                  onClick={() => { editor.chain().focus().setColor(MVM_YELLOW).run(); setShowColorPicker(false); }}
-                  className="w-8 h-8 rounded border-2 border-gray-300 hover:border-mvm-blue"
+                  onClick={() => {
+                    editor.chain().focus().setColor(MVM_YELLOW).run()
+                    setShowColorPicker(false)
+                  }}
+                  className="h-8 w-8 rounded border-2 border-gray-300 hover:border-mvm-blue"
                   style={{ backgroundColor: MVM_YELLOW }}
                   title="MVM Yellow"
                 />
               </div>
-              <div className="text-xs font-medium text-gray-700 mb-2">Custom Color</div>
+              <div className="mb-2 text-xs font-medium text-gray-700">Custom Color</div>
               <input
                 type="color"
-                onChange={(e) => { editor.chain().focus().setColor(e.target.value).run(); }}
+                onChange={(e) => {
+                  editor.chain().focus().setColor(e.target.value).run()
+                }}
                 value={editor.getAttributes('textStyle').color || '#000000'}
-                className="w-full h-8 rounded cursor-pointer border border-gray-300"
+                className="h-8 w-full cursor-pointer rounded border border-gray-300"
               />
               <button
                 type="button"
-                onClick={() => { setShowColorPicker(false); }}
-                className="w-full px-2 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                onClick={() => {
+                  setShowColorPicker(false)
+                }}
+                className="w-full rounded bg-gray-100 px-2 py-1 text-xs hover:bg-gray-200"
               >
                 Close
               </button>
@@ -186,19 +204,19 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
         <button
           type="button"
           onClick={() => editor.chain().focus().unsetColor().run()}
-          className="px-3 py-1.5 rounded text-sm bg-white text-gray-700 hover:bg-gray-100"
+          className="rounded bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
           title="Clear Color"
         >
           Reset
         </button>
 
-        <div className="w-px h-8 bg-gray-300 mx-1" />
+        <div className="mx-1 h-8 w-px bg-gray-300" />
 
         {/* Lists */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`px-3 py-1.5 rounded text-sm transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm transition-colors ${
             editor.isActive('bulletList')
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -209,7 +227,7 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`px-3 py-1.5 rounded text-sm transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm transition-colors ${
             editor.isActive('orderedList')
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -218,13 +236,13 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
           1. List
         </button>
 
-        <div className="w-px h-8 bg-gray-300 mx-1" />
+        <div className="mx-1 h-8 w-px bg-gray-300" />
 
         {/* Blockquote & Code */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`px-3 py-1.5 rounded text-sm transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm transition-colors ${
             editor.isActive('blockquote')
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -235,7 +253,7 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`px-3 py-1.5 rounded text-sm transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm transition-colors ${
             editor.isActive('codeBlock')
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -244,7 +262,7 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
           Code
         </button>
 
-        <div className="w-px h-8 bg-gray-300 mx-1" />
+        <div className="mx-1 h-8 w-px bg-gray-300" />
 
         {/* Link */}
         <button
@@ -255,7 +273,7 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
               editor.chain().focus().setLink({ href: url }).run()
             }
           }}
-          className={`px-3 py-1.5 rounded text-sm transition-colors ${
+          className={`rounded px-3 py-1.5 text-sm transition-colors ${
             editor.isActive('link')
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -264,14 +282,14 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
           Link
         </button>
 
-        <div className="w-px h-8 bg-gray-300 mx-1" />
+        <div className="mx-1 h-8 w-px bg-gray-300" />
 
         {/* Undo/Redo */}
         <button
           type="button"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="px-3 py-1.5 rounded text-sm bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
         >
           ↶
         </button>
@@ -279,7 +297,7 @@ export function RichTextEditor({ value, onChange, placeholder: _placeholder }: R
           type="button"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="px-3 py-1.5 rounded text-sm bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
         >
           ↷
         </button>

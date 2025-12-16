@@ -55,8 +55,11 @@ export async function getUsersAction(
       }
 
       const offset = (page - 1) * limit
-      const { data: invitations, error: invError, count: invCount } = await invitationQuery
-        .range(offset, offset + limit - 1)
+      const {
+        data: invitations,
+        error: invError,
+        count: invCount,
+      } = await invitationQuery.range(offset, offset + limit - 1)
 
       if (invError) {
         console.error('Error fetching invitations:', invError)
@@ -102,8 +105,11 @@ export async function getUsersAction(
       query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
     }
 
-    const { data: profiles, error: profileError, count: profileCount } = await query
-      .range(offset, offset + limit - 1)
+    const {
+      data: profiles,
+      error: profileError,
+      count: profileCount,
+    } = await query.range(offset, offset + limit - 1)
 
     if (profileError) {
       console.error('Error fetching users:', profileError)
@@ -169,9 +175,7 @@ export async function getUsersAction(
 /**
  * Get a single user by ID
  */
-export async function getUserByIdAction(
-  userId: string
-): Promise<ActionResponse<UserWithRole>> {
+export async function getUserByIdAction(userId: string): Promise<ActionResponse<UserWithRole>> {
   try {
     const supabase = await createClient()
 
@@ -263,7 +267,7 @@ export async function inviteUserAction(formData: FormData): Promise<ActionRespon
 
     // SECURITY: Validate authentication with DAL
     const currentUser = await verifySession()
-    
+
     // Get inviter profile for email
     let inviterName = 'Admin'
     const { data: currentUserProfile } = await supabase
@@ -361,7 +365,12 @@ export async function updateUserAction(
       .eq('id', userId)
       .single()
 
-    if (user?.role && typeof user.role === 'object' && 'is_super_admin' in user.role && user.role.is_super_admin) {
+    if (
+      user?.role &&
+      typeof user.role === 'object' &&
+      'is_super_admin' in user.role &&
+      user.role.is_super_admin
+    ) {
       return {
         success: false,
         error: 'Cannot modify Super Admin user',
@@ -399,12 +408,12 @@ export async function updateUserAction(
     // Create audit log
     const currentUser = await verifySession()
     await supabase.from('user_audit_logs').insert({
-        actor_id: currentUser.id,
-        action_type: 'user.update',
-        target_type: 'user',
-        target_id: userId,
-        metadata: { name, role_id: roleId },
-      })
+      actor_id: currentUser.id,
+      action_type: 'user.update',
+      target_type: 'user',
+      target_id: userId,
+      metadata: { name, role_id: roleId },
+    })
 
     revalidatePath('/admin/users')
     revalidatePath(`/admin/users/${userId}`)
@@ -440,7 +449,12 @@ export async function toggleUserStatusAction(
       .eq('id', userId)
       .single()
 
-    if (user?.role && typeof user.role === 'object' && 'is_super_admin' in user.role && user.role.is_super_admin) {
+    if (
+      user?.role &&
+      typeof user.role === 'object' &&
+      'is_super_admin' in user.role &&
+      user.role.is_super_admin
+    ) {
       return {
         success: false,
         error: 'Cannot deactivate Super Admin user',
@@ -475,12 +489,12 @@ export async function toggleUserStatusAction(
     // Create audit log
     const currentUser = await verifySession()
     await supabase.from('user_audit_logs').insert({
-        actor_id: currentUser.id,
-        action_type: 'user.status_change',
-        target_type: 'user',
-        target_id: userId,
-        metadata: { new_status: newStatus },
-      })
+      actor_id: currentUser.id,
+      action_type: 'user.status_change',
+      target_type: 'user',
+      target_id: userId,
+      metadata: { new_status: newStatus },
+    })
 
     revalidatePath('/admin/users')
     revalidatePath(`/admin/users/${userId}`)
@@ -513,7 +527,12 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
       .eq('id', userId)
       .single()
 
-    if (user?.role && typeof user.role === 'object' && 'is_super_admin' in user.role && user.role.is_super_admin) {
+    if (
+      user?.role &&
+      typeof user.role === 'object' &&
+      'is_super_admin' in user.role &&
+      user.role.is_super_admin
+    ) {
       return {
         success: false,
         error: 'Cannot delete Super Admin user',
@@ -549,12 +568,12 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
     // Create audit log
     const currentUser = await verifySession()
     await supabase.from('user_audit_logs').insert({
-        actor_id: currentUser.id,
-        action_type: 'user.delete',
-        target_type: 'user',
-        target_id: userId,
-        metadata: {},
-      })
+      actor_id: currentUser.id,
+      action_type: 'user.delete',
+      target_type: 'user',
+      target_id: userId,
+      metadata: {},
+    })
 
     revalidatePath('/admin/users')
 
@@ -660,16 +679,12 @@ export async function uploadAvatarAction(
     const filePath = `${userId}/${fileName}`
 
     // Check if the user already has avatar files stored
-    const { data: existingAvatar } = await supabase.storage
-      .from('user-avatars')
-      .list(userId)
+    const { data: existingAvatar } = await supabase.storage.from('user-avatars').list(userId)
 
     // Remove every existing avatar object to avoid leaving stale files behind
     if (existingAvatar && existingAvatar.length > 0) {
       const avatarPaths = existingAvatar.map((avatar) => `${userId}/${avatar.name}`)
-      const { error: removeError } = await supabase.storage
-        .from('user-avatars')
-        .remove(avatarPaths)
+      const { error: removeError } = await supabase.storage.from('user-avatars').remove(avatarPaths)
 
       if (removeError) {
         console.error('Error removing existing avatar(s):', removeError)

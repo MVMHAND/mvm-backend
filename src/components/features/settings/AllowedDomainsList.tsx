@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useMemo } from 'react'
+import { useState, useTransition, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -34,9 +34,9 @@ export function AllowedDomainsList({ domains, pagination }: AllowedDomainsListPr
     domainName: string
   }>({ isOpen: false, domainId: '', domainName: '' })
 
-  const handleDelete = (domainId: string, domainName: string) => {
+  const handleDelete = useCallback((domainId: string, domainName: string) => {
     setConfirmDialog({ isOpen: true, domainId, domainName })
-  }
+  }, [])
 
   const confirmDelete = () => {
     const { domainId } = confirmDialog
@@ -57,7 +57,7 @@ export function AllowedDomainsList({ domains, pagination }: AllowedDomainsListPr
     })
   }
 
-  const handleToggleStatus = (domainId: string, currentStatus: boolean) => {
+  const handleToggleStatus = useCallback((domainId: string, currentStatus: boolean) => {
     setError(null)
     setTogglingId(domainId)
     startTransition(async () => {
@@ -72,7 +72,7 @@ export function AllowedDomainsList({ domains, pagination }: AllowedDomainsListPr
       }
       setTogglingId(null)
     })
-  }
+  }, [startTransition, success, showError, router])
 
   const columns: Column<AllowedDomain>[] = useMemo(
     () => [
@@ -83,7 +83,7 @@ export function AllowedDomainsList({ domains, pagination }: AllowedDomainsListPr
           <div>
             <div className="font-medium text-gray-900">{domain.domain}</div>
             {domain.description && (
-              <div className="text-sm text-gray-500 mt-1">{domain.description}</div>
+              <div className="mt-1 text-sm text-gray-500">{domain.description}</div>
             )}
           </div>
         ),
@@ -94,9 +94,7 @@ export function AllowedDomainsList({ domains, pagination }: AllowedDomainsListPr
         render: (domain) => (
           <span
             className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-              domain.is_active
-                ? 'bg-green-100 text-green-800'
-                : 'bg-gray-100 text-gray-800'
+              domain.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
             }`}
           >
             {domain.is_active ? 'Active' : 'Inactive'}
@@ -139,7 +137,7 @@ export function AllowedDomainsList({ domains, pagination }: AllowedDomainsListPr
         ),
       },
     ],
-    [isPending, deletingId, togglingId]
+    [isPending, deletingId, togglingId, handleToggleStatus, handleDelete]
   )
 
   return (

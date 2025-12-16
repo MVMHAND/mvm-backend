@@ -75,10 +75,7 @@ export function TopBar() {
           {isDropdownOpen && (
             <>
               {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setIsDropdownOpen(false)}
-              />
+              <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
 
               {/* Menu */}
               <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg">

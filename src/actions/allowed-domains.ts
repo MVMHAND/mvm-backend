@@ -77,9 +77,9 @@ export async function createAllowedDomainAction(
     // Ensure domain starts with http:// or https://
     const domain = formData.domain.trim()
     if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
-      return { 
-        success: false, 
-        error: 'Domain must start with http:// or https://' 
+      return {
+        success: false,
+        error: 'Domain must start with http:// or https://',
       }
     }
 
@@ -164,9 +164,9 @@ export async function updateAllowedDomainAction(
 
     const domain = formData.domain.trim()
     if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
-      return { 
-        success: false, 
-        error: 'Domain must start with http:// or https://' 
+      return {
+        success: false,
+        error: 'Domain must start with http:// or https://',
       }
     }
 
@@ -237,9 +237,7 @@ export async function updateAllowedDomainAction(
 /**
  * Delete an allowed domain
  */
-export async function deleteAllowedDomainAction(
-  domainId: string
-): Promise<ActionResponse<null>> {
+export async function deleteAllowedDomainAction(domainId: string): Promise<ActionResponse<null>> {
   try {
     const user = await verifySession()
     const supabase = await createClient()
@@ -259,10 +257,7 @@ export async function deleteAllowedDomainAction(
     }
 
     // Delete domain
-    const { error } = await supabase
-      .from('public_allowed_domains')
-      .delete()
-      .eq('id', domainId)
+    const { error } = await supabase.from('public_allowed_domains').delete().eq('id', domainId)
 
     if (error) {
       console.error('Error deleting allowed domain:', error)

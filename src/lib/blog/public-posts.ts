@@ -38,20 +38,20 @@ interface BlogPostResponse {
  */
 export async function getPublicPostBySlug(slug: string): Promise<BlogPostResponse | null> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  
+
   if (!supabaseUrl) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is not defined')
   }
 
   try {
     const functionUrl = `${supabaseUrl}/functions/v1/blog-get-post?slug=${encodeURIComponent(slug)}`
-    
+
     const response = await fetch(functionUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
-        'Origin': `${process.env.NEXT_PUBLIC_SITE_URL}`,
+        Origin: `${process.env.NEXT_PUBLIC_SITE_URL}`,
       },
       // Add cache control for better performance
       next: {
@@ -90,7 +90,7 @@ export async function getPublicPosts(params?: {
   category?: string
 }): Promise<{ posts: BlogPostResponse[]; total: number }> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  
+
   if (!supabaseUrl) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is not defined')
   }
@@ -102,13 +102,13 @@ export async function getPublicPosts(params?: {
     if (params?.category) queryParams.set('category', params.category)
 
     const functionUrl = `${supabaseUrl}/functions/v1/blog-list-posts?${queryParams.toString()}`
-    
+
     const response = await fetch(functionUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
-        'Origin': `${process.env.NEXT_PUBLIC_SITE_URL}`,
+        Origin: `${process.env.NEXT_PUBLIC_SITE_URL}`,
       },
       // Add cache control for better performance
       next: {
@@ -121,7 +121,7 @@ export async function getPublicPosts(params?: {
     }
 
     const result = await response.json()
-    
+
     // The Edge Function returns { posts: [...], pagination: { total, page, limit, pages } }
     if (result && result.posts) {
       return {

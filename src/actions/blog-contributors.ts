@@ -10,10 +10,7 @@ import {
   validateExpertiseCount,
   validateStatsCount,
 } from '@/lib/blog/contributors'
-import {
-  uploadContributorAvatar,
-  deleteContributorAvatar,
-} from '@/lib/blog/storage'
+import { uploadContributorAvatar, deleteContributorAvatar } from '@/lib/blog/storage'
 import type {
   ActionResponse,
   BlogContributor,
@@ -134,14 +131,14 @@ export async function getContributorByIdAction(
 ): Promise<ActionResponse<BlogContributorWithUsers>> {
   try {
     const contributor = await getContributorWithUsers(contributorId)
-    
+
     if (!contributor) {
       return {
         success: false,
         error: 'Contributor not found',
       }
     }
-    
+
     return {
       success: true,
       data: contributor,
@@ -165,7 +162,7 @@ export async function createContributorAction(
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Validate input
     if (!formData.full_name || formData.full_name.trim() === '') {
       return {
@@ -173,21 +170,21 @@ export async function createContributorAction(
         error: 'Full name is required',
       }
     }
-    
+
     if (!formData.position || formData.position.trim() === '') {
       return {
         success: false,
         error: 'Position is required',
       }
     }
-    
+
     if (!formData.bio || formData.bio.trim() === '') {
       return {
         success: false,
         error: 'Bio is required',
       }
     }
-    
+
     // Validate expertise count
     const expertiseValidation = validateExpertiseCount(formData.expertise)
     if (!expertiseValidation.isValid) {
@@ -196,7 +193,7 @@ export async function createContributorAction(
         error: expertiseValidation.error,
       }
     }
-    
+
     // Validate stats count
     const statsValidation = validateStatsCount(formData.stats)
     if (!statsValidation.isValid) {
@@ -205,7 +202,7 @@ export async function createContributorAction(
         error: statsValidation.error,
       }
     }
-    
+
     // Create contributor
     const { data: contributor, error } = await supabase
       .from('blog_contributors')
@@ -221,7 +218,7 @@ export async function createContributorAction(
       })
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error creating contributor:', error)
       return {
@@ -229,7 +226,7 @@ export async function createContributorAction(
         error: 'Failed to create contributor',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -240,10 +237,10 @@ export async function createContributorAction(
         contributor_name: contributor.full_name,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/contributors')
-    
+
     return {
       success: true,
       data: contributor as BlogContributor,
@@ -269,7 +266,7 @@ export async function updateContributorAction(
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Validate input
     if (!formData.full_name || formData.full_name.trim() === '') {
       return {
@@ -277,21 +274,21 @@ export async function updateContributorAction(
         error: 'Full name is required',
       }
     }
-    
+
     if (!formData.position || formData.position.trim() === '') {
       return {
         success: false,
         error: 'Position is required',
       }
     }
-    
+
     if (!formData.bio || formData.bio.trim() === '') {
       return {
         success: false,
         error: 'Bio is required',
       }
     }
-    
+
     // Validate expertise count
     const expertiseValidation = validateExpertiseCount(formData.expertise)
     if (!expertiseValidation.isValid) {
@@ -300,7 +297,7 @@ export async function updateContributorAction(
         error: expertiseValidation.error,
       }
     }
-    
+
     // Validate stats count
     const statsValidation = validateStatsCount(formData.stats)
     if (!statsValidation.isValid) {
@@ -309,21 +306,21 @@ export async function updateContributorAction(
         error: statsValidation.error,
       }
     }
-    
+
     // Get existing contributor
     const { data: existingContributor, error: fetchError } = await supabase
       .from('blog_contributors')
       .select('*')
       .eq('id', contributorId)
       .single()
-    
+
     if (fetchError || !existingContributor) {
       return {
         success: false,
         error: 'Contributor not found',
       }
     }
-    
+
     // Update contributor
     const { data: contributor, error } = await supabase
       .from('blog_contributors')
@@ -338,7 +335,7 @@ export async function updateContributorAction(
       .eq('id', contributorId)
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error updating contributor:', error)
       return {
@@ -346,7 +343,7 @@ export async function updateContributorAction(
         error: 'Failed to update contributor',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -365,11 +362,11 @@ export async function updateContributorAction(
         },
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/contributors')
     revalidatePath(`/admin/blog/contributors/${contributorId}`)
-    
+
     return {
       success: true,
       data: contributor as BlogContributor,
@@ -394,42 +391,39 @@ export async function deleteContributorAction(
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Get contributor
     const { data: contributor, error: fetchError } = await supabase
       .from('blog_contributors')
       .select('*')
       .eq('id', contributorId)
       .single()
-    
+
     if (fetchError || !contributor) {
       return {
         success: false,
         error: 'Contributor not found',
       }
     }
-    
+
     // Validate deletion
     const validation = await validateContributorDeletion(contributorId)
-    
+
     if (!validation.canDelete) {
       return {
         success: false,
         error: validation.reason || 'Cannot delete contributor',
       }
     }
-    
+
     // Delete avatar if exists
     if (contributor.avatar_url) {
       await deleteContributorAvatar(contributor.avatar_url)
     }
-    
+
     // Delete contributor
-    const { error } = await supabase
-      .from('blog_contributors')
-      .delete()
-      .eq('id', contributorId)
-    
+    const { error } = await supabase.from('blog_contributors').delete().eq('id', contributorId)
+
     if (error) {
       console.error('Error deleting contributor:', error)
       return {
@@ -437,7 +431,7 @@ export async function deleteContributorAction(
         error: 'Failed to delete contributor',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -448,10 +442,10 @@ export async function deleteContributorAction(
         contributor_name: contributor.full_name,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/contributors')
-    
+
     return {
       success: true,
       data: null,
@@ -476,30 +470,30 @@ export async function uploadContributorAvatarAction(
   try {
     const supabase = await createClient()
     const file = formData.get('avatar') as File
-    
+
     if (!file) {
       return {
         success: false,
         error: 'No file provided',
       }
     }
-    
+
     // Upload avatar
     const result = await uploadContributorAvatar(file, contributorId)
-    
+
     if (!result.success || !result.url) {
       return {
         success: false,
         error: result.error || 'Failed to upload avatar',
       }
     }
-    
+
     // Update the contributor with the new avatar URL
     const { error: updateError } = await supabase
       .from('blog_contributors')
       .update({ avatar_url: result.url })
       .eq('id', contributorId)
-    
+
     if (updateError) {
       console.error('Error updating contributor with avatar:', updateError)
       return {
@@ -507,7 +501,7 @@ export async function uploadContributorAvatarAction(
         error: 'Failed to update contributor with avatar',
       }
     }
-    
+
     return {
       success: true,
       data: result.url,

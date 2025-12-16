@@ -51,10 +51,10 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
   const [categoryId, setCategoryId] = useState(post?.category_id || '')
   const [contributorId, setContributorId] = useState(post?.contributor_id || '')
   const [content, setContent] = useState(post?.content || '')
-  
+
   // Track if slug was manually edited
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEditing)
-  
+
   // Store pending cover file for new posts
   const pendingCoverFileRef = useRef<File | null>(null)
 
@@ -199,7 +199,7 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
         result = await updatePostAction(post.id, data)
       } else {
         result = await createPostAction(data)
-        
+
         // If post created successfully and we have a pending cover file, upload it
         if (result.success && result.data && pendingCoverFileRef.current) {
           const formData = new FormData()
@@ -264,7 +264,12 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
           {/* Description */}
           <div>
             <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
-              Description {post?.status !== 'draft' ? '' : <span className="text-gray-400 font-normal">(optional for drafts)</span>}
+              Description{' '}
+              {post?.status !== 'draft' ? (
+                ''
+              ) : (
+                <span className="font-normal text-gray-400">(optional for drafts)</span>
+              )}
             </label>
             <textarea
               id="description"
@@ -290,7 +295,12 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
           {/* Category */}
           <div>
             <label htmlFor="category" className="mb-1 block text-sm font-medium text-gray-700">
-              Category {post?.status !== 'draft' ? '' : <span className="text-gray-400 font-normal">(optional for drafts)</span>}
+              Category{' '}
+              {post?.status !== 'draft' ? (
+                ''
+              ) : (
+                <span className="font-normal text-gray-400">(optional for drafts)</span>
+              )}
             </label>
             <select
               id="category"
@@ -310,7 +320,12 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
           {/* Contributor */}
           <div>
             <label htmlFor="contributor" className="mb-1 block text-sm font-medium text-gray-700">
-              Author {post?.status !== 'draft' ? '' : <span className="text-gray-400 font-normal">(optional for drafts)</span>}
+              Author{' '}
+              {post?.status !== 'draft' ? (
+                ''
+              ) : (
+                <span className="font-normal text-gray-400">(optional for drafts)</span>
+              )}
             </label>
             <select
               id="contributor"
@@ -330,7 +345,12 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
           {/* Content */}
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
-              Content {post?.status !== 'draft' ? '' : <span className="text-gray-400 font-normal">(optional for drafts)</span>}
+              Content{' '}
+              {post?.status !== 'draft' ? (
+                ''
+              ) : (
+                <span className="font-normal text-gray-400">(optional for drafts)</span>
+              )}
             </label>
             <RichTextEditor
               value={content}
@@ -344,7 +364,7 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
 
           {/* SEO Configuration Section */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">SEO Configuration</h3>
+            <h3 className="mb-4 text-lg font-semibold text-gray-900">SEO Configuration</h3>
             <div className="space-y-6">
               {/* SEO Meta Title */}
               <div>
@@ -356,15 +376,21 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
                   placeholder="SEO-optimized title (max 60 chars)"
                   maxLength={60}
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  {seoTitle.length}/60 characters
-                </p>
+                <p className="mt-1 text-sm text-gray-500">{seoTitle.length}/60 characters</p>
               </div>
 
               {/* SEO Meta Description */}
               <div>
-                <label htmlFor="seo-description" className="mb-1 block text-sm font-medium text-gray-700">
-                  SEO Meta Description {post?.status !== 'draft' ? '' : <span className="text-gray-400 font-normal">(optional for drafts)</span>}
+                <label
+                  htmlFor="seo-description"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
+                  SEO Meta Description{' '}
+                  {post?.status !== 'draft' ? (
+                    ''
+                  ) : (
+                    <span className="font-normal text-gray-400">(optional for drafts)</span>
+                  )}
                 </label>
                 <textarea
                   id="seo-description"
@@ -375,15 +401,16 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
                   maxLength={160}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  {seoDescription.length}/160 characters
-                </p>
+                <p className="mt-1 text-sm text-gray-500">{seoDescription.length}/160 characters</p>
               </div>
 
               {/* SEO Keywords */}
               <div>
-                <label htmlFor="seo-keywords" className="mb-1 block text-sm font-medium text-gray-700">
-                  SEO Keywords <span className="text-gray-400 font-normal">(optional)</span>
+                <label
+                  htmlFor="seo-keywords"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
+                  SEO Keywords <span className="font-normal text-gray-400">(optional)</span>
                 </label>
                 <Input
                   id="seo-keywords"
@@ -399,16 +426,10 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
             </div>
           </div>
 
-
-
           {/* Actions */}
           <div className="flex gap-4 border-t pt-6">
             <Button type="submit" disabled={isPending}>
-              {isPending
-                ? 'Saving...'
-                : isEditing
-                  ? 'Save Changes'
-                  : 'Save as Draft'}
+              {isPending ? 'Saving...' : isEditing ? 'Save Changes' : 'Save as Draft'}
             </Button>
             <Button
               type="button"

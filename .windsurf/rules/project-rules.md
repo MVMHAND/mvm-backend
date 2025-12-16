@@ -11,18 +11,15 @@ Use this document as the single source of truth when implementing, refactoring, 
 ## 1. Product & Project Overview
 
 - **Product**
-
   - Internal admin panel: _My Virtual Mate – Backend Panel_
   - Minimal public “Coming Soon” website at `/`
 
 - **Core vision**
-
   - Strong, DB-backed **RBAC** with exactly **one immutable Super Admin**.
   - Menu/navigation defined **in code** (typed config), while **permissions are dynamic & DB‑driven**.
   - Secure, maintainable admin panel that can evolve without schema churn for navigation.
 
 - **No public signup**
-
   - Only **login** for admin users.
   - Admins are **invited** via email (Resend) by existing admins.
 
@@ -36,7 +33,6 @@ Use this document as the single source of truth when implementing, refactoring, 
 ## 2. Tech Stack & Architecture
 
 - **Frontend**
-
   - Next.js **App Router** in `app/` (Next.js **15**).
   - React **19**.
   - TypeScript, **strict mode** enabled.
@@ -44,7 +40,6 @@ Use this document as the single source of truth when implementing, refactoring, 
   - All components are **Server Components by default**; use `"use client"` only when really needed.
 
 - **Backend / Platform**
-
   - Supabase:
     - Postgres (primary DB).
     - Supabase Auth (for admin identities and sessions).
@@ -71,12 +66,10 @@ Use this document as the single source of truth when implementing, refactoring, 
 ### 3.2 Admin Authentication
 
 - **Routes**
-
   - `/admin/login` – email + password login only.
   - No **self‑service signup** page.
 
 - **Flows**
-
   - Login via Supabase Auth (email + password).
   - “Forgot password” triggers Supabase reset flow (email with secure link).
   - All `/admin/**` routes must be **protected via middleware + server-side checks**.
@@ -93,7 +86,6 @@ Use this document as the single source of truth when implementing, refactoring, 
 ### 4.1 User Types
 
 - **Super Admin (single instance)**
-
   - Has **full access** to all current and future features.
   - **Immutable**:
     - Cannot be edited or deleted from UI.
@@ -156,7 +148,6 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
 - Menu lives in code, e.g. `config/menu.ts` or equivalent.
 
 - **Menu item structure** (typed config object):
-
   - `id`: stable, unique key.
   - `label`: display name.
   - `path`: route path.
@@ -165,7 +156,6 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
   - `permissionScope` / `featureKey`: ties menu item to permission(s).
 
 - **Rendering**
-
   - Sidebar and any nested navigation are **driven entirely** from this config.
   - There should be **no menu/navigation tables** in the DB.
 
@@ -179,7 +169,6 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
 ## 6. Email Integration (Resend)
 
 - Use Resend for:
-
   - Admin invitation emails (primary for v1).
   - Optional alerts to Super Admin (e.g., new admin created, role permissions changed).
 
@@ -198,7 +187,6 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
 ### 7.1 Audit Logging
 
 - Log at least:
-
   - User creation, updates, role changes, status changes, delete/soft-delete.
   - Role creation, deletion, permission matrix changes.
   - Login success/failure for admin users.
@@ -218,7 +206,6 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
   - Reads and writes to what a user is allowed to see/do.
   - Incorporate role and effective permissions into the logic.
 - All mutations:
-
   - Must go through **server-side code** (Server Actions / API routes).
   - The frontend must never call privileged PostgREST endpoints directly using service-level keys.
 
@@ -245,7 +232,6 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
 ### 8.2 State Management
 
 - **Zustand store** (`src/store/`):
-
   - Uses the **slices pattern** for modularity:
     - `authSlice.ts` – user, permissions, menu items, `hasPermission()`, `isSuperAdmin()`.
     - `uiSlice.ts` – sidebar state, theme, mobile menu.
@@ -272,7 +258,6 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
   - CSS Modules only for complex, component-specific styling needs.
 
 - Branding rules:
-
   - Primary: MVM Blue `#025fc7`.
   - Accent: MVM Yellow `#ba9309`.
   - Gradients:
@@ -290,34 +275,34 @@ Auth identity is stored in Supabase Auth’s `auth.users` table. A `profiles` ta
   - Add ARIA attributes to menus, dialogs, forms, and complex interactive controls.
 
 ### 8.4 TypeScript & Naming Standards
-  
-  - **General**
-  
-  -  Strict TypeScript; no `any` (use `unknown` + proper guards).
-  -  Centralize shared types in `src/types/*`.
-  -  Prefer named `interface` / `type` aliases for props, payloads, etc.
-  -  All functions should have explicit return types.
-  
-  - **Naming**
-  
-  -  Components & types: `PascalCase`.
-  -  Variables & functions: `camelCase`.
-  -  Constants: `SCREAMING_SNAKE_CASE`.
-  -  Booleans: prefix with `is`, `has`, `should`, `can`.
-  -  Event handlers: prefix with `handle` or `on` (e.g., `handleSubmit`).
-  
-  - **Files & folders**
-  
-  -  Components: `PascalCase.tsx`; non-components: `camelCase.ts`.
-  -  Pages: `page.tsx`, `layout.tsx`, `error.tsx`, `loading.tsx`.
-  -  Route folders: lowercase, hyphen-separated (e.g., `user-settings`, `[id]`).
-  -  Imports order: React, Next.js, third-party, internal `@/...`, then relative.
-  
-  ### 8.5 Utilities & Patterns
-  
-  - Use a `cn` helper (clsx + tailwind-merge) for className merging.
-  - Implement reusable helpers (date formatting, slug generation, text truncation).
-  - Use Next `Image` for all images and configure `next.config` remote patterns for Supabase Storage.
+
+- **General**
+
+- Strict TypeScript; no `any` (use `unknown` + proper guards).
+- Centralize shared types in `src/types/*`.
+- Prefer named `interface` / `type` aliases for props, payloads, etc.
+- All functions should have explicit return types.
+
+- **Naming**
+
+- Components & types: `PascalCase`.
+- Variables & functions: `camelCase`.
+- Constants: `SCREAMING_SNAKE_CASE`.
+- Booleans: prefix with `is`, `has`, `should`, `can`.
+- Event handlers: prefix with `handle` or `on` (e.g., `handleSubmit`).
+
+- **Files & folders**
+
+- Components: `PascalCase.tsx`; non-components: `camelCase.ts`.
+- Pages: `page.tsx`, `layout.tsx`, `error.tsx`, `loading.tsx`.
+- Route folders: lowercase, hyphen-separated (e.g., `user-settings`, `[id]`).
+- Imports order: React, Next.js, third-party, internal `@/...`, then relative.
+
+### 8.5 Utilities & Patterns
+
+- Use a `cn` helper (clsx + tailwind-merge) for className merging.
+- Implement reusable helpers (date formatting, slug generation, text truncation).
+- Use Next `Image` for all images and configure `next.config` remote patterns for Supabase Storage.
 
 ### 8.6 Error & Loading States
 

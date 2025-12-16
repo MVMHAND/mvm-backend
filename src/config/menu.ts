@@ -45,10 +45,30 @@ export const MENU_CONFIG: MenuItem[] = [
     icon: 'Users',
     permissionKey: 'users.view',
     relatedPermissions: [
-      { key: 'users.view', label: 'View Users', group: 'Users', description: 'View user list and details' },
-      { key: 'users.create', label: 'Create Users', group: 'Users', description: 'Invite and create new users' },
-      { key: 'users.edit', label: 'Edit Users', group: 'Users', description: 'Edit user information' },
-      { key: 'users.delete', label: 'Delete Users', group: 'Users', description: 'Delete or deactivate users' },
+      {
+        key: 'users.view',
+        label: 'View Users',
+        group: 'Users',
+        description: 'View user list and details',
+      },
+      {
+        key: 'users.create',
+        label: 'Create Users',
+        group: 'Users',
+        description: 'Invite and create new users',
+      },
+      {
+        key: 'users.edit',
+        label: 'Edit Users',
+        group: 'Users',
+        description: 'Edit user information',
+      },
+      {
+        key: 'users.delete',
+        label: 'Delete Users',
+        group: 'Users',
+        description: 'Delete or deactivate users',
+      },
     ],
   },
   {
@@ -58,9 +78,24 @@ export const MENU_CONFIG: MenuItem[] = [
     icon: 'Shield',
     permissionKey: 'roles.view',
     relatedPermissions: [
-      { key: 'roles.view', label: 'View Roles', group: 'Roles', description: 'View roles and permissions' },
-      { key: 'roles.create', label: 'Create Roles', group: 'Roles', description: 'Create new roles' },
-      { key: 'roles.edit', label: 'Edit Roles', group: 'Roles', description: 'Edit role information and permissions' },
+      {
+        key: 'roles.view',
+        label: 'View Roles',
+        group: 'Roles',
+        description: 'View roles and permissions',
+      },
+      {
+        key: 'roles.create',
+        label: 'Create Roles',
+        group: 'Roles',
+        description: 'Create new roles',
+      },
+      {
+        key: 'roles.edit',
+        label: 'Edit Roles',
+        group: 'Roles',
+        description: 'Edit role information and permissions',
+      },
       { key: 'roles.delete', label: 'Delete Roles', group: 'Roles', description: 'Delete roles' },
     ],
   },
@@ -70,8 +105,18 @@ export const MENU_CONFIG: MenuItem[] = [
     icon: 'BookOpen',
     permissionKey: 'blog.view',
     relatedPermissions: [
-      { key: 'blog.view', label: 'View Blog', group: 'Blog', description: 'View blog posts, categories, and contributors' },
-      { key: 'blog.manage', label: 'Manage Blog', group: 'Blog', description: 'Full blog management (create, edit, delete, publish)' },
+      {
+        key: 'blog.view',
+        label: 'View Blog',
+        group: 'Blog',
+        description: 'View blog posts, categories, and contributors',
+      },
+      {
+        key: 'blog.manage',
+        label: 'Manage Blog',
+        group: 'Blog',
+        description: 'Full blog management (create, edit, delete, publish)',
+      },
     ],
     children: [
       {
@@ -104,9 +149,14 @@ export const MENU_CONFIG: MenuItem[] = [
     icon: 'FileText',
     permissionKey: 'audit.view',
     relatedPermissions: [
-      { key: 'audit.view', label: 'View Audit Logs', group: 'Audit', description: '⚠️ CAUTION: Access to audit logs can reveal sensitive information about all system activities, user actions, and changes. Grant this permission carefully.' },
+      {
+        key: 'audit.view',
+        label: 'View Audit Logs',
+        group: 'Audit',
+        description:
+          '⚠️ CAUTION: Access to audit logs can reveal sensitive information about all system activities, user actions, and changes. Grant this permission carefully.',
+      },
     ],
-    
   },
   {
     id: 'settings',
@@ -114,8 +164,18 @@ export const MENU_CONFIG: MenuItem[] = [
     icon: 'Settings',
     permissionKey: 'settings.view',
     relatedPermissions: [
-      { key: 'settings.view', label: 'View Settings', group: 'Settings', description: 'View and manage system settings' },
-      { key: 'settings.manage', label: 'Manage Settings', group: 'Settings', description: 'Full settings management access' },
+      {
+        key: 'settings.view',
+        label: 'View Settings',
+        group: 'Settings',
+        description: 'View and manage system settings',
+      },
+      {
+        key: 'settings.manage',
+        label: 'Manage Settings',
+        group: 'Settings',
+        description: 'Full settings management access',
+      },
     ],
     children: [
       {

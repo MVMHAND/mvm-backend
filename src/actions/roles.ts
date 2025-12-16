@@ -44,9 +44,7 @@ export async function getRolesAction(): Promise<ActionResponse<Role[]>> {
  */
 export async function getRolesWithCountsAction(
   search = ''
-): Promise<
-  ActionResponse<{ roles: (Role & { user_count: number })[]; total: number }>
-> {
+): Promise<ActionResponse<{ roles: (Role & { user_count: number })[]; total: number }>> {
   try {
     const supabase = await createClient()
 
@@ -156,9 +154,7 @@ export async function getRoleByIdAction(
       .order('label')
 
     const permissionKeys = new Set(rolePermissions?.map((rp) => rp.permission_key) || [])
-    const permissions = (allPermissions || []).filter((p) =>
-      permissionKeys.has(p.permission_key)
-    )
+    const permissions = (allPermissions || []).filter((p) => permissionKeys.has(p.permission_key))
 
     // Get user count
     const { count } = await supabase
@@ -195,9 +191,7 @@ interface RoleUser {
 /**
  * Get users assigned to a specific role
  */
-export async function getRoleUsersAction(
-  roleId: string
-): Promise<ActionResponse<RoleUser[]>> {
+export async function getRoleUsersAction(roleId: string): Promise<ActionResponse<RoleUser[]>> {
   try {
     const supabase = await createClient()
 
@@ -284,9 +278,7 @@ export async function getPermissionsAction(): Promise<
 /**
  * Get permissions assigned to a specific role
  */
-export async function getRolePermissionsAction(
-  roleId: string
-): Promise<ActionResponse<string[]>> {
+export async function getRolePermissionsAction(roleId: string): Promise<ActionResponse<string[]>> {
   try {
     const supabase = await createClient()
 

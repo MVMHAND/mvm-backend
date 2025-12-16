@@ -282,7 +282,12 @@ export function TablePagination({
   const endItem = Math.min(page * pageSize, total)
 
   return (
-    <div className={cn('flex items-center justify-between border-t border-gray-200 px-4 py-3', className)}>
+    <div
+      className={cn(
+        'flex items-center justify-between border-t border-gray-200 px-4 py-3',
+        className
+      )}
+    >
       <div className="text-sm text-gray-600">
         Showing {startItem} to {endItem} of {total} results
       </div>
@@ -365,8 +370,18 @@ export function TableError({ message, onRetry }: TableErrorProps): ReactNode {
   return (
     <div className="rounded-lg border border-red-200 bg-red-50 p-4">
       <div className="flex items-center gap-3">
-        <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+        <svg
+          className="h-5 w-5 text-red-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+          />
         </svg>
         <p className="text-sm text-red-800">{message}</p>
         {onRetry && (
@@ -539,7 +554,12 @@ export function AdminTable<T>({
               })}
 
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-gray-500">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="text-gray-500"
+                >
                   Clear filters
                 </Button>
               )}

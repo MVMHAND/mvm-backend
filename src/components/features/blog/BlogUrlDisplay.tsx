@@ -12,7 +12,13 @@ interface BlogUrlDisplayProps {
   blogPreviewUrl: string
 }
 
-export function BlogUrlDisplay({ slug, status, mainSiteUrls, socialPreviewUrl, blogPreviewUrl }: BlogUrlDisplayProps) {
+export function BlogUrlDisplay({
+  slug,
+  status,
+  mainSiteUrls,
+  socialPreviewUrl,
+  blogPreviewUrl,
+}: BlogUrlDisplayProps) {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
 
   const copyToClipboard = async (url: string) => {
@@ -25,20 +31,26 @@ export function BlogUrlDisplay({ slug, status, mainSiteUrls, socialPreviewUrl, b
     }
   }
 
-  const UrlRow = ({ label, url, description }: { label: string; url: string; description?: string }) => (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
+  const UrlRow = ({
+    label,
+    url,
+    description,
+  }: {
+    label: string
+    url: string
+    description?: string
+  }) => (
+    <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100">
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-2">
           <span className="text-sm font-medium text-gray-700">{label}</span>
-          {description && (
-            <span className="text-xs text-gray-500">({description})</span>
-          )}
+          {description && <span className="text-xs text-gray-500">({description})</span>}
         </div>
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-mvm-blue hover:underline break-all"
+          className="break-all text-sm text-mvm-blue hover:underline"
         >
           {url}
         </a>
@@ -52,15 +64,25 @@ export function BlogUrlDisplay({ slug, status, mainSiteUrls, socialPreviewUrl, b
       >
         {copiedUrl === url ? (
           <span className="flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             Copied
           </span>
         ) : (
           <span className="flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
             </svg>
             Copy
           </span>
@@ -76,10 +98,7 @@ export function BlogUrlDisplay({ slug, status, mainSiteUrls, socialPreviewUrl, b
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Blog Preview URL - Always available */}
-        <UrlRow
-          label="Blog Preview"
-          url={blogPreviewUrl}
-        />
+        <UrlRow label="Blog Preview" url={blogPreviewUrl} />
 
         {/* Social Media Preview URL - Only for published posts */}
         {status === 'published' && (
@@ -111,7 +130,7 @@ export function BlogUrlDisplay({ slug, status, mainSiteUrls, socialPreviewUrl, b
         )}
 
         {status !== 'published' && (
-          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
             <p className="text-sm text-amber-800">
               <strong>Note:</strong> Production URLs will be available once this post is published.
             </p>

@@ -14,19 +14,19 @@ Internal administrative platform for managing users, roles, permissions, and blo
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| **Framework** | Next.js 15 (App Router) |
-| **Language** | TypeScript (Strict Mode) |
-| **UI** | React 19 |
-| **Styling** | Tailwind CSS |
-| **Database** | Supabase PostgreSQL with RLS |
-| **Authentication** | Supabase Auth |
-| **State Management** | Zustand |
-| **Rich Text Editor** | Tiptap |
-| **Icons** | Lucide React |
-| **Email** | Resend API |
-| **Deployment** | Vercel |
+| Category             | Technology                   |
+| -------------------- | ---------------------------- |
+| **Framework**        | Next.js 15 (App Router)      |
+| **Language**         | TypeScript (Strict Mode)     |
+| **UI**               | React 19                     |
+| **Styling**          | Tailwind CSS                 |
+| **Database**         | Supabase PostgreSQL with RLS |
+| **Authentication**   | Supabase Auth                |
+| **State Management** | Zustand                      |
+| **Rich Text Editor** | Tiptap                       |
+| **Icons**            | Lucide React                 |
+| **Email**            | Resend API                   |
+| **Deployment**       | Vercel                       |
 
 ## Getting Started
 
@@ -40,22 +40,26 @@ Internal administrative platform for managing users, roles, permissions, and blo
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd my-virtual-mate
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.local.example .env.local
 ```
 
 4. Configure `.env.local` with your credentials:
+
 ```env
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -72,6 +76,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 5. Run database migrations (see `supabase/migrations/` folder)
 
 6. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -141,16 +146,16 @@ my-virtual-mate/
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production (auto-syncs permissions) |
-| `npm run start` | Start production server |
+| Command                    | Description                                   |
+| -------------------------- | --------------------------------------------- |
+| `npm run dev`              | Start development server                      |
+| `npm run build`            | Build for production (auto-syncs permissions) |
+| `npm run start`            | Start production server                       |
 | `npm run sync-permissions` | Sync permissions from menu config to database |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format code with Prettier |
-| `npm run format:check` | Check code formatting |
-| `npm run type-check` | Check TypeScript types |
+| `npm run lint`             | Run ESLint                                    |
+| `npm run format`           | Format code with Prettier                     |
+| `npm run format:check`     | Check code formatting                         |
+| `npm run type-check`       | Check TypeScript types                        |
 
 ## Branding
 
@@ -161,17 +166,20 @@ my-virtual-mate/
 ## Database Schema
 
 ### Core Tables
+
 - `profiles` - Admin user profiles linked to Supabase Auth
 - `roles` - User roles with Super Admin constraint
 - `permissions` - Permission definitions synced from code
 - `role_permissions` - Role-permission mappings
 
 ### Blog Tables
+
 - `blog_categories` - Blog post categories
 - `blog_contributors` - Blog authors and contributors
 - `blog_posts` - Blog post content with rich text
 
 ### System Tables
+
 - `user_invitations` - Pending user invitations
 - `password_reset_tokens` - Password reset tokens
 - `audit_logs` - Action audit trail
@@ -204,7 +212,7 @@ import { verifySessionWithProfile, hasPermission } from '@/lib/dal'
 export default async function UsersPage() {
   const profile = await verifySessionWithProfile() // Validates JWT
   const canCreate = await hasPermission('users.create')
-  
+
   return <UsersList currentUser={profile} canCreate={canCreate} />
 }
 

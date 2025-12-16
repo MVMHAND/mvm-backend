@@ -23,9 +23,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       <Sidebar />
 
       {/* Main content area */}
-      <div
-        className={`transition-all duration-300 ${collapsed ? 'pl-16' : 'pl-64'}`}
-      >
+      <div className={`transition-all duration-300 ${collapsed ? 'pl-16' : 'pl-64'}`}>
         {/* Top bar */}
         <TopBar />
 

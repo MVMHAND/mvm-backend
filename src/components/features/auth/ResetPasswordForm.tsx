@@ -96,7 +96,7 @@ export function ResetPasswordForm() {
   // Loading state while verifying token
   if (isVerifying) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 space-y-4">
+      <div className="flex flex-col items-center justify-center space-y-4 py-8">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-mvm-blue border-t-transparent"></div>
         <p className="text-sm text-gray-600">Verifying reset link...</p>
       </div>
@@ -113,10 +113,7 @@ export function ResetPasswordForm() {
         </div>
 
         <div className="text-center">
-          <Link
-            href="/admin/forgot-password"
-            className="text-sm text-mvm-blue hover:underline"
-          >
+          <Link href="/admin/forgot-password" className="text-sm text-mvm-blue hover:underline">
             Request a new reset link
           </Link>
         </div>
@@ -136,10 +133,7 @@ export function ResetPasswordForm() {
         </div>
 
         <div className="text-center">
-          <Link
-            href="/admin/login"
-            className="text-sm text-mvm-blue hover:underline"
-          >
+          <Link href="/admin/login" className="text-sm text-mvm-blue hover:underline">
             Go to login now
           </Link>
         </div>
@@ -151,8 +145,8 @@ export function ResetPasswordForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       {userData && (
         <p className="text-sm text-gray-600">
-          Hi <strong>{userData.userName}</strong>, enter your new password below.
-          Make sure it&apos;s at least 8 characters long.
+          Hi <strong>{userData.userName}</strong>, enter your new password below. Make sure
+          it&apos;s at least 8 characters long.
         </p>
       )}
 

@@ -139,9 +139,7 @@ export function AvatarUpload({ user, disabled = false }: AvatarUploadProps) {
             </div>
           )}
 
-          <p className="text-center text-xs text-gray-500">
-            JPG, PNG or GIF. Max size 2MB.
-          </p>
+          <p className="text-center text-xs text-gray-500">JPG, PNG or GIF. Max size 2MB.</p>
         </>
       )}
     </div>

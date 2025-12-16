@@ -114,10 +114,7 @@ export function RoleCreateForm({ groupedPermissions }: RoleCreateFormProps) {
           />
 
           <div>
-            <label
-              htmlFor="description"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
@@ -143,25 +140,18 @@ export function RoleCreateForm({ groupedPermissions }: RoleCreateFormProps) {
                 Select permissions for this role (can be changed later)
               </p>
             </div>
-            <span className="text-sm text-gray-500">
-              {selectedPermissions.size} selected
-            </span>
+            <span className="text-sm text-gray-500">{selectedPermissions.size} selected</span>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {groups.map(([groupName, permissions]) => {
               const groupKeys = permissions.map((p) => p.permission_key)
-              const selectedInGroup = groupKeys.filter((key) =>
-                selectedPermissions.has(key)
-              ).length
+              const selectedInGroup = groupKeys.filter((key) => selectedPermissions.has(key)).length
               const allSelected = selectedInGroup === permissions.length
 
               return (
-                <div
-                  key={groupName}
-                  className="overflow-hidden rounded-lg border border-gray-200"
-                >
+                <div key={groupName} className="overflow-hidden rounded-lg border border-gray-200">
                   {/* Group header */}
                   <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -183,13 +173,15 @@ export function RoleCreateForm({ groupedPermissions }: RoleCreateFormProps) {
                   <div className="divide-y divide-gray-100">
                     {permissions.map((permission) => {
                       const isSelected = selectedPermissions.has(permission.permission_key)
-                      const isSensitive = permission.description?.includes('⚠️') || permission.permission_key.includes('audit')
+                      const isSensitive =
+                        permission.description?.includes('⚠️') ||
+                        permission.permission_key.includes('audit')
 
                       return (
                         <label
                           key={permission.permission_key}
                           className={`flex cursor-pointer items-center gap-4 px-4 py-3 hover:bg-gray-50 ${
-                            isSensitive ? 'bg-amber-50/50 border-l-4 border-amber-400' : ''
+                            isSensitive ? 'border-l-4 border-amber-400 bg-amber-50/50' : ''
                           }`}
                         >
                           <input
@@ -199,18 +191,20 @@ export function RoleCreateForm({ groupedPermissions }: RoleCreateFormProps) {
                             className="h-4 w-4 rounded border-gray-300 text-mvm-blue focus:ring-mvm-blue"
                           />
                           <div className="flex-1">
-                            <p className={`text-sm font-medium ${isSensitive ? 'text-amber-900' : 'text-gray-900'}`}>
+                            <p
+                              className={`text-sm font-medium ${isSensitive ? 'text-amber-900' : 'text-gray-900'}`}
+                            >
                               {permission.label}
                             </p>
                             {permission.description && (
-                              <p className={`text-sm ${isSensitive ? 'text-amber-700 font-medium' : 'text-gray-500'}`}>
+                              <p
+                                className={`text-sm ${isSensitive ? 'font-medium text-amber-700' : 'text-gray-500'}`}
+                              >
                                 {permission.description}
                               </p>
                             )}
                           </div>
-                          <code className="text-xs text-gray-400">
-                            {permission.permission_key}
-                          </code>
+                          <code className="text-xs text-gray-400">{permission.permission_key}</code>
                         </label>
                       )
                     })}
@@ -227,12 +221,7 @@ export function RoleCreateForm({ groupedPermissions }: RoleCreateFormProps) {
         <Button type="submit" disabled={isPending || !name.trim()}>
           {isPending ? 'Creating...' : 'Create Role'}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          disabled={isPending}
-        >
+        <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending}>
           Cancel
         </Button>
       </div>

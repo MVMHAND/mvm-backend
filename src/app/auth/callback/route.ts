@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       if (type === 'invite') {
         return NextResponse.redirect(`${origin}/auth/setup-password`)
       }
-      
+
       // Otherwise redirect to the specified next URL or admin dashboard
       return NextResponse.redirect(`${origin}${next}`)
     }

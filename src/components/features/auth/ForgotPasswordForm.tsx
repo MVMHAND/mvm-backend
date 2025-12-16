@@ -44,16 +44,13 @@ export function ForgotPasswordForm() {
         <div className="rounded-lg bg-green-50 p-4 text-sm text-green-800">
           <p className="font-medium">Check your email</p>
           <p className="mt-1">
-            If an account with this email exists, we&apos;ve sent you a password reset link.
-            Please check your inbox and spam folder.
+            If an account with this email exists, we&apos;ve sent you a password reset link. Please
+            check your inbox and spam folder.
           </p>
         </div>
 
         <div className="text-center">
-          <Link
-            href="/admin/login"
-            className="text-sm text-mvm-blue hover:underline"
-          >
+          <Link href="/admin/login" className="text-sm text-mvm-blue hover:underline">
             ← Back to login
           </Link>
         </div>
@@ -64,8 +61,8 @@ export function ForgotPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <p className="text-sm text-gray-600">
-        Enter the email address associated with your account and we&apos;ll send you a link to
-        reset your password.
+        Enter the email address associated with your account and we&apos;ll send you a link to reset
+        your password.
       </p>
 
       <Input
@@ -91,10 +88,7 @@ export function ForgotPasswordForm() {
       </Button>
 
       <div className="text-center">
-        <Link
-          href="/admin/login"
-          className="text-sm text-mvm-blue hover:underline"
-        >
+        <Link href="/admin/login" className="text-sm text-mvm-blue hover:underline">
           ← Back to login
         </Link>
       </div>

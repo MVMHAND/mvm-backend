@@ -39,7 +39,7 @@ export default function RoleDetailLoading() {
                   <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
                     <div className="h-5 w-24 animate-pulse rounded bg-gray-200" />
                   </div>
-                  <div className="p-4 space-y-3">
+                  <div className="space-y-3 p-4">
                     {[1, 2, 3].map((j) => (
                       <div key={j} className="flex items-center gap-4">
                         <div className="h-4 w-4 animate-pulse rounded bg-gray-200" />

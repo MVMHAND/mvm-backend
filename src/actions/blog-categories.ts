@@ -5,7 +5,12 @@ import { verifySession } from '@/lib/dal'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import { getCategoryWithUsers, validateCategoryDeletion } from '@/lib/blog/categories'
-import type { ActionResponse, BlogCategory, BlogCategoryFormData, BlogCategoryWithUsers } from '@/types'
+import type {
+  ActionResponse,
+  BlogCategory,
+  BlogCategoryFormData,
+  BlogCategoryWithUsers,
+} from '@/types'
 
 interface GetCategoriesParams {
   page?: number
@@ -120,14 +125,14 @@ export async function getCategoryByIdAction(
 ): Promise<ActionResponse<BlogCategoryWithUsers>> {
   try {
     const category = await getCategoryWithUsers(categoryId)
-    
+
     if (!category) {
       return {
         success: false,
         error: 'Category not found',
       }
     }
-    
+
     return {
       success: true,
       data: category,
@@ -151,7 +156,7 @@ export async function createCategoryAction(
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Validate input
     if (!formData.name || formData.name.trim() === '') {
       return {
@@ -159,21 +164,21 @@ export async function createCategoryAction(
         error: 'Category name is required',
       }
     }
-    
+
     // Check if category name already exists
     const { data: existingCategory } = await supabase
       .from('blog_categories')
       .select('id')
       .eq('name', formData.name.trim())
       .single()
-    
+
     if (existingCategory) {
       return {
         success: false,
         error: 'A category with this name already exists',
       }
     }
-    
+
     // Create category
     const { data: category, error } = await supabase
       .from('blog_categories')
@@ -184,7 +189,7 @@ export async function createCategoryAction(
       })
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error creating category:', error)
       return {
@@ -192,7 +197,7 @@ export async function createCategoryAction(
         error: 'Failed to create category',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -203,10 +208,10 @@ export async function createCategoryAction(
         category_name: category.name,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/categories')
-    
+
     return {
       success: true,
       data: category as BlogCategory,
@@ -232,7 +237,7 @@ export async function updateCategoryAction(
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Validate input
     if (!formData.name || formData.name.trim() === '') {
       return {
@@ -240,21 +245,21 @@ export async function updateCategoryAction(
         error: 'Category name is required',
       }
     }
-    
+
     // Get existing category
     const { data: existingCategory, error: fetchError } = await supabase
       .from('blog_categories')
       .select('*')
       .eq('id', categoryId)
       .single()
-    
+
     if (fetchError || !existingCategory) {
       return {
         success: false,
         error: 'Category not found',
       }
     }
-    
+
     // Check if new name conflicts with another category
     if (formData.name.trim() !== existingCategory.name) {
       const { data: conflictCategory } = await supabase
@@ -263,7 +268,7 @@ export async function updateCategoryAction(
         .eq('name', formData.name.trim())
         .neq('id', categoryId)
         .single()
-      
+
       if (conflictCategory) {
         return {
           success: false,
@@ -271,7 +276,7 @@ export async function updateCategoryAction(
         }
       }
     }
-    
+
     // Update category
     const { data: category, error } = await supabase
       .from('blog_categories')
@@ -281,7 +286,7 @@ export async function updateCategoryAction(
       .eq('id', categoryId)
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error updating category:', error)
       return {
@@ -289,7 +294,7 @@ export async function updateCategoryAction(
         error: 'Failed to update category',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -302,11 +307,11 @@ export async function updateCategoryAction(
         new_values: { name: category.name },
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/categories')
     revalidatePath(`/admin/blog/categories/${categoryId}`)
-    
+
     return {
       success: true,
       data: category as BlogCategory,
@@ -329,37 +334,34 @@ export async function deleteCategoryAction(categoryId: string): Promise<ActionRe
     // SECURITY: Validate authentication with DAL
     const user = await verifySession()
     const supabase = await createClient()
-    
+
     // Get category
     const { data: category, error: fetchError } = await supabase
       .from('blog_categories')
       .select('*')
       .eq('id', categoryId)
       .single()
-    
+
     if (fetchError || !category) {
       return {
         success: false,
         error: 'Category not found',
       }
     }
-    
+
     // Validate deletion
     const validation = await validateCategoryDeletion(categoryId)
-    
+
     if (!validation.canDelete) {
       return {
         success: false,
         error: validation.reason || 'Cannot delete category',
       }
     }
-    
+
     // Delete category
-    const { error } = await supabase
-      .from('blog_categories')
-      .delete()
-      .eq('id', categoryId)
-    
+    const { error } = await supabase.from('blog_categories').delete().eq('id', categoryId)
+
     if (error) {
       console.error('Error deleting category:', error)
       return {
@@ -367,7 +369,7 @@ export async function deleteCategoryAction(categoryId: string): Promise<ActionRe
         error: 'Failed to delete category',
       }
     }
-    
+
     // Create audit log
     await createAuditLog({
       actorId: user.id,
@@ -378,10 +380,10 @@ export async function deleteCategoryAction(categoryId: string): Promise<ActionRe
         category_name: category.name,
       },
     })
-    
+
     // Revalidate paths
     revalidatePath('/admin/blog/categories')
-    
+
     return {
       success: true,
       data: null,

@@ -30,7 +30,7 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
   const [stats, setStats] = useState<string[]>(
     contributor?.stats && contributor.stats.length > 0 ? contributor.stats : ['']
   )
-  
+
   // Store pending avatar file for new contributors
   const pendingAvatarFileRef = useRef<File | null>(null)
 
@@ -98,7 +98,7 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
         result = await updateContributorAction(contributor.id, data)
       } else {
         result = await createContributorAction(data)
-        
+
         // If contributor created successfully and we have a pending avatar file, upload it
         if (result.success && result.data && pendingAvatarFileRef.current) {
           const avatarFormData = new FormData()
@@ -190,7 +190,7 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
           </div>
 
           {/* Avatar with circle preview */}
-          <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
             <div className="flex-shrink-0">
               <div className="relative">
                 {avatarUrl ? (
@@ -198,16 +198,16 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
                   <img
                     src={avatarUrl}
                     alt="Avatar preview"
-                    className="h-32 w-32 rounded-full object-cover border-4 border-mvm-blue/20"
+                    className="h-32 w-32 rounded-full border-4 border-mvm-blue/20 object-cover"
                   />
                 ) : (
-                  <div className="h-32 w-32 rounded-full bg-gray-200 flex items-center justify-center border-4 border-dashed border-gray-300">
-                    <span className="text-gray-400 text-sm text-center px-2">No avatar</span>
+                  <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-dashed border-gray-300 bg-gray-200">
+                    <span className="px-2 text-center text-sm text-gray-400">No avatar</span>
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex-1 w-full">
+            <div className="w-full flex-1">
               <ImageUploader
                 label="Avatar (required)"
                 onUpload={handleAvatarUpload}
@@ -215,7 +215,9 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
                 maxSizeMB={2}
                 hidePreview
               />
-              <p className="mt-2 text-xs text-gray-500">Upload a square image for best results. The avatar will be displayed in a circle.</p>
+              <p className="mt-2 text-xs text-gray-500">
+                Upload a square image for best results. The avatar will be displayed in a circle.
+              </p>
             </div>
           </div>
 
@@ -272,7 +274,9 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
               Stats <span className="text-red-500">*</span>{' '}
-              <span className="text-xs text-gray-500">(1-3 items, e.g., "5+ Years Experience")</span>
+              <span className="text-xs text-gray-500">
+                (1-3 items, e.g., "5+ Years Experience")
+              </span>
             </label>
             <div className="space-y-2">
               {stats.map((item, index) => (

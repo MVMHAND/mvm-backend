@@ -7,9 +7,7 @@ export default async function AdminDashboard() {
 
   return (
     <PageContainer>
-      <PageHeader
-        title={`Welcome back, ${profile.name || profile.email}!`}
-      />
+      <PageHeader title={`Welcome back, ${profile.name || profile.email}!`} />
     </PageContainer>
   )
 }

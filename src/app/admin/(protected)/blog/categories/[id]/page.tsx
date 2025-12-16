@@ -3,7 +3,12 @@ import { notFound } from 'next/navigation'
 import { CategoryForm } from '@/components/features/blog/CategoryForm'
 import { getCategoryByIdAction } from '@/actions/blog-categories'
 import type { PageProps } from '@/types'
-import { PageContainer, PageHeader, FormContainer, LoadingState } from '@/components/layout/PageLayout'
+import {
+  PageContainer,
+  PageHeader,
+  FormContainer,
+  LoadingState,
+} from '@/components/layout/PageLayout'
 
 async function CategoryFormContent({ categoryId }: { categoryId: string }) {
   const result = await getCategoryByIdAction(categoryId)

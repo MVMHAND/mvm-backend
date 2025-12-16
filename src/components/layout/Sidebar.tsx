@@ -94,9 +94,10 @@ export function Sidebar() {
     }
 
     // When collapsed, show first child path for parent items
-    const linkPath = hasChildren && collapsed && item.children?.[0]?.path
-      ? item.children[0].path
-      : item.path || '#'
+    const linkPath =
+      hasChildren && collapsed && item.children?.[0]?.path
+        ? item.children[0].path
+        : item.path || '#'
 
     // For regular menu items or collapsed parent items
     return (
@@ -131,7 +132,9 @@ export function Sidebar() {
     >
       <div className="flex h-full flex-col">
         {/* Logo/Brand */}
-        <div className={`flex h-16 items-center border-b border-gray-200 ${collapsed ? 'justify-center px-2' : 'justify-between px-3'}`}>
+        <div
+          className={`flex h-16 items-center border-b border-gray-200 ${collapsed ? 'justify-center px-2' : 'justify-between px-3'}`}
+        >
           {!collapsed && (
             <Link href="/admin" className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-mvm-blue to-mvm-yellow">
@@ -145,11 +148,7 @@ export function Sidebar() {
             className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? (
-              <Menu className="h-5 w-5" />
-            ) : (
-              <ChevronLeft className="h-5 w-5" />
-            )}
+            {collapsed ? <Menu className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
           </button>
         </div>
 

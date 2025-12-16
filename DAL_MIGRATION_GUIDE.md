@@ -5,6 +5,7 @@
 This guide helps you migrate existing code to use the new **Data Access Layer (DAL)** for authentication and authorization.
 
 The DAL provides:
+
 - ✅ **Better security** - Always validates JWTs with Auth server
 - ✅ **Performance** - React `cache()` prevents duplicate requests
 - ✅ **Type safety** - Full TypeScript support with proper types
@@ -19,35 +20,39 @@ The DAL provides:
 #### Server Components (Pages)
 
 **❌ Before:**
+
 ```typescript
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export default async function UsersPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) {
     redirect('/admin/login')
   }
-  
+
   const { data: profile } = await supabase
     .from('users')
     .select('*, role:user_roles(*)')
     .eq('id', user.id)
     .single()
-  
+
   // ... rest of code
 }
 ```
 
 **✅ After:**
+
 ```typescript
 import { verifySessionWithProfile } from '@/lib/dal'
 
 export default async function UsersPage() {
   const profile = await verifySessionWithProfile()
-  
+
   // profile is guaranteed to exist and includes role info
   // ... rest of code
 }
@@ -58,6 +63,7 @@ export default async function UsersPage() {
 #### Server Actions
 
 **❌ Before:**
+
 ```typescript
 'use server'
 
@@ -65,29 +71,32 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function deleteUser(userId: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) {
     return { success: false, error: 'Unauthorized' }
   }
-  
+
   // Check permission manually
   const { data: profile } = await supabase
     .from('users')
     .select('role:user_roles(is_super_admin)')
     .eq('id', user.id)
     .single()
-  
+
   if (!profile?.role?.is_super_admin) {
     // Check specific permission...
     return { success: false, error: 'Unauthorized' }
   }
-  
+
   // Proceed with deletion
 }
 ```
 
 **✅ After:**
+
 ```typescript
 'use server'
 
@@ -96,7 +105,7 @@ import { verifySession, requirePermission } from '@/lib/dal'
 export async function deleteUser(userId: string) {
   await verifySession()
   await requirePermission('users.delete')
-  
+
   // Proceed with deletion - auth and authz handled
 }
 ```
@@ -106,6 +115,7 @@ export async function deleteUser(userId: string) {
 #### Permission Checks
 
 **❌ Before:**
+
 ```typescript
 import { hasPermission } from '@/lib/permissions'
 
@@ -118,6 +128,7 @@ export async function someAction() {
 ```
 
 **✅ After:**
+
 ```typescript
 import { hasPermission } from '@/lib/dal'
 
@@ -136,6 +147,7 @@ export async function someAction() {
 ### Authentication Functions
 
 #### `verifySession()`
+
 Validates JWT and returns authenticated user. Redirects to login if not authenticated.
 
 ```typescript
@@ -148,6 +160,7 @@ export default async function ProtectedPage() {
 ```
 
 #### `getCurrentUser()`
+
 Returns user if authenticated, `null` otherwise. Does NOT redirect.
 
 ```typescript
@@ -155,16 +168,17 @@ import { getCurrentUser } from '@/lib/dal'
 
 export default async function OptionalAuthPage() {
   const user = await getCurrentUser()
-  
+
   if (!user) {
     return <div>Please log in</div>
   }
-  
+
   return <div>Welcome {user.email}</div>
 }
 ```
 
 #### `getUserProfile()`
+
 Returns full user profile with role information. Returns `null` if not authenticated.
 
 ```typescript
@@ -172,11 +186,11 @@ import { getUserProfile } from '@/lib/dal'
 
 export default async function ProfilePage() {
   const profile = await getUserProfile()
-  
+
   if (!profile) {
     return <div>Not logged in</div>
   }
-  
+
   return (
     <div>
       <p>Name: {profile.name}</p>
@@ -188,6 +202,7 @@ export default async function ProfilePage() {
 ```
 
 #### `verifySessionWithProfile()`
+
 Validates JWT and returns full profile. Redirects to login if not authenticated.
 
 ```typescript
@@ -196,7 +211,7 @@ import { verifySessionWithProfile } from '@/lib/dal'
 export default async function DashboardPage() {
   const profile = await verifySessionWithProfile()
   // profile is guaranteed to exist with full role info
-  
+
   return <Dashboard user={profile} />
 }
 ```
@@ -206,6 +221,7 @@ export default async function DashboardPage() {
 ### Authorization Functions
 
 #### `hasPermission(permissionKey)`
+
 Checks if current user has a specific permission.
 
 ```typescript
@@ -213,18 +229,19 @@ import { hasPermission } from '@/lib/dal'
 
 export async function editUser(userId: string) {
   'use server'
-  
+
   const canEdit = await hasPermission('users.edit')
-  
+
   if (!canEdit) {
     return { success: false, error: 'Unauthorized' }
   }
-  
+
   // Proceed with edit
 }
 ```
 
 #### `requirePermission(permissionKey)`
+
 Throws error if user doesn't have permission. Cleaner for Server Actions.
 
 ```typescript
@@ -232,15 +249,16 @@ import { verifySession, requirePermission } from '@/lib/dal'
 
 export async function deleteUser(userId: string) {
   'use server'
-  
+
   await verifySession()
   await requirePermission('users.delete')
-  
+
   // Proceed - will throw if unauthorized
 }
 ```
 
 #### `getUserPermissions()`
+
 Returns array of all permission keys for current user.
 
 ```typescript
@@ -248,7 +266,7 @@ import { getUserPermissions } from '@/lib/dal'
 
 export default async function PermissionsPage() {
   const permissions = await getUserPermissions()
-  
+
   return (
     <ul>
       {permissions.map(p => <li key={p}>{p}</li>)}
@@ -258,6 +276,7 @@ export default async function PermissionsPage() {
 ```
 
 #### `isSuperAdmin()`
+
 Checks if current user is Super Admin.
 
 ```typescript
@@ -265,11 +284,11 @@ import { isSuperAdmin } from '@/lib/dal'
 
 export default async function AdminOnlyPage() {
   const isAdmin = await isSuperAdmin()
-  
+
   if (!isAdmin) {
     return <div>Access denied</div>
   }
-  
+
   return <SuperAdminDashboard />
 }
 ```
@@ -281,6 +300,7 @@ export default async function AdminOnlyPage() {
 ### Pattern 1: Simple Protected Page
 
 **Before:**
+
 ```typescript
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -288,22 +308,23 @@ import { redirect } from 'next/navigation'
 export default async function Page() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/admin/login')
   }
-  
+
   return <Content />
 }
 ```
 
 **After:**
+
 ```typescript
 import { verifySession } from '@/lib/dal'
 
 export default async function Page() {
   await verifySession()
-  
+
   return <Content />
 }
 ```
@@ -313,6 +334,7 @@ export default async function Page() {
 ### Pattern 2: Page with User Profile
 
 **Before:**
+
 ```typescript
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -320,28 +342,29 @@ import { redirect } from 'next/navigation'
 export default async function Page() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/admin/login')
   }
-  
+
   const { data: profile } = await supabase
     .from('users')
     .select('*, role:user_roles(*)')
     .eq('id', user.id)
     .single()
-  
+
   return <Content user={profile} />
 }
 ```
 
 **After:**
+
 ```typescript
 import { verifySessionWithProfile } from '@/lib/dal'
 
 export default async function Page() {
   const profile = await verifySessionWithProfile()
-  
+
   return <Content user={profile} />
 }
 ```
@@ -351,6 +374,7 @@ export default async function Page() {
 ### Pattern 3: Server Action with Permission Check
 
 **Before:**
+
 ```typescript
 'use server'
 
@@ -358,35 +382,38 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function createUser(formData: FormData) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) {
     return { success: false, error: 'Unauthorized' }
   }
-  
+
   // Manual permission check
   const { data: profile } = await supabase
     .from('users')
     .select('role_id')
     .eq('id', user.id)
     .single()
-  
+
   const { data: permission } = await supabase
     .from('user_role_permissions')
     .select('*')
     .eq('role_id', profile.role_id)
     .eq('permission_key', 'users.create')
     .single()
-  
+
   if (!permission) {
     return { success: false, error: 'Unauthorized' }
   }
-  
+
   // Proceed with creation
 }
 ```
 
 **After:**
+
 ```typescript
 'use server'
 
@@ -395,7 +422,7 @@ import { verifySession, requirePermission } from '@/lib/dal'
 export async function createUser(formData: FormData) {
   await verifySession()
   await requirePermission('users.create')
-  
+
   // Proceed with creation
 }
 ```
@@ -405,6 +432,7 @@ export async function createUser(formData: FormData) {
 ### Pattern 4: Conditional Rendering Based on Permissions
 
 **Before:**
+
 ```typescript
 import { createClient } from '@/lib/supabase/server'
 import { hasPermission } from '@/lib/permissions'
@@ -412,14 +440,14 @@ import { hasPermission } from '@/lib/permissions'
 export default async function Page() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/admin/login')
   }
-  
+
   const canCreate = await hasPermission('users.create')
   const canDelete = await hasPermission('users.delete')
-  
+
   return (
     <div>
       {canCreate && <CreateButton />}
@@ -430,15 +458,16 @@ export default async function Page() {
 ```
 
 **After:**
+
 ```typescript
 import { verifySession, hasPermission } from '@/lib/dal'
 
 export default async function Page() {
   await verifySession()
-  
+
   const canCreate = await hasPermission('users.create')
   const canDelete = await hasPermission('users.delete')
-  
+
   return (
     <div>
       {canCreate && <CreateButton />}
@@ -474,7 +503,7 @@ import { ClientComponent } from './ClientComponent'
 
 export default async function Page() {
   const profile = await verifySessionWithProfile()
-  
+
   return <ClientComponent user={profile} />
 }
 
@@ -492,7 +521,9 @@ export function ClientComponent({ user }) {
 
 ```typescript
 // INSECURE - cookies can be spoofed
-const { data: { session } } = await supabase.auth.getSession()
+const {
+  data: { session },
+} = await supabase.auth.getSession()
 if (session) {
   // This is not secure!
 }
@@ -572,6 +603,7 @@ interface UserProfile {
 ```
 
 Import it:
+
 ```typescript
 import type { UserProfile } from '@/lib/dal'
 ```

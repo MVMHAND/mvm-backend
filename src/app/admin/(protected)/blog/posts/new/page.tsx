@@ -1,7 +1,12 @@
 import { PostForm } from '@/components/features/blog/PostForm'
 import { getAllCategoriesForSelectAction } from '@/actions/blog-categories'
 import { getAllContributorsForSelectAction } from '@/actions/blog-contributors'
-import { PageContainer, PageHeader, FormContainer, ErrorMessage } from '@/components/layout/PageLayout'
+import {
+  PageContainer,
+  PageHeader,
+  FormContainer,
+  ErrorMessage,
+} from '@/components/layout/PageLayout'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,10 +39,7 @@ export default async function NewPostPage() {
       <PageHeader title="Create Post" description="Write a new blog post" />
 
       <FormContainer>
-        <PostForm
-          categories={categoriesResult.data}
-          contributors={contributorsResult.data}
-        />
+        <PostForm categories={categoriesResult.data} contributors={contributorsResult.data} />
       </FormContainer>
     </PageContainer>
   )

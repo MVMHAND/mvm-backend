@@ -220,10 +220,7 @@ function AcceptInvitationForm() {
           </Button>
 
           <div className="text-center text-sm">
-            <Link
-              href="/admin/login"
-              className="font-medium text-mvm-blue hover:text-mvm-blue/80"
-            >
+            <Link href="/admin/login" className="font-medium text-mvm-blue hover:text-mvm-blue/80">
               Already have an account? Log in
             </Link>
           </div>

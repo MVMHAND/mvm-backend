@@ -4,7 +4,12 @@ import { BlogUrlDisplay } from '@/components/features/blog/BlogUrlDisplay'
 import { getPostByIdAction } from '@/actions/blog-posts'
 import { getAllCategoriesForSelectAction } from '@/actions/blog-categories'
 import { getAllContributorsForSelectAction } from '@/actions/blog-contributors'
-import { PageContainer, PageHeader, FormContainer, ErrorMessage } from '@/components/layout/PageLayout'
+import {
+  PageContainer,
+  PageHeader,
+  FormContainer,
+  ErrorMessage,
+} from '@/components/layout/PageLayout'
 
 interface EditPostPageProps {
   params: Promise<{ id: string }>
@@ -14,7 +19,7 @@ interface EditPostPageProps {
 const getMainSiteUrls = (): string[] => {
   const envValue = process.env.MAIN_SITE_URL
   if (!envValue) throw new Error('MAIN_SITE_URL is not defined')
-  
+
   try {
     const parsed = JSON.parse(envValue)
     return Array.isArray(parsed) ? parsed : [parsed]
@@ -73,8 +78,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       <PageHeader title="Edit Post" description="Update post information" />
 
       <div className="space-y-6">
-        <BlogUrlDisplay 
-          slug={postResult.data.slug} 
+        <BlogUrlDisplay
+          slug={postResult.data.slug}
           status={postResult.data.status}
           mainSiteUrls={mainSiteUrls}
           socialPreviewUrl={socialPreviewUrl}

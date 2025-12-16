@@ -22,9 +22,7 @@ export default function HomePage() {
         <p className="mb-6 text-xl font-medium md:text-2xl">{APP_TAGLINE}</p>
 
         {/* Description */}
-        <p className="mx-auto mb-12 max-w-2xl text-lg opacity-90 md:text-xl">
-          {APP_DESCRIPTION}
-        </p>
+        <p className="mx-auto mb-12 max-w-2xl text-lg opacity-90 md:text-xl">{APP_DESCRIPTION}</p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -33,7 +31,7 @@ export default function HomePage() {
               size="lg"
               variant="secondary"
               className="min-w-48 bg-white text-mvm-blue hover:bg-white/90"
-              >
+            >
               Learn More
             </Button>
           </Link>

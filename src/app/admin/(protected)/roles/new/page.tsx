@@ -11,10 +11,7 @@ export default async function NewRolePage() {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Create New Role"
-        description="Define a new role with custom permissions"
-      />
+      <PageHeader title="Create New Role" description="Define a new role with custom permissions" />
 
       <FormContainer>
         <RoleCreateForm groupedPermissions={groupedPermissions} />

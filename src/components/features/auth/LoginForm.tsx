@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { loginAction } from '@/actions/auth'
@@ -80,12 +81,9 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
       </Button>
 
       <div className="text-center">
-        <a
-          href="/admin/forgot-password"
-          className="text-sm text-mvm-blue hover:underline"
-        >
+        <Link href="/admin/forgot-password" className="text-sm text-mvm-blue hover:underline">
           Forgot your password?
-        </a>
+        </Link>
       </div>
     </form>
   )

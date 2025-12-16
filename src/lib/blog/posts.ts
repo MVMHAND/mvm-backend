@@ -11,21 +11,23 @@ import type { BlogPost, BlogPostWithRelations, BlogPostFilters, BlogPostStatus }
  */
 export async function getPostBySlug(slug: string): Promise<BlogPostWithRelations | null> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_posts')
-    .select(`
+    .select(
+      `
       *,
       contributor:blog_contributors(full_name)
-    `)
+    `
+    )
     .eq('slug', slug)
     .single()
-  
+
   if (error) {
     if (error.code === 'PGRST116') return null // Not found
     throw error
   }
-  
+
   return data as unknown as BlogPostWithRelations
 }
 
@@ -34,18 +36,14 @@ export async function getPostBySlug(slug: string): Promise<BlogPostWithRelations
  */
 export async function getPostById(id: string): Promise<BlogPost | null> {
   const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('id', id)
-    .single()
-  
+
+  const { data, error } = await supabase.from('blog_posts').select('*').eq('id', id).single()
+
   if (error) {
     if (error.code === 'PGRST116') return null
     throw error
   }
-  
+
   return data as BlogPost
 }
 
@@ -54,25 +52,27 @@ export async function getPostById(id: string): Promise<BlogPost | null> {
  */
 export async function getPostWithRelations(id: string): Promise<BlogPostWithRelations | null> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_posts')
-    .select(`
+    .select(
+      `
       *,
       category:blog_categories(*),
       contributor:blog_contributors(*),
       creator:created_by(name, email),
       updater:updated_by(name, email),
       publisher:published_by(name, email)
-    `)
+    `
+    )
     .eq('id', id)
     .single()
-  
+
   if (error) {
     if (error.code === 'PGRST116') return null
     throw error
   }
-  
+
   return data as unknown as BlogPostWithRelations
 }
 
@@ -81,39 +81,36 @@ export async function getPostWithRelations(id: string): Promise<BlogPostWithRela
  */
 export async function getAllPosts(filters?: BlogPostFilters): Promise<BlogPost[]> {
   const supabase = await createClient()
-  
-  let query = supabase
-    .from('blog_posts')
-    .select('*')
-    .order('created_at', { ascending: false })
-  
+
+  let query = supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
+
   // Apply filters
   if (filters?.status) {
     query = query.eq('status', filters.status)
   }
-  
+
   if (filters?.category_id) {
     query = query.eq('category_id', filters.category_id)
   }
-  
+
   if (filters?.contributor_id) {
     query = query.eq('contributor_id', filters.contributor_id)
   }
-  
+
   if (filters?.search) {
     query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`)
   }
-  
+
   if (filters?.date_from) {
     query = query.gte('published_date', filters.date_from)
   }
-  
+
   if (filters?.date_to) {
     query = query.lte('published_date', filters.date_to)
   }
-  
+
   const { data, error } = await query
-  
+
   if (error) throw error
   return data as BlogPost[]
 }
@@ -123,13 +120,13 @@ export async function getAllPosts(filters?: BlogPostFilters): Promise<BlogPost[]
  */
 export async function getPostsByCategory(categoryId: string): Promise<BlogPost[]> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
     .eq('category_id', categoryId)
     .order('published_date', { ascending: false })
-  
+
   if (error) throw error
   return data as BlogPost[]
 }
@@ -139,13 +136,13 @@ export async function getPostsByCategory(categoryId: string): Promise<BlogPost[]
  */
 export async function getPostsByContributor(contributorId: string): Promise<BlogPost[]> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
     .eq('contributor_id', contributorId)
     .order('published_date', { ascending: false })
-  
+
   if (error) throw error
   return data as BlogPost[]
 }
@@ -168,40 +165,34 @@ export function calculateReadingTime(content: string): number {
 export async function generateSlugFromTitle(title: string, excludeId?: string): Promise<string> {
   const baseSlug = slugify(title)
   const supabase = await createClient()
-  
+
   // Check if slug exists
-  let query = supabase
-    .from('blog_posts')
-    .select('id')
-    .eq('slug', baseSlug)
-  
+  let query = supabase.from('blog_posts').select('id').eq('slug', baseSlug)
+
   if (excludeId) {
     query = query.neq('id', excludeId)
   }
-  
+
   const { data } = await query.single()
-  
+
   // If slug doesn't exist, return it
   if (!data) return baseSlug
-  
+
   // If slug exists, append a number
   let counter = 1
   let newSlug = `${baseSlug}-${counter}`
-  
+
   while (true) {
-    let checkQuery = supabase
-      .from('blog_posts')
-      .select('id')
-      .eq('slug', newSlug)
-    
+    let checkQuery = supabase.from('blog_posts').select('id').eq('slug', newSlug)
+
     if (excludeId) {
       checkQuery = checkQuery.neq('id', excludeId)
     }
-    
+
     const { data: existingData } = await checkQuery.single()
-    
+
     if (!existingData) return newSlug
-    
+
     counter++
     newSlug = `${baseSlug}-${counter}`
   }
@@ -210,7 +201,10 @@ export async function generateSlugFromTitle(title: string, excludeId?: string): 
 /**
  * Validate SEO field lengths
  */
-export function validateSEOFieldLengths(title: string, description: string): {
+export function validateSEOFieldLengths(
+  title: string,
+  description: string
+): {
   title: {
     length: number
     isValid: boolean
@@ -224,7 +218,7 @@ export function validateSEOFieldLengths(title: string, description: string): {
 } {
   const titleMaxLength = 60
   const descriptionMaxLength = 160
-  
+
   return {
     title: {
       length: title.length,
@@ -249,37 +243,37 @@ export function canPublishPost(post: BlogPost): {
   if (!post.title || post.title.trim() === '') {
     return { canPublish: false, reason: 'Title is required' }
   }
-  
+
   if (!post.description || post.description.trim() === '') {
     return { canPublish: false, reason: 'Description is required for publishing' }
   }
-  
+
   if (!post.content || post.content.trim() === '') {
     return { canPublish: false, reason: 'Content is required' }
   }
-  
+
   if (!post.cover_image_url || post.cover_image_url.trim() === '') {
     return { canPublish: false, reason: 'Cover image is required for publishing' }
   }
-  
+
   if (!post.category_id) {
     return { canPublish: false, reason: 'Category is required' }
   }
-  
+
   if (!post.contributor_id) {
     return { canPublish: false, reason: 'Contributor is required' }
   }
-  
+
   const seoValidation = validateSEOFieldLengths(post.seo_meta_title, post.seo_meta_description)
-  
+
   if (!seoValidation.title.isValid) {
     return { canPublish: false, reason: 'SEO title exceeds 60 characters' }
   }
-  
+
   if (!seoValidation.description.isValid) {
     return { canPublish: false, reason: 'SEO description exceeds 160 characters' }
   }
-  
+
   return { canPublish: true }
 }
 
@@ -297,7 +291,7 @@ export function canDeletePost(post: BlogPost): {
       reason: 'Cannot delete published posts. Unpublish first.',
     }
   }
-  
+
   return { canDelete: true }
 }
 

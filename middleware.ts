@@ -12,11 +12,11 @@ export async function middleware(request: NextRequest) {
       data: { user },
       error,
     } = await supabase.auth.getUser()
-    
+
     const isAuthenticated = !error && !!user
 
     // Define public auth routes
-    const isAuthRoute = 
+    const isAuthRoute =
       request.nextUrl.pathname === '/admin/login' ||
       request.nextUrl.pathname === '/admin/forgot-password'
 
@@ -29,7 +29,9 @@ export async function middleware(request: NextRequest) {
       redirectUrl.pathname = '/admin/login'
       redirectUrl.searchParams.set('message', 'Please log in to access this page')
       // Only set redirect for potentially valid routes (not obvious 404s)
-      if (!request.nextUrl.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+      if (
+        !request.nextUrl.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)
+      ) {
         redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
       }
       return NextResponse.redirect(redirectUrl)
@@ -46,10 +48,10 @@ export async function middleware(request: NextRequest) {
   } catch (error) {
     console.error('Middleware error:', error)
     // On error, redirect to login for all admin routes except auth pages
-    const isAuthRoute = 
+    const isAuthRoute =
       request.nextUrl.pathname === '/admin/login' ||
       request.nextUrl.pathname === '/admin/forgot-password'
-    
+
     if (request.nextUrl.pathname.startsWith('/admin') && !isAuthRoute) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/admin/login'
@@ -61,7 +63,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/admin/:path*',
-  ],
+  matcher: ['/admin/:path*'],
 }

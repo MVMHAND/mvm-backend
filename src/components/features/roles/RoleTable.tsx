@@ -23,13 +23,9 @@ export function RoleTable({ roles }: RoleTableProps) {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-900">{role.name}</span>
-            {role.is_super_admin && (
-              <TableBadge variant="purple">Super Admin</TableBadge>
-            )}
+            {role.is_super_admin && <TableBadge variant="purple">Super Admin</TableBadge>}
           </div>
-          {role.description && (
-            <p className="mt-1 text-sm text-gray-500">{role.description}</p>
-          )}
+          {role.description && <p className="mt-1 text-sm text-gray-500">{role.description}</p>}
         </div>
       ),
     },
@@ -48,9 +44,7 @@ export function RoleTable({ roles }: RoleTableProps) {
       render: (role) => (
         <span className="text-sm text-gray-900">
           {role.user_count}
-          <span className="ml-1 text-gray-500">
-            {role.user_count === 1 ? 'user' : 'users'}
-          </span>
+          <span className="ml-1 text-gray-500">{role.user_count === 1 ? 'user' : 'users'}</span>
         </span>
       ),
     },

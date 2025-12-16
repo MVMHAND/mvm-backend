@@ -97,9 +97,7 @@ export function PermissionMatrix({
       {message && (
         <div
           className={`rounded-lg p-4 ${
-            message.type === 'success'
-              ? 'bg-green-50 text-green-800'
-              : 'bg-red-50 text-red-800'
+            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
           }`}
         >
           {message.text}
@@ -152,16 +150,19 @@ export function PermissionMatrix({
               {/* Permissions list */}
               <div className="divide-y divide-gray-100">
                 {permissions.map((permission) => {
-                  const isSelected = isSuperAdmin || selectedPermissions.has(permission.permission_key)
+                  const isSelected =
+                    isSuperAdmin || selectedPermissions.has(permission.permission_key)
 
-                  const isSensitive = permission.description?.includes('⚠️') || permission.permission_key.includes('audit')
-                  
+                  const isSensitive =
+                    permission.description?.includes('⚠️') ||
+                    permission.permission_key.includes('audit')
+
                   return (
                     <label
                       key={permission.permission_key}
                       className={`flex cursor-pointer items-center gap-4 px-4 py-3 hover:bg-gray-50 ${
                         isSuperAdmin ? 'cursor-default' : ''
-                      } ${isSensitive ? 'bg-amber-50/50 border-l-4 border-amber-400' : ''}`}
+                      } ${isSensitive ? 'border-l-4 border-amber-400 bg-amber-50/50' : ''}`}
                     >
                       <input
                         type="checkbox"
@@ -171,11 +172,15 @@ export function PermissionMatrix({
                         className="h-4 w-4 rounded border-gray-300 text-mvm-blue focus:ring-mvm-blue disabled:cursor-not-allowed disabled:opacity-50"
                       />
                       <div className="flex-1">
-                        <p className={`text-sm font-medium ${isSensitive ? 'text-amber-900' : 'text-gray-900'}`}>
+                        <p
+                          className={`text-sm font-medium ${isSensitive ? 'text-amber-900' : 'text-gray-900'}`}
+                        >
                           {permission.label}
                         </p>
                         {permission.description && (
-                          <p className={`text-sm ${isSensitive ? 'text-amber-700 font-medium' : 'text-gray-500'}`}>
+                          <p
+                            className={`text-sm ${isSensitive ? 'font-medium text-amber-700' : 'text-gray-500'}`}
+                          >
                             {permission.description}
                           </p>
                         )}

@@ -3,7 +3,12 @@ import { notFound } from 'next/navigation'
 import { ContributorForm } from '@/components/features/blog/ContributorForm'
 import { getContributorByIdAction } from '@/actions/blog-contributors'
 import type { PageProps } from '@/types'
-import { PageContainer, PageHeader, FormContainer, LoadingState } from '@/components/layout/PageLayout'
+import {
+  PageContainer,
+  PageHeader,
+  FormContainer,
+  LoadingState,
+} from '@/components/layout/PageLayout'
 
 async function ContributorFormContent({ contributorId }: { contributorId: string }) {
   const result = await getContributorByIdAction(contributorId)

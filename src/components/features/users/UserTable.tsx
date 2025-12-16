@@ -37,9 +37,7 @@ interface UserTableProps {
   }
 }
 
-function getStatusVariant(
-  status: string
-): 'success' | 'warning' | 'error' | 'info' | 'default' {
+function getStatusVariant(status: string): 'success' | 'warning' | 'error' | 'info' | 'default' {
   switch (status) {
     case 'active':
       return 'success'
@@ -112,7 +110,7 @@ export function UserTable({ users, pagination }: UserTableProps) {
       header: 'Actions',
       headerAlign: 'right',
       cellAlign: 'right',
-      render: (user) => (
+      render: (user) =>
         user.status === 'invited' ? (
           <span className="text-xs text-gray-400">Pending</span>
         ) : (
@@ -121,8 +119,7 @@ export function UserTable({ users, pagination }: UserTableProps) {
               View
             </Button>
           </Link>
-        )
-      ),
+        ),
     },
   ]
 

@@ -6,7 +6,14 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/contexts/ToastContext'
-import { AdminTable, Column, TableBadge, DateCell, TableError, FilterConfig } from '@/components/ui/AdminTable'
+import {
+  AdminTable,
+  Column,
+  TableBadge,
+  DateCell,
+  TableError,
+  FilterConfig,
+} from '@/components/ui/AdminTable'
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { StatusBadge } from './StatusBadge'
 import { deletePostAction, publishPostAction, unpublishPostAction } from '@/actions/blog-posts'
@@ -151,7 +158,9 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         render: (post) => (
           <div className="max-w-md">
             <div className="font-medium text-gray-900">{post.title}</div>
-            <div className="mt-1 text-sm text-gray-500 line-clamp-1">{post.seo_meta_description}</div>
+            <div className="mt-1 line-clamp-1 text-sm text-gray-500">
+              {post.seo_meta_description}
+            </div>
           </div>
         ),
         className: 'whitespace-normal',
@@ -267,7 +276,9 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
 
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
-        onClose={() => setConfirmDialog({ isOpen: false, type: 'delete', postId: '', postTitle: '' })}
+        onClose={() =>
+          setConfirmDialog({ isOpen: false, type: 'delete', postId: '', postTitle: '' })
+        }
         onConfirm={confirmDialog.type === 'delete' ? confirmDelete : confirmUnpublish}
         title={confirmDialog.type === 'delete' ? 'Delete Post' : 'Unpublish Post'}
         message={

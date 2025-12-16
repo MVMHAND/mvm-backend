@@ -12,7 +12,14 @@ interface DialogProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-export function Dialog({ isOpen, onClose, title, description, children, size = 'md' }: DialogProps) {
+export function Dialog({
+  isOpen,
+  onClose,
+  title,
+  description,
+  children,
+  size = 'md',
+}: DialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
 
@@ -90,7 +97,12 @@ export function Dialog({ isOpen, onClose, title, description, children, size = '
               aria-label="Close dialog"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>

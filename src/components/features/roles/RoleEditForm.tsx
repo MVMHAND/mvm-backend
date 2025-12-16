@@ -15,11 +15,7 @@ interface RoleEditFormProps {
   assignedPermissions: string[]
 }
 
-export function RoleEditForm({
-  role,
-  groupedPermissions,
-  assignedPermissions,
-}: RoleEditFormProps) {
+export function RoleEditForm({ role, groupedPermissions, assignedPermissions }: RoleEditFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -82,10 +78,7 @@ export function RoleEditForm({
       }
 
       // Update permissions
-      const permResult = await updateRolePermissionsAction(
-        role.id,
-        Array.from(selectedPermissions)
-      )
+      const permResult = await updateRolePermissionsAction(role.id, Array.from(selectedPermissions))
       if (!permResult.success) {
         setError(permResult.error || 'Failed to update permissions')
         return
@@ -149,10 +142,7 @@ export function RoleEditForm({
           />
 
           <div>
-            <label
-              htmlFor="description"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
@@ -182,9 +172,7 @@ export function RoleEditForm({
               </p>
             </div>
             {!isSuperAdmin && (
-              <span className="text-sm text-gray-500">
-                {selectedPermissions.size} selected
-              </span>
+              <span className="text-sm text-gray-500">{selectedPermissions.size} selected</span>
             )}
           </div>
         </CardHeader>
@@ -192,16 +180,11 @@ export function RoleEditForm({
           <div className="space-y-4">
             {groups.map(([groupName, permissions]) => {
               const groupKeys = permissions.map((p) => p.permission_key)
-              const selectedInGroup = groupKeys.filter((key) =>
-                selectedPermissions.has(key)
-              ).length
+              const selectedInGroup = groupKeys.filter((key) => selectedPermissions.has(key)).length
               const allSelected = selectedInGroup === permissions.length
 
               return (
-                <div
-                  key={groupName}
-                  className="overflow-hidden rounded-lg border border-gray-200"
-                >
+                <div key={groupName} className="overflow-hidden rounded-lg border border-gray-200">
                   {/* Group header */}
                   <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -228,14 +211,16 @@ export function RoleEditForm({
                     {permissions.map((permission) => {
                       const isSelected =
                         isSuperAdmin || selectedPermissions.has(permission.permission_key)
-                      const isSensitive = permission.description?.includes('⚠️') || permission.permission_key.includes('audit')
+                      const isSensitive =
+                        permission.description?.includes('⚠️') ||
+                        permission.permission_key.includes('audit')
 
                       return (
                         <label
                           key={permission.permission_key}
                           className={`flex cursor-pointer items-center gap-4 px-4 py-3 hover:bg-gray-50 ${
                             isSuperAdmin ? 'cursor-default' : ''
-                          } ${isSensitive ? 'bg-amber-50/50 border-l-4 border-amber-400' : ''}`}
+                          } ${isSensitive ? 'border-l-4 border-amber-400 bg-amber-50/50' : ''}`}
                         >
                           <input
                             type="checkbox"
@@ -245,18 +230,20 @@ export function RoleEditForm({
                             className="h-4 w-4 rounded border-gray-300 text-mvm-blue focus:ring-mvm-blue disabled:cursor-not-allowed disabled:opacity-50"
                           />
                           <div className="flex-1">
-                            <p className={`text-sm font-medium ${isSensitive ? 'text-amber-900' : 'text-gray-900'}`}>
+                            <p
+                              className={`text-sm font-medium ${isSensitive ? 'text-amber-900' : 'text-gray-900'}`}
+                            >
                               {permission.label}
                             </p>
                             {permission.description && (
-                              <p className={`text-sm ${isSensitive ? 'text-amber-700 font-medium' : 'text-gray-500'}`}>
+                              <p
+                                className={`text-sm ${isSensitive ? 'font-medium text-amber-700' : 'text-gray-500'}`}
+                              >
                                 {permission.description}
                               </p>
                             )}
                           </div>
-                          <code className="text-xs text-gray-400">
-                            {permission.permission_key}
-                          </code>
+                          <code className="text-xs text-gray-400">{permission.permission_key}</code>
                         </label>
                       )
                     })}

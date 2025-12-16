@@ -29,7 +29,7 @@ export function createAdminClient() {
  */
 export async function verifyDomain(origin: string | null): Promise<boolean> {
   if (!origin) return false
-  
+
   try {
     const supabaseAdmin = createAdminClient()
 
@@ -38,24 +38,24 @@ export async function verifyDomain(origin: string | null): Promise<boolean> {
       .from('public_allowed_domains')
       .select('domain, is_active')
       .eq('is_active', true)
-    
+
     if (error) {
       console.error('Error fetching allowed domains:', error)
       return false
     }
-    
+
     // Check if origin matches any allowed domain
     const isAllowed = data.some((entry: any) => {
       const allowedDomain = entry.domain.toLowerCase()
       const requestOrigin = origin.toLowerCase()
       return requestOrigin === allowedDomain || requestOrigin.startsWith(allowedDomain)
     })
-    
+
     // If not allowed, track this domain attempt
     if (!isAllowed) {
       await trackUnauthorizedDomain(origin)
     }
-    
+
     return isAllowed
   } catch (err) {
     console.error('Domain verification error:', err)
@@ -78,17 +78,15 @@ export async function trackUnauthorizedDomain(origin: string): Promise<void> {
       .select('id')
       .eq('domain', origin)
       .single()
-    
+
     // Only add if not already in the database
     if (!existing) {
-      const { error } = await supabaseAdmin
-        .from('public_allowed_domains')
-        .insert({
-          domain: origin,
-          description: `Auto-tracked: Attempted to access blog API on ${new Date().toISOString()}`,
-          is_active: false,
-        })
-      
+      const { error } = await supabaseAdmin.from('public_allowed_domains').insert({
+        domain: origin,
+        description: `Auto-tracked: Attempted to access blog API on ${new Date().toISOString()}`,
+        is_active: false,
+      })
+
       if (error) {
         console.error('Error inserting unauthorized domain:', error)
       } else {
@@ -104,15 +102,11 @@ export async function trackUnauthorizedDomain(origin: string): Promise<void> {
 /**
  * Creates a standardized error response
  */
-export function createErrorResponse(
-  error: string,
-  status: number,
-  code?: string
-): Response {
+export function createErrorResponse(error: string, status: number, code?: string): Response {
   return new Response(
-    JSON.stringify({ 
+    JSON.stringify({
       error,
-      ...(code && { code })
+      ...(code && { code }),
     }),
     {
       status,

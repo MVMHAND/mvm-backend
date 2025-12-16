@@ -22,9 +22,10 @@ export function RoleForm({ role, isEditing = false }: RoleFormProps) {
   const handleSubmit = (formData: FormData) => {
     setError(null)
     startTransition(async () => {
-      const result = isEditing && role
-        ? await updateRoleAction(role.id, formData)
-        : await createRoleAction(formData)
+      const result =
+        isEditing && role
+          ? await updateRoleAction(role.id, formData)
+          : await createRoleAction(formData)
 
       if (result.success) {
         if (isEditing) {
@@ -72,10 +73,7 @@ export function RoleForm({ role, isEditing = false }: RoleFormProps) {
           />
 
           <div>
-            <label
-              htmlFor="description"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea

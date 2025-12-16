@@ -70,7 +70,7 @@ export async function loginAction(formData: FormData): Promise<ActionResponse> {
   }
 
   revalidatePath('/admin', 'layout')
-  
+
   return {
     success: true,
     message: 'Login successful',
@@ -150,10 +150,7 @@ export async function forgotPasswordAction(formData: FormData): Promise<ActionRe
     }
 
     // Invalidate any existing reset tokens for this user
-    await adminClient
-      .from('user_password_reset_tokens')
-      .delete()
-      .eq('user_id', profile.id)
+    await adminClient.from('user_password_reset_tokens').delete().eq('user_id', profile.id)
 
     // Generate secure reset token
     const token = randomBytes(32).toString('hex')
@@ -164,14 +161,12 @@ export async function forgotPasswordAction(formData: FormData): Promise<ActionRe
     expiresAt.setMinutes(expiresAt.getMinutes() + 30)
 
     // Store token in database
-    const { error: insertError } = await adminClient
-      .from('user_password_reset_tokens')
-      .insert({
-        user_id: profile.id,
-        email: email,
-        token_hash: tokenHash,
-        expires_at: expiresAt.toISOString(),
-      })
+    const { error: insertError } = await adminClient.from('user_password_reset_tokens').insert({
+      user_id: profile.id,
+      email: email,
+      token_hash: tokenHash,
+      expires_at: expiresAt.toISOString(),
+    })
 
     if (insertError) {
       console.error('Error creating reset token:', insertError)
@@ -308,10 +303,9 @@ export async function resetPasswordAction(
     }
 
     // Update the user's password in Supabase Auth
-    const { error: updateError } = await adminClient.auth.admin.updateUserById(
-      resetToken.user_id,
-      { password: newPassword }
-    )
+    const { error: updateError } = await adminClient.auth.admin.updateUserById(resetToken.user_id, {
+      password: newPassword,
+    })
 
     if (updateError) {
       console.error('Error updating password:', updateError)

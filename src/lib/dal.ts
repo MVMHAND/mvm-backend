@@ -5,29 +5,29 @@ import { createClient } from '@/lib/supabase/server'
 
 /**
  * Data Access Layer (DAL) - Security Layer
- * 
+ *
  * This module provides centralized authentication verification for Server Components,
  * Server Actions, and Route Handlers. It follows Next.js 15 and Supabase best practices.
- * 
+ *
  * SECURITY PRINCIPLES:
  * 1. Never trust cookies or client-side data alone
  * 2. Always verify JWT with Supabase Auth server using getUser()
  * 3. Use React's cache() to memoize verification during a render pass
  * 4. Implement this in all data-fetching functions, not just middleware
- * 
+ *
  * @see https://nextjs.org/docs/app/guides/authentication
  * @see https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 
 /**
  * Verifies the current user session by validating the JWT with Supabase Auth server.
- * 
+ *
  * This function is memoized using React's cache() API, so multiple calls during the
  * same render pass will only make one request to Supabase.
- * 
+ *
  * @returns User object if authenticated
  * @throws Redirects to /admin/login if not authenticated
- * 
+ *
  * @example
  * ```ts
  * // In a Server Component
@@ -36,7 +36,7 @@ import { createClient } from '@/lib/supabase/server'
  *   // user is guaranteed to exist here
  * }
  * ```
- * 
+ *
  * @example
  * ```ts
  * // In a Server Action
@@ -68,9 +68,9 @@ export const verifySession = cache(async () => {
 /**
  * Gets the current user session without redirecting.
  * Useful for optional authentication scenarios.
- * 
+ *
  * @returns User object if authenticated, null otherwise
- * 
+ *
  * @example
  * ```ts
  * export default async function ProfilePage() {
@@ -121,9 +121,9 @@ export interface UserProfile {
 /**
  * Gets the current user's full profile with role information.
  * This is memoized and should be used in Server Components and Server Actions.
- * 
+ *
  * @returns UserProfile if authenticated, null otherwise
- * 
+ *
  * @example
  * ```ts
  * export default async function DashboardPage() {
@@ -145,7 +145,8 @@ export const getUserProfile = cache(async (): Promise<UserProfile | null> => {
 
   const { data: profile, error } = await supabase
     .from('users')
-    .select(`
+    .select(
+      `
       id,
       name,
       email,
@@ -161,7 +162,8 @@ export const getUserProfile = cache(async (): Promise<UserProfile | null> => {
         is_super_admin,
         is_system
       )
-    `)
+    `
+    )
     .eq('id', user.id)
     .single()
 
@@ -194,9 +196,9 @@ export const getUserProfile = cache(async (): Promise<UserProfile | null> => {
 /**
  * Verifies session and returns user profile.
  * Redirects to login if not authenticated or profile not found.
- * 
+ *
  * @returns UserProfile (guaranteed to exist)
- * 
+ *
  * @example
  * ```ts
  * export default async function UsersPage() {
@@ -218,7 +220,7 @@ export const verifySessionWithProfile = cache(async (): Promise<UserProfile> => 
 
 /**
  * Checks if the current user is a Super Admin.
- * 
+ *
  * @returns true if user is Super Admin, false otherwise
  */
 export const isSuperAdmin = cache(async (): Promise<boolean> => {
@@ -229,7 +231,7 @@ export const isSuperAdmin = cache(async (): Promise<boolean> => {
 /**
  * Gets all permissions for the current user.
  * Super Admin gets all available permissions.
- * 
+ *
  * @returns Array of permission keys
  */
 export const getUserPermissions = cache(async (): Promise<string[]> => {
@@ -261,10 +263,10 @@ export const getUserPermissions = cache(async (): Promise<string[]> => {
 /**
  * Checks if the current user has a specific permission.
  * This should be called AFTER verifySession() to ensure user is authenticated.
- * 
+ *
  * @param permissionKey - The permission key to check (e.g., 'users.edit')
  * @returns true if user has the permission, false otherwise
- * 
+ *
  * @example
  * ```ts
  * export async function deleteUser(userId: string) {
@@ -305,10 +307,10 @@ export const hasPermission = cache(async (permissionKey: string): Promise<boolea
 /**
  * Requires a specific permission, throws error if not authorized.
  * Use this in Server Actions for cleaner code.
- * 
+ *
  * @param permissionKey - The permission key required
  * @throws Error if user doesn't have the permission
- * 
+ *
  * @example
  * ```ts
  * export async function deleteUser(userId: string) {
@@ -321,7 +323,7 @@ export const hasPermission = cache(async (permissionKey: string): Promise<boolea
  */
 export const requirePermission = async (permissionKey: string): Promise<void> => {
   const hasAccess = await hasPermission(permissionKey)
-  
+
   if (!hasAccess) {
     throw new Error(`Unauthorized: Missing required permission '${permissionKey}'`)
   }

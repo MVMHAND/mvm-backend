@@ -14,11 +14,7 @@ interface DeleteRoleButtonProps {
   userCount: number
 }
 
-export function DeleteRoleButton({
-  roleId,
-  roleName,
-  userCount,
-}: DeleteRoleButtonProps) {
+export function DeleteRoleButton({ roleId, roleName, userCount }: DeleteRoleButtonProps) {
   const router = useRouter()
   const { success, error: showError } = useToast()
   const [isPending, startTransition] = useTransition()

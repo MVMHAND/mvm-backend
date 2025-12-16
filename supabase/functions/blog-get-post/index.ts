@@ -42,13 +42,9 @@ serve(async (req) => {
     // Verify domain access
     const origin = req.headers.get('origin')
     const isAllowed = await verifyDomain(origin)
-    
+
     if (!isAllowed) {
-      return createErrorResponse(
-        'Access denied. Domain not authorized.',
-        403,
-        'DOMAIN_NOT_ALLOWED'
-      )
+      return createErrorResponse('Access denied. Domain not authorized.', 403, 'DOMAIN_NOT_ALLOWED')
     }
 
     // Use service role client to bypass RLS since no public read access
@@ -66,7 +62,8 @@ serve(async (req) => {
     // Build query
     let query = supabaseClient
       .from('blog_posts')
-      .select(`
+      .select(
+        `
         id,
         title,
         slug,
@@ -80,7 +77,8 @@ serve(async (req) => {
         updated_at,
         category:blog_categories(id, name),
         contributor:blog_contributors(id, full_name, position, avatar_url, bio, expertise, stats)
-      `)
+      `
+      )
       .eq('slug', slug)
       .single()
 

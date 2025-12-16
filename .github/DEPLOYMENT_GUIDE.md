@@ -18,30 +18,30 @@ Complete guide for deploying My Virtual Mate admin panel to Vercel with Supabase
 
 ### Required Secrets Table
 
-| Secret Name | Storage Location | How to Obtain | Example Format | Required |
-|-------------|-----------------|---------------|----------------|----------|
-| `VERCEL_TOKEN` | GitHub Secrets | Vercel Dashboard → Settings → Tokens → Create Token | `abc123def456...` (72 chars) | ✅ Yes |
-| `VERCEL_ORG_ID` | GitHub Secrets | Run `vercel link` locally, copy from `.vercel/project.json` | `team_abc123def456` | ✅ Yes |
-| `VERCEL_PROJECT_ID` | GitHub Secrets | Run `vercel link` locally, copy from `.vercel/project.json` | `prj_abc123def456` | ✅ Yes |
-| `SUPABASE_ACCESS_TOKEN` | GitHub Secrets | Supabase Dashboard → Account → Access Tokens → Generate New Token | `sbp_abc123...` | ✅ Yes |
-| `SUPABASE_PROJECT_ID` | GitHub Secrets | Supabase Dashboard → Project Settings → General → Project ID | `abcdefghijklmnop` (16 chars) | ✅ Yes |
-| `SUPABASE_DB_PASSWORD` | GitHub Secrets | Supabase Dashboard → Project Settings → Database → Password | Your database password | ✅ Yes |
-| `NEXT_PUBLIC_SUPABASE_URL` | GitHub Secrets | Supabase Dashboard → Project Settings → API → Project URL | `https://abcdefg.supabase.co` | ✅ Yes |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT) | ✅ Yes |
+| Secret Name                     | Storage Location | How to Obtain                                                      | Example Format                | Required |
+| ------------------------------- | ---------------- | ------------------------------------------------------------------ | ----------------------------- | -------- |
+| `VERCEL_TOKEN`                  | GitHub Secrets   | Vercel Dashboard → Settings → Tokens → Create Token                | `abc123def456...` (72 chars)  | ✅ Yes   |
+| `VERCEL_ORG_ID`                 | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `team_abc123def456`           | ✅ Yes   |
+| `VERCEL_PROJECT_ID`             | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `prj_abc123def456`            | ✅ Yes   |
+| `SUPABASE_ACCESS_TOKEN`         | GitHub Secrets   | Supabase Dashboard → Account → Access Tokens → Generate New Token  | `sbp_abc123...`               | ✅ Yes   |
+| `SUPABASE_PROJECT_ID`           | GitHub Secrets   | Supabase Dashboard → Project Settings → General → Project ID       | `abcdefghijklmnop` (16 chars) | ✅ Yes   |
+| `SUPABASE_DB_PASSWORD`          | GitHub Secrets   | Supabase Dashboard → Project Settings → Database → Password        | Your database password        | ✅ Yes   |
+| `NEXT_PUBLIC_SUPABASE_URL`      | GitHub Secrets   | Supabase Dashboard → Project Settings → API → Project URL          | `https://abcdefg.supabase.co` | ✅ Yes   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets   | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT)       | ✅ Yes   |
 
 ### Environment Variables for Vercel
 
 These should be set in **Vercel Dashboard** → Your Project → Settings → Environment Variables:
 
-| Variable Name | Environment | Value Source | Notes |
-|---------------|-------------|--------------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Production | From Supabase Dashboard | Must match GitHub secret |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production | From Supabase Dashboard | Must match GitHub secret |
-| `SUPABASE_SERVICE_ROLE_KEY` | Production | Supabase Dashboard → API Keys → Secret key | ⚠️ Keep secret, server-only |
-| `RESEND_API_KEY` | Production | Resend Dashboard → API Keys | For email functionality |
-| `NEXT_PUBLIC_SITE_URL` | Production | Your production domain | `https://admin.myvirtualmate.com` |
-| `MAIN_SITE_URL` | Production | `https://myvirtualmate.com,https://myvirtualmate.com.au` | Array of main site URLs |
-| `BLOG_PREVIEW_URL` | Production | `https://preview--mvm-official.lovable.app` | Blog preview URL |
+| Variable Name                   | Environment | Value Source                                             | Notes                             |
+| ------------------------------- | ----------- | -------------------------------------------------------- | --------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Production  | From Supabase Dashboard                                  | Must match GitHub secret          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production  | From Supabase Dashboard                                  | Must match GitHub secret          |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Production  | Supabase Dashboard → API Keys → Secret key               | ⚠️ Keep secret, server-only       |
+| `RESEND_API_KEY`                | Production  | Resend Dashboard → API Keys                              | For email functionality           |
+| `NEXT_PUBLIC_SITE_URL`          | Production  | Your production domain                                   | `https://admin.myvirtualmate.com` |
+| `MAIN_SITE_URL`                 | Production  | `https://myvirtualmate.com,https://myvirtualmate.com.au` | Array of main site URLs           |
+| `BLOG_PREVIEW_URL`              | Production  | `https://preview--mvm-official.lovable.app`              | Blog preview URL                  |
 
 ---
 
@@ -115,6 +115,7 @@ Get-Content .vercel\project.json
 ### Step 6: Get Supabase Credentials
 
 **Access Token:**
+
 1. Go to https://supabase.com/dashboard/account/tokens
 2. Click **Generate New Token**
 3. Name: `GitHub Actions CI/CD`
@@ -122,16 +123,19 @@ Get-Content .vercel\project.json
 5. Copy the token (starts with `sbp_`)
 
 **Project ID:**
+
 1. Open your Supabase project
 2. Go to **Project Settings** → **General**
 3. Copy **Project ID**
 
 **Database Password:**
+
 1. Go to **Project Settings** → **Database**
 2. Use your existing database password
 3. If forgotten, reset it (⚠️ will require updating all connections)
 
 **API Credentials:**
+
 1. Go to **Project Settings** → **Data API**
 2. Copy **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
 3. Go to **Project Settings** → **API Keys**
@@ -194,6 +198,7 @@ git push origin test-deployment
 ### How Deployments Are Triggered
 
 Deployments run **automatically** when:
+
 - Code is pushed directly to `main` branch
 - A pull request is merged into `main` branch
 
@@ -202,6 +207,7 @@ Deployments run **automatically** when:
 The workflow runs in **3 sequential phases**:
 
 #### Phase 1: Build Validation (2-4 minutes)
+
 - ✅ Install dependencies with caching
 - ✅ Run ESLint checks
 - ✅ Run TypeScript type checking
@@ -211,6 +217,7 @@ The workflow runs in **3 sequential phases**:
 **If this fails:** Deployment stops immediately. No database or Vercel changes are made.
 
 #### Phase 2: Database Migration (1-2 minutes)
+
 - ✅ Link to Supabase project
 - ✅ Apply all pending migrations from `supabase/migrations/`
 - ✅ Log migration results
@@ -219,6 +226,7 @@ The workflow runs in **3 sequential phases**:
 **If this fails:** Deployment stops. Vercel deployment is NOT triggered. Database may be partially migrated (see rollback section).
 
 #### Phase 3: Vercel Deployment (3-5 minutes)
+
 - ✅ Pull Vercel environment configuration
 - ✅ Build production artifacts
 - ✅ Deploy to Vercel production
@@ -248,10 +256,11 @@ After workflow completes:
    - Note the deployment URL
 
 3. **Test the Application:**
+
    ```bash
    # Visit production URL
    https://your-project.vercel.app/admin/login
-   
+
    # Verify:
    - Login page loads
    - Can authenticate
@@ -271,6 +280,7 @@ After workflow completes:
 ### When to Rollback
 
 Rollback if:
+
 - ❌ Application crashes or shows errors in production
 - ❌ Database queries fail
 - ❌ Critical features are broken
@@ -306,6 +316,7 @@ vercel promote my-app-abc123.vercel.app --token=YOUR_VERCEL_TOKEN
 ```
 
 **What this does:**
+
 - ✅ Instantly switches production traffic to previous deployment
 - ✅ No rebuild required
 - ✅ Database remains at current migration state
@@ -348,17 +359,20 @@ supabase db push
 
 1. Go to Supabase Dashboard → **SQL Editor**
 2. Write SQL to undo the migration changes:
+
    ```sql
    -- Example: Remove a column that was added
    ALTER TABLE users DROP COLUMN IF EXISTS new_column;
-   
+
    -- Example: Restore a dropped table from backup
    -- (requires having a backup)
    ```
+
 3. Execute the SQL
 4. Verify changes
 
 **After Database Rollback:**
+
 - You MUST also rollback the Vercel deployment to match the database schema
 - Test thoroughly to ensure data integrity
 
@@ -369,10 +383,11 @@ supabase db push
 1. **First, rollback Vercel** (see Option A)
 2. **Then, rollback Database** (see Option B, Method 1)
 3. **Verify both are in sync:**
+
    ```bash
    # Check Vercel deployment
    curl https://your-app.vercel.app/api/health
-   
+
    # Check database
    # Run a test query in Supabase SQL Editor
    SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 5;
@@ -397,6 +412,7 @@ After any rollback:
 To avoid needing rollbacks:
 
 1. **Always test locally first:**
+
    ```bash
    npm run build
    npm run lint
@@ -404,6 +420,7 @@ To avoid needing rollbacks:
    ```
 
 2. **Test migrations locally:**
+
    ```bash
    supabase db reset  # Reset local DB
    supabase db push   # Apply all migrations
@@ -426,6 +443,7 @@ To avoid needing rollbacks:
 **Cause:** Token expired or incorrect
 
 **Fix:**
+
 1. Generate new token at https://vercel.com/account/tokens
 2. Update GitHub secret `VERCEL_TOKEN`
 3. Re-run workflow
@@ -435,6 +453,7 @@ To avoid needing rollbacks:
 **Cause:** Migration was partially applied or run twice
 
 **Fix:**
+
 ```bash
 # Check migration status
 supabase migration list
@@ -450,6 +469,7 @@ supabase migration list
 **Cause:** Missing dependency or import error
 
 **Fix:**
+
 1. Check the error log for the missing module
 2. Verify `package.json` includes the dependency
 3. Run `npm install` locally to test
@@ -461,6 +481,7 @@ supabase migration list
 **Cause:** Runtime environment variable missing or incorrect
 
 **Fix:**
+
 1. Go to Vercel Dashboard → Settings → Environment Variables
 2. Verify all required variables are set for Production
 3. Click **Redeploy** in Vercel Dashboard
@@ -471,6 +492,7 @@ supabase migration list
 **Cause:** Wrong credentials or network issue
 
 **Fix:**
+
 1. Verify `NEXT_PUBLIC_SUPABASE_URL` is correct
 2. Verify `NEXT_PUBLIC_SUPABASE_ANON_KEY` is correct
 3. Check Supabase project is not paused
@@ -484,6 +506,7 @@ supabase migration list
 **Cause:** Vercel deployment hanging
 
 **Fix:**
+
 1. Cancel the workflow in GitHub Actions
 2. Check Vercel Dashboard for stuck deployments
 3. Cancel any stuck deployments in Vercel
@@ -504,6 +527,7 @@ If you encounter issues not covered here:
    - Supabase Dashboard → Logs → Select service (API, Auth, etc.)
 
 4. **Review recent changes:**
+
    ```bash
    git log --oneline -10
    git diff HEAD~1 HEAD

@@ -5,7 +5,7 @@ import { APP_NAME } from '@/lib/constants'
 
 function FormLoadingFallback() {
   return (
-    <div className="flex flex-col items-center justify-center py-8 space-y-4">
+    <div className="flex flex-col items-center justify-center space-y-4 py-8">
       <div className="h-8 w-8 animate-spin rounded-full border-4 border-mvm-blue border-t-transparent"></div>
       <p className="text-sm text-gray-600">Loading...</p>
     </div>
@@ -27,9 +27,7 @@ export default function ResetPasswordPage() {
         <Card className="shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">{APP_NAME}</CardTitle>
-            <CardDescription className="text-base">
-              Create your new password
-            </CardDescription>
+            <CardDescription className="text-base">Create your new password</CardDescription>
           </CardHeader>
           <CardContent>
             <Suspense fallback={<FormLoadingFallback />}>

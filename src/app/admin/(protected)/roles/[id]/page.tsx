@@ -53,9 +53,7 @@ export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
             </span>
           )}
         </div>
-        {role.description && (
-          <p className="mt-2 text-gray-600">{role.description}</p>
-        )}
+        {role.description && <p className="mt-2 text-gray-600">{role.description}</p>}
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -99,9 +97,7 @@ export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
           {/* Users with this role */}
           <Card>
             <CardHeader>
-              <CardTitle>
-                Users ({roleUsers.length})
-              </CardTitle>
+              <CardTitle>Users ({roleUsers.length})</CardTitle>
             </CardHeader>
             <CardContent>
               <RoleUsers users={roleUsers} roleName={role.name} />

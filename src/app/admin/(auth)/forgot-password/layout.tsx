@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: 'Reset your password',
 }
 
-export default function ForgotPasswordLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function ForgotPasswordLayout({ children }: { children: React.ReactNode }) {
   return children
 }

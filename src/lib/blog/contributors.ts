@@ -10,12 +10,12 @@ import type { BlogContributor, BlogContributorWithUsers } from '@/types'
  */
 export async function getAllContributors(): Promise<BlogContributor[]> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_contributors')
     .select('*')
     .order('full_name', { ascending: true })
-  
+
   if (error) throw error
   return data as BlogContributor[]
 }
@@ -25,18 +25,14 @@ export async function getAllContributors(): Promise<BlogContributor[]> {
  */
 export async function getContributorById(id: string): Promise<BlogContributor | null> {
   const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('blog_contributors')
-    .select('*')
-    .eq('id', id)
-    .single()
-  
+
+  const { data, error } = await supabase.from('blog_contributors').select('*').eq('id', id).single()
+
   if (error) {
     if (error.code === 'PGRST116') return null // Not found
     throw error
   }
-  
+
   return data as BlogContributor
 }
 
@@ -50,24 +46,28 @@ export async function getContributorsWithPostCount(): Promise<BlogContributor[]>
 /**
  * Get contributor with creator and updater info
  */
-export async function getContributorWithUsers(id: string): Promise<BlogContributorWithUsers | null> {
+export async function getContributorWithUsers(
+  id: string
+): Promise<BlogContributorWithUsers | null> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_contributors')
-    .select(`
+    .select(
+      `
       *,
       creator:created_by(name, email),
       updater:updated_by(name, email)
-    `)
+    `
+    )
     .eq('id', id)
     .single()
-  
+
   if (error) {
     if (error.code === 'PGRST116') return null
     throw error
   }
-  
+
   return data as unknown as BlogContributorWithUsers
 }
 
@@ -81,18 +81,18 @@ export async function validateContributorDeletion(contributorId: string): Promis
   publishedPostCount?: number
 }> {
   const supabase = await createClient()
-  
+
   // Check for published posts
   const { count, error } = await supabase
     .from('blog_posts')
     .select('id', { count: 'exact', head: true })
     .eq('contributor_id', contributorId)
     .eq('status', 'published')
-  
+
   if (error) throw error
-  
+
   const publishedPostCount = count || 0
-  
+
   if (publishedPostCount > 0) {
     return {
       canDelete: false,
@@ -100,7 +100,7 @@ export async function validateContributorDeletion(contributorId: string): Promis
       publishedPostCount,
     }
   }
-  
+
   return { canDelete: true }
 }
 
@@ -141,13 +141,13 @@ export function validateStatsCount(stats: string[]): {
  */
 export async function searchContributors(query: string): Promise<BlogContributor[]> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_contributors')
     .select('*')
     .ilike('full_name', `%${query}%`)
     .order('full_name', { ascending: true })
-  
+
   if (error) throw error
   return data as BlogContributor[]
 }

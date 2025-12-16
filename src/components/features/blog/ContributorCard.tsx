@@ -64,7 +64,7 @@ export function ContributorCard({ contributor }: ContributorCardProps) {
           </div>
         )}
 
-        <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
+        <div className="mt-4 border-t border-gray-100 pt-4 text-xs text-gray-500">
           {contributor.post_count} {contributor.post_count === 1 ? 'post' : 'posts'}
         </div>
       </div>

@@ -24,7 +24,10 @@ export default async function AllowedDomainsPage({ searchParams }: AllowedDomain
   if (!result.success || !result.data) {
     return (
       <PageContainer>
-        <PageHeader title="Allowed Domains" description="Manage domains allowed to access the public blog API" />
+        <PageHeader
+          title="Allowed Domains"
+          description="Manage domains allowed to access the public blog API"
+        />
         <ErrorMessage message={result.error || 'Failed to load allowed domains'} />
       </PageContainer>
     )

@@ -130,11 +130,7 @@ interface FormContainerProps {
   className?: string
 }
 
-export function FormContainer({
-  children,
-  maxWidth = 'full',
-  className = '',
-}: FormContainerProps) {
+export function FormContainer({ children, maxWidth = 'full', className = '' }: FormContainerProps) {
   const maxWidthClass = maxWidth === 'full' ? 'w-full' : `max-w-${maxWidth}`
   return <div className={`${maxWidthClass} ${className}`}>{children}</div>
 }
@@ -168,13 +164,7 @@ interface EmptyStateProps {
   className?: string
 }
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  className = '',
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action, className = '' }: EmptyStateProps) {
   return (
     <div className={`flex flex-col items-center justify-center py-12 text-center ${className}`}>
       {icon && <div className="mb-4 text-6xl opacity-50">{icon}</div>}

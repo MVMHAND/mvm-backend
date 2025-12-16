@@ -10,12 +10,12 @@ import type { BlogCategory, BlogCategoryWithUsers } from '@/types'
  */
 export async function getAllCategories(): Promise<BlogCategory[]> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_categories')
     .select('*')
     .order('name', { ascending: true })
-  
+
   if (error) throw error
   return data as BlogCategory[]
 }
@@ -25,18 +25,14 @@ export async function getAllCategories(): Promise<BlogCategory[]> {
  */
 export async function getCategoryById(id: string): Promise<BlogCategory | null> {
   const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('blog_categories')
-    .select('*')
-    .eq('id', id)
-    .single()
-  
+
+  const { data, error } = await supabase.from('blog_categories').select('*').eq('id', id).single()
+
   if (error) {
     if (error.code === 'PGRST116') return null // Not found
     throw error
   }
-  
+
   return data as BlogCategory
 }
 
@@ -52,22 +48,24 @@ export async function getCategoriesWithPostCount(): Promise<BlogCategory[]> {
  */
 export async function getCategoryWithUsers(id: string): Promise<BlogCategoryWithUsers | null> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_categories')
-    .select(`
+    .select(
+      `
       *,
       creator:created_by(name, email),
       updater:updated_by(name, email)
-    `)
+    `
+    )
     .eq('id', id)
     .single()
-  
+
   if (error) {
     if (error.code === 'PGRST116') return null
     throw error
   }
-  
+
   return data as unknown as BlogCategoryWithUsers
 }
 
@@ -81,18 +79,18 @@ export async function validateCategoryDeletion(categoryId: string): Promise<{
   publishedPostCount?: number
 }> {
   const supabase = await createClient()
-  
+
   // Check for published posts
   const { count, error } = await supabase
     .from('blog_posts')
     .select('id', { count: 'exact', head: true })
     .eq('category_id', categoryId)
     .eq('status', 'published')
-  
+
   if (error) throw error
-  
+
   const publishedPostCount = count || 0
-  
+
   if (publishedPostCount > 0) {
     return {
       canDelete: false,
@@ -100,7 +98,7 @@ export async function validateCategoryDeletion(categoryId: string): Promise<{
       publishedPostCount,
     }
   }
-  
+
   return { canDelete: true }
 }
 
@@ -109,13 +107,13 @@ export async function validateCategoryDeletion(categoryId: string): Promise<{
  */
 export async function searchCategories(query: string): Promise<BlogCategory[]> {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from('blog_categories')
     .select('*')
     .ilike('name', `%${query}%`)
     .order('name', { ascending: true })
-  
+
   if (error) throw error
   return data as BlogCategory[]
 }
