@@ -3,6 +3,7 @@
 import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/contexts/ToastContext'
@@ -156,10 +157,23 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         key: 'post',
         header: 'Post',
         render: (post) => (
-          <div className="max-w-md">
-            <div className="font-medium text-gray-900">{post.title}</div>
-            <div className="mt-1 line-clamp-1 text-sm text-gray-500">
-              {post.seo_meta_description}
+          <div className="flex max-w-md gap-3">
+            {post.cover_image_url && (
+              <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded">
+                <Image
+                  src={post.cover_image_url}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="font-medium text-gray-900">{post.title}</div>
+              <div className="mt-1 line-clamp-1 text-sm text-gray-500">
+                {post.seo_meta_description}
+              </div>
             </div>
           </div>
         ),
