@@ -81,7 +81,7 @@ export async function uploadBlogCover(
     .from('blog-cover-images')
     .upload(filePath, file, {
       cacheControl: '3600',
-      upsert: false,
+      upsert: true,
     })
 
   if (uploadError) {
@@ -138,7 +138,7 @@ export async function uploadContributorAvatar(
     .from('blog-contributor-avatars')
     .upload(filePath, file, {
       cacheControl: '3600',
-      upsert: false,
+      upsert: true,
     })
 
   if (uploadError) {
