@@ -80,7 +80,6 @@ export async function uploadBlogCover(
   const { error: uploadError } = await supabase.storage
     .from('blog-cover-images')
     .upload(filePath, file, {
-      cacheControl: '3600',
       upsert: true,
     })
 
@@ -137,7 +136,6 @@ export async function uploadContributorAvatar(
   const { error: uploadError } = await supabase.storage
     .from('blog-contributor-avatars')
     .upload(filePath, file, {
-      cacheControl: '3600',
       upsert: true,
     })
 
