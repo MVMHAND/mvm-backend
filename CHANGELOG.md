@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security - React2Shell Vulnerability Patch (2025-12-16)
+
+#### 🚨 CRITICAL SECURITY UPDATE
+
+- **Fixed CVE-2025-55182**: Remote Code Execution in React Server Components (CVSS 10.0)
+- **Fixed CVE-2025-55184**: Denial of Service vulnerability (CVSS 7.5)
+- **Fixed CVE-2025-55183**: Source Code Exposure vulnerability (CVSS 5.3)
+- **Fixed CVE-2025-67779**: Additional RCE case in React Server Components
+
+#### Version Updates
+
+- **Next.js**: `^15.0.5` → `15.5.9` (latest secure version)
+- **React**: `^19.0.1` → `^19.0.0` (auto-upgraded to 19.2.0)
+- **React-dom**: `^19.0.1` → `^19.0.0` (auto-upgraded to 19.2.0)
+
+#### Impact
+
+This project was vulnerable due to:
+
+- Usage of Next.js 15 App Router with React Server Components
+- 12+ Server Actions across multiple files in `src/actions/`
+- Server-side data fetching and mutations
+
+#### Documentation
+
+- Created `SECURITY_UPDATE_REACT2SHELL.md` with comprehensive details
+- Includes verification steps and additional security recommendations
+- **Important**: Review secret rotation guidance if app was deployed Dec 4-16
+
+#### References
+
+- [React Advisory](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components)
+- [Next.js Advisory](https://nextjs.org/blog/CVE-2025-66478)
+- [Vercel Bulletin](https://vercel.com/kb/bulletin/react2shell)
+
+---
+
 ### Added - DAL Implementation (2024-12-10)
 
 #### Security Improvements
