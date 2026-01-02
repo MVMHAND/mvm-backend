@@ -8,7 +8,7 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { common, createLowlight } from 'lowlight'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 const lowlight = createLowlight(common)
 
@@ -24,6 +24,35 @@ export function RichTextEditor({
   placeholder: _placeholder,
 }: RichTextEditorProps) {
   const [showColorPicker, setShowColorPicker] = useState(false)
+  const [toolbarState, setToolbarState] = useState({
+    bold: false,
+    italic: false,
+    strike: false,
+    heading2: false,
+    heading3: false,
+    bulletList: false,
+    orderedList: false,
+    blockquote: false,
+    codeBlock: false,
+    link: false,
+  })
+
+  // Update toolbar state from editor
+  const updateToolbarState = useCallback((editor: ReturnType<typeof useEditor>) => {
+    if (!editor) return
+    setToolbarState({
+      bold: editor.isActive('bold'),
+      italic: editor.isActive('italic'),
+      strike: editor.isActive('strike'),
+      heading2: editor.isActive('heading', { level: 2 }),
+      heading3: editor.isActive('heading', { level: 3 }),
+      bulletList: editor.isActive('bulletList'),
+      orderedList: editor.isActive('orderedList'),
+      blockquote: editor.isActive('blockquote'),
+      codeBlock: editor.isActive('codeBlock'),
+      link: editor.isActive('link'),
+    })
+  }, [])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -56,6 +85,39 @@ export function RichTextEditor({
         class:
           'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[300px] max-w-none p-4',
       },
+      transformPastedHTML(html) {
+        // Clean up Word paste to preserve headings
+        // Word uses <p class="MsoHeading1"> or <h1 class="MsoHeading1"> for headings
+        let cleanedHtml = html
+
+        // Convert Word heading paragraphs to proper heading tags
+        cleanedHtml = cleanedHtml.replace(
+          /<p[^>]*class="[^"]*MsoHeading1[^"]*"[^>]*>(.*?)<\/p>/gi,
+          '<h1>$1</h1>'
+        )
+        cleanedHtml = cleanedHtml.replace(
+          /<p[^>]*class="[^"]*MsoHeading2[^"]*"[^>]*>(.*?)<\/p>/gi,
+          '<h2>$1</h2>'
+        )
+        cleanedHtml = cleanedHtml.replace(
+          /<p[^>]*class="[^"]*MsoHeading3[^"]*"[^>]*>(.*?)<\/p>/gi,
+          '<h3>$1</h3>'
+        )
+
+        // Clean up Word-specific classes from actual heading tags
+        cleanedHtml = cleanedHtml.replace(/<(h[1-6])[^>]*class="[^"]*Mso[^"]*"[^>]*>/gi, '<$1>')
+
+        // Remove Word-specific span wrappers that might interfere
+        cleanedHtml = cleanedHtml.replace(
+          /<span[^>]*class="[^"]*MsoHeading[^"]*"[^>]*>(.*?)<\/span>/gi,
+          '$1'
+        )
+
+        // Remove excessive bold tags that Word adds to headings
+        cleanedHtml = cleanedHtml.replace(/<(h[1-6])><b>(.*?)<\/b><\/(h[1-6])>/gi, '<$1>$2</$3>')
+
+        return cleanedHtml
+      },
     },
   })
 
@@ -65,6 +127,34 @@ export function RichTextEditor({
       editor.commands.setContent(value)
     }
   }, [value, editor])
+
+  // Listen to selection and editor updates to sync toolbar state
+  useEffect(() => {
+    if (!editor) return
+
+    // Update toolbar state on selection change
+    const handleSelectionUpdate = () => {
+      updateToolbarState(editor)
+    }
+
+    // Update toolbar state on editor update (typing, formatting, etc.)
+    const handleUpdate = () => {
+      updateToolbarState(editor)
+    }
+
+    // Register listeners
+    editor.on('selectionUpdate', handleSelectionUpdate)
+    editor.on('update', handleUpdate)
+
+    // Initial update
+    updateToolbarState(editor)
+
+    // Cleanup
+    return () => {
+      editor.off('selectionUpdate', handleSelectionUpdate)
+      editor.off('update', handleUpdate)
+    }
+  }, [editor, updateToolbarState])
 
   if (!editor) {
     return null
@@ -83,7 +173,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-            editor.isActive('heading', { level: 2 })
+            toolbarState.heading2
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -94,7 +184,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-            editor.isActive('heading', { level: 3 })
+            toolbarState.heading3
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -109,7 +199,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={`rounded px-3 py-1.5 text-sm font-bold transition-colors ${
-            editor.isActive('bold')
+            toolbarState.bold
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -120,7 +210,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={`rounded px-3 py-1.5 text-sm italic transition-colors ${
-            editor.isActive('italic')
+            toolbarState.italic
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -131,7 +221,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleStrike().run()}
           className={`rounded px-3 py-1.5 text-sm line-through transition-colors ${
-            editor.isActive('strike')
+            toolbarState.strike
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -217,7 +307,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`rounded px-3 py-1.5 text-sm transition-colors ${
-            editor.isActive('bulletList')
+            toolbarState.bulletList
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -228,7 +318,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={`rounded px-3 py-1.5 text-sm transition-colors ${
-            editor.isActive('orderedList')
+            toolbarState.orderedList
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -243,7 +333,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           className={`rounded px-3 py-1.5 text-sm transition-colors ${
-            editor.isActive('blockquote')
+            toolbarState.blockquote
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -254,7 +344,7 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           className={`rounded px-3 py-1.5 text-sm transition-colors ${
-            editor.isActive('codeBlock')
+            toolbarState.codeBlock
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
@@ -274,7 +364,7 @@ export function RichTextEditor({
             }
           }}
           className={`rounded px-3 py-1.5 text-sm transition-colors ${
-            editor.isActive('link')
+            toolbarState.link
               ? 'bg-mvm-blue text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
