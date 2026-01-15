@@ -7,8 +7,12 @@ import Image from '@tiptap/extension-image'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableCell } from '@tiptap/extension-table-cell'
+import { TableHeader } from '@tiptap/extension-table-header'
 import { common, createLowlight } from 'lowlight'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 
 const lowlight = createLowlight(common)
 
@@ -24,17 +28,26 @@ export function RichTextEditor({
   placeholder: _placeholder,
 }: RichTextEditorProps) {
   const [showColorPicker, setShowColorPicker] = useState(false)
+  const [showHeadingDropdown, setShowHeadingDropdown] = useState(false)
+  const [showTableMenu, setShowTableMenu] = useState(false)
+  const headingDropdownRef = useRef<HTMLDivElement>(null)
+  const tableMenuRef = useRef<HTMLDivElement>(null)
   const [toolbarState, setToolbarState] = useState({
     bold: false,
     italic: false,
     strike: false,
     heading2: false,
     heading3: false,
+    heading4: false,
+    heading5: false,
+    heading6: false,
+    paragraph: false,
     bulletList: false,
     orderedList: false,
     blockquote: false,
     codeBlock: false,
     link: false,
+    table: false,
   })
 
   // Update toolbar state from editor
@@ -46,11 +59,16 @@ export function RichTextEditor({
       strike: editor.isActive('strike'),
       heading2: editor.isActive('heading', { level: 2 }),
       heading3: editor.isActive('heading', { level: 3 }),
+      heading4: editor.isActive('heading', { level: 4 }),
+      heading5: editor.isActive('heading', { level: 5 }),
+      heading6: editor.isActive('heading', { level: 6 }),
+      paragraph: editor.isActive('paragraph'),
       bulletList: editor.isActive('bulletList'),
       orderedList: editor.isActive('orderedList'),
       blockquote: editor.isActive('blockquote'),
       codeBlock: editor.isActive('codeBlock'),
       link: editor.isActive('link'),
+      table: editor.isActive('table'),
     })
   }, [])
 
@@ -75,6 +93,15 @@ export function RichTextEditor({
       Image,
       TextStyle,
       Color,
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: 'tiptap-table',
+        },
+      }),
+      TableRow,
+      TableCell,
+      TableHeader,
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -86,8 +113,7 @@ export function RichTextEditor({
           'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[300px] max-w-none p-4',
       },
       transformPastedHTML(html) {
-        // Clean up Word paste to preserve headings
-        // Word uses <p class="MsoHeading1"> or <h1 class="MsoHeading1"> for headings
+        // Clean up Word paste to preserve headings and tables
         let cleanedHtml = html
 
         // Convert Word heading paragraphs to proper heading tags
@@ -103,6 +129,18 @@ export function RichTextEditor({
           /<p[^>]*class="[^"]*MsoHeading3[^"]*"[^>]*>(.*?)<\/p>/gi,
           '<h3>$1</h3>'
         )
+        cleanedHtml = cleanedHtml.replace(
+          /<p[^>]*class="[^"]*MsoHeading4[^"]*"[^>]*>(.*?)<\/p>/gi,
+          '<h4>$1</h4>'
+        )
+        cleanedHtml = cleanedHtml.replace(
+          /<p[^>]*class="[^"]*MsoHeading5[^"]*"[^>]*>(.*?)<\/p>/gi,
+          '<h5>$1</h5>'
+        )
+        cleanedHtml = cleanedHtml.replace(
+          /<p[^>]*class="[^"]*MsoHeading6[^"]*"[^>]*>(.*?)<\/p>/gi,
+          '<h6>$1</h6>'
+        )
 
         // Clean up Word-specific classes from actual heading tags
         cleanedHtml = cleanedHtml.replace(/<(h[1-6])[^>]*class="[^"]*Mso[^"]*"[^>]*>/gi, '<$1>')
@@ -115,6 +153,14 @@ export function RichTextEditor({
 
         // Remove excessive bold tags that Word adds to headings
         cleanedHtml = cleanedHtml.replace(/<(h[1-6])><b>(.*?)<\/b><\/(h[1-6])>/gi, '<$1>$2</$3>')
+
+        // Clean up Word table styling - preserve table structure but remove Word-specific attributes
+        cleanedHtml = cleanedHtml.replace(
+          /<table[^>]*class="[^"]*MsoTable[^"]*"[^>]*>/gi,
+          '<table>'
+        )
+        cleanedHtml = cleanedHtml.replace(/<td[^>]*class="[^"]*MsoNormal[^"]*"[^>]*>/gi, '<td>')
+        cleanedHtml = cleanedHtml.replace(/<th[^>]*class="[^"]*MsoNormal[^"]*"[^>]*>/gi, '<th>')
 
         return cleanedHtml
       },
@@ -156,6 +202,24 @@ export function RichTextEditor({
     }
   }, [editor, updateToolbarState])
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        headingDropdownRef.current &&
+        !headingDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowHeadingDropdown(false)
+      }
+      if (tableMenuRef.current && !tableMenuRef.current.contains(event.target as Node)) {
+        setShowTableMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   if (!editor) {
     return null
   }
@@ -164,33 +228,127 @@ export function RichTextEditor({
   const MVM_BLUE = '#025fc7'
   const MVM_YELLOW = '#ba9309'
 
+  // Get current active heading level or 'Paragraph'
+  const getActiveHeadingLabel = () => {
+    if (toolbarState.heading2) return 'H2'
+    if (toolbarState.heading3) return 'H3'
+    if (toolbarState.heading4) return 'H4'
+    if (toolbarState.heading5) return 'H5'
+    if (toolbarState.heading6) return 'H6'
+    return 'Paragraph'
+  }
+
   return (
     <div className="tiptap-editor overflow-hidden rounded-lg border border-gray-300 focus-within:border-mvm-blue focus-within:ring-2 focus-within:ring-mvm-blue focus-within:ring-opacity-20">
       {/* Toolbar - Sticky at top */}
       <div className="sticky top-0 z-10 flex flex-wrap gap-1 border-b border-gray-200 bg-gray-50 p-2">
-        {/* Headings */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-            toolbarState.heading2
-              ? 'bg-mvm-blue text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          H2
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-            toolbarState.heading3
-              ? 'bg-mvm-blue text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          H3
-        </button>
+        {/* Heading Dropdown */}
+        <div className="relative" ref={headingDropdownRef}>
+          <button
+            type="button"
+            onClick={() => setShowHeadingDropdown(!showHeadingDropdown)}
+            className={`flex items-center gap-1 rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+              toolbarState.heading2 ||
+              toolbarState.heading3 ||
+              toolbarState.heading4 ||
+              toolbarState.heading5 ||
+              toolbarState.heading6
+                ? 'bg-mvm-blue text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            {getActiveHeadingLabel()}
+            <span className="text-xs">▼</span>
+          </button>
+          {showHeadingDropdown && (
+            <div className="absolute z-20 mt-1 min-w-[140px] rounded-lg border border-gray-300 bg-white py-1 shadow-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().setParagraph().run()
+                  setShowHeadingDropdown(false)
+                }}
+                className={`w-full px-4 py-2 text-left text-sm transition-colors ${
+                  toolbarState.paragraph
+                    ? 'bg-blue-50 text-mvm-blue'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Paragraph
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().toggleHeading({ level: 2 }).run()
+                  setShowHeadingDropdown(false)
+                }}
+                className={`w-full px-4 py-2 text-left text-lg font-bold transition-colors ${
+                  toolbarState.heading2
+                    ? 'bg-blue-50 text-mvm-blue'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Heading 2
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().toggleHeading({ level: 3 }).run()
+                  setShowHeadingDropdown(false)
+                }}
+                className={`w-full px-4 py-2 text-left text-base font-semibold transition-colors ${
+                  toolbarState.heading3
+                    ? 'bg-blue-50 text-mvm-blue'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Heading 3
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().toggleHeading({ level: 4 }).run()
+                  setShowHeadingDropdown(false)
+                }}
+                className={`w-full px-4 py-2 text-left text-base font-medium transition-colors ${
+                  toolbarState.heading4
+                    ? 'bg-blue-50 text-mvm-blue'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Heading 4
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().toggleHeading({ level: 5 }).run()
+                  setShowHeadingDropdown(false)
+                }}
+                className={`w-full px-4 py-2 text-left text-sm font-medium transition-colors ${
+                  toolbarState.heading5
+                    ? 'bg-blue-50 text-mvm-blue'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Heading 5
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().toggleHeading({ level: 6 }).run()
+                  setShowHeadingDropdown(false)
+                }}
+                className={`w-full px-4 py-2 text-left text-sm transition-colors ${
+                  toolbarState.heading6
+                    ? 'bg-blue-50 text-mvm-blue'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Heading 6
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="mx-1 h-8 w-px bg-gray-300" />
 
@@ -371,6 +529,145 @@ export function RichTextEditor({
         >
           Link
         </button>
+
+        <div className="mx-1 h-8 w-px bg-gray-300" />
+
+        {/* Table Menu */}
+        <div className="relative" ref={tableMenuRef}>
+          <button
+            type="button"
+            onClick={() => setShowTableMenu(!showTableMenu)}
+            className={`rounded px-3 py-1.5 text-sm transition-colors ${
+              toolbarState.table
+                ? 'bg-mvm-blue text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+            title="Table"
+          >
+            Table
+          </button>
+          {showTableMenu && (
+            <div className="absolute z-20 mt-1 min-w-[180px] rounded-lg border border-gray-300 bg-white py-1 shadow-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  editor
+                    .chain()
+                    .focus()
+                    .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                    .run()
+                  setShowTableMenu(false)
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Insert Table
+              </button>
+              <div className="my-1 border-t border-gray-200" />
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().addRowBefore().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().addRowBefore()}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Add Row Before
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().addRowAfter().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().addRowAfter()}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Add Row After
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().deleteRow().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().deleteRow()}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Delete Row
+              </button>
+              <div className="my-1 border-t border-gray-200" />
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().addColumnBefore().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().addColumnBefore()}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Add Column Before
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().addColumnAfter().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().addColumnAfter()}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Add Column After
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().deleteColumn().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().deleteColumn()}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Delete Column
+              </button>
+              <div className="my-1 border-t border-gray-200" />
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().mergeCells().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().mergeCells()}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Merge Cells
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().splitCell().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().splitCell()}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Split Cell
+              </button>
+              <div className="my-1 border-t border-gray-200" />
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().deleteTable().run()
+                  setShowTableMenu(false)
+                }}
+                disabled={!editor.can().deleteTable()}
+                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-white"
+              >
+                Delete Table
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="mx-1 h-8 w-px bg-gray-300" />
 
