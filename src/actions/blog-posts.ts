@@ -214,8 +214,13 @@ export async function createPostAction(
         category_id: formData.category_id || null,
         contributor_id: formData.contributor_id || null,
         content: formData.content?.trim() || '',
+        content_type: formData.content_type || 'tiptap',
         reading_time,
         status: formData.status || 'draft',
+        published_date: formData.published_date || null,
+        seo_additional_schemas: formData.seo_additional_schemas
+          ? JSON.parse(formData.seo_additional_schemas)
+          : [],
         created_by: user.id,
         updated_by: user.id,
       })
@@ -308,8 +313,13 @@ export async function updatePostAction(
         category_id: formData.category_id || null,
         contributor_id: formData.contributor_id || null,
         content: formData.content?.trim() || '',
+        content_type: formData.content_type || 'tiptap',
         reading_time,
         status: formData.status,
+        published_date: formData.published_date || null,
+        seo_additional_schemas: formData.seo_additional_schemas
+          ? JSON.parse(formData.seo_additional_schemas)
+          : [],
       })
       .eq('id', postId)
       .select()

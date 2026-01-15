@@ -6,6 +6,29 @@
 // Blog Post Status
 export type BlogPostStatus = 'draft' | 'published' | 'unpublished'
 
+// Blog Content Type (for backward compatibility with legacy HTML content)
+export type ContentType = 'tiptap' | 'html'
+
+// Schema.org types for additional structured data
+export type SchemaType =
+  | 'FAQPage'
+  | 'HowTo'
+  | 'Recipe'
+  | 'Product'
+  | 'Review'
+  | 'Event'
+  | 'Organization'
+  | 'WebPage'
+  | 'BreadcrumbList'
+  | 'Custom'
+
+// Additional schema for UI management
+export interface AdditionalSchema {
+  id: string
+  type: SchemaType
+  data: Record<string, unknown>
+}
+
 // Blog Category
 export interface BlogCategory {
   id: string
@@ -70,8 +93,10 @@ export interface BlogPost {
   category_id: string
   contributor_id: string
   content: string
+  content_type: ContentType
   reading_time: number
   published_date: string | null
+  seo_additional_schemas: Record<string, unknown>[]
   status: BlogPostStatus
   created_at: string
   updated_at: string
@@ -123,8 +148,11 @@ export interface BlogPostFormData {
   category_id: string | null
   contributor_id: string | null
   content: string
+  content_type: ContentType
   reading_time: number
   status: BlogPostStatus
+  published_date?: string | null
+  seo_additional_schemas?: string // JSON string of schema array for form submission
 }
 
 // Filter types

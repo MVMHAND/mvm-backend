@@ -13,9 +13,11 @@ interface BlogPostListItem {
   slug: string
   description: string | null
   cover_image_url: string | null
+  content_type: 'tiptap' | 'html'
   reading_time: number
   published_date: string | null
   status: string
+  seo_json_ld: Record<string, unknown> | null
   category: {
     id: string
     name: string
@@ -66,6 +68,7 @@ serve(async (req) => {
         slug,
         description,
         cover_image_url,
+        content_type,
         reading_time,
         published_date,
         status,
@@ -99,9 +102,10 @@ serve(async (req) => {
       return createErrorResponse('Failed to fetch posts', 500)
     }
 
-    // Add published flag for preview mode if needed
+    // Add published flag for preview mode and default content_type for old posts
     const posts = data.map((post) => ({
       ...post,
+      content_type: post.content_type || 'tiptap',
       isPublished: post.status === 'published',
     }))
 

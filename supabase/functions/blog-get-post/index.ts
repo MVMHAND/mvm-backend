@@ -14,6 +14,7 @@ interface BlogPost {
   description: string | null
   cover_image_url: string | null
   content: string
+  content_type: 'tiptap' | 'html'
   reading_time: number
   published_date: string | null
   status: string
@@ -30,6 +31,9 @@ interface BlogPost {
     avatar_url: string | null
     bio: string
   } | null
+  seo_meta_title: string | null
+  seo_meta_description: string | null
+  seo_additional_schemas: Record<string, unknown>[]
 }
 
 serve(async (req) => {
@@ -70,9 +74,13 @@ serve(async (req) => {
         description,
         cover_image_url,
         content,
+        content_type,
         reading_time,
         published_date,
         status,
+        seo_meta_title,
+        seo_meta_description,
+        seo_additional_schemas,
         created_at,
         updated_at,
         category:blog_categories(id, name),
@@ -94,10 +102,12 @@ serve(async (req) => {
       return createErrorResponse('Post not found', 404, 'NOT_FOUND')
     }
 
-    // Add published flag for preview mode
+    // Add published flag for preview mode and default content_type for old posts
     const response = {
       ...data,
+      content_type: data.content_type || 'tiptap',
       isPublished: data.status === 'published',
+      seo_additional_schemas: data.seo_additional_schemas || [],
     }
 
     return createSuccessResponse(response)

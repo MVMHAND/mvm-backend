@@ -16,7 +16,8 @@ import {
   checkSlugExistsAction,
 } from '@/actions/blog-posts'
 import { slugify } from '@/lib/utils'
-import type { BlogPost } from '@/types'
+import type { BlogPost, ContentType, AdditionalSchema } from '@/types'
+import JsonLdSchemaEditor from './JsonLdSchemaEditor'
 
 interface CategoryOption {
   id: string
@@ -51,6 +52,26 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
   const [categoryId, setCategoryId] = useState(post?.category_id || '')
   const [contributorId, setContributorId] = useState(post?.contributor_id || '')
   const [content, setContent] = useState(post?.content || '')
+  const [contentType, setContentType] = useState<ContentType>(post?.content_type || 'tiptap')
+
+  // Published date state (format for datetime-local input)
+  const [publishedDate, setPublishedDate] = useState<string>(
+    post?.published_date ? new Date(post.published_date).toISOString().slice(0, 16) : ''
+  )
+
+  // Additional schemas state
+  const [additionalSchemas, setAdditionalSchemas] = useState<AdditionalSchema[]>(
+    post?.seo_additional_schemas
+      ? post.seo_additional_schemas.map(
+          (data, index) =>
+            ({
+              id: `schema-${index}`,
+              type: ((data as Record<string, unknown>)['@type'] as string) || 'Custom',
+              data: data as Record<string, unknown>,
+            }) as AdditionalSchema
+        )
+      : []
+  )
 
   // Track if slug was manually edited
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEditing)
@@ -171,6 +192,24 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
       }
     }
 
+    // Validate all additional schemas
+    const hasSchemaErrors = additionalSchemas.some((schema) => {
+      try {
+        JSON.stringify(schema.data)
+        return false
+      } catch {
+        return true
+      }
+    })
+
+    if (hasSchemaErrors) {
+      setError('Please fix schema validation errors before saving')
+      return
+    }
+
+    // Convert datetime-local to ISO timestamp
+    const publishedDateISO = publishedDate ? new Date(publishedDate).toISOString() : null
+
     startTransition(async () => {
       const readingTime = content ? calculateReadingTime(content) : 1
 
@@ -186,8 +225,11 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
         category_id: categoryId || null,
         contributor_id: contributorId || null,
         content: content || '',
+        content_type: contentType,
         reading_time: readingTime,
         status: (post?.status || 'draft') as 'draft' | 'published' | 'unpublished',
+        published_date: publishedDateISO,
+        seo_additional_schemas: JSON.stringify(additionalSchemas.map((s) => s.data)),
       }
 
       let result
@@ -347,6 +389,37 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
             </select>
           </div>
 
+          {/* Content Input Method Toggle */}
+          <div className="space-y-2">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Content Input Method
+            </label>
+            <div className="flex gap-6">
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  name="contentType"
+                  value="tiptap"
+                  checked={contentType === 'tiptap'}
+                  onChange={(e) => setContentType(e.target.value as ContentType)}
+                  className="h-4 w-4 border-gray-300 text-mvm-blue focus:ring-mvm-blue"
+                />
+                <span className="text-sm text-gray-700">Tiptap Editor (Recommended)</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  name="contentType"
+                  value="html"
+                  checked={contentType === 'html'}
+                  onChange={(e) => setContentType(e.target.value as ContentType)}
+                  className="h-4 w-4 border-gray-300 text-mvm-blue focus:ring-mvm-blue"
+                />
+                <span className="text-sm text-gray-700">Raw HTML (Legacy Content)</span>
+              </label>
+            </div>
+          </div>
+
           {/* Content */}
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -357,13 +430,49 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
                 <span className="font-normal text-gray-400">(optional for drafts)</span>
               )}
             </label>
-            <RichTextEditor
-              value={content}
-              onChange={setContent}
-              placeholder="Write your post content here..."
-            />
+            {contentType === 'tiptap' ? (
+              <RichTextEditor
+                value={content}
+                onChange={setContent}
+                placeholder="Write your post content here..."
+              />
+            ) : (
+              <div className="space-y-2">
+                <textarea
+                  id="html-content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="min-h-[400px] w-full rounded-lg border border-gray-300 p-4 font-mono text-sm text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+                  placeholder="<p>Paste your HTML content here...</p>"
+                />
+                <p className="text-sm text-amber-600">
+                  ⚠️ HTML will be rendered as-is. Ensure content is safe and properly formatted.
+                </p>
+              </div>
+            )}
             <p className="mt-2 text-sm text-gray-500">
               Estimated reading time: {calculateReadingTime(content)} min
+            </p>
+          </div>
+
+          {/* Published Date */}
+          <div>
+            <label
+              htmlFor="published-date"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
+              Published Date <span className="font-normal text-gray-400">(optional)</span>
+            </label>
+            <input
+              type="datetime-local"
+              id="published-date"
+              value={publishedDate}
+              onChange={(e) => setPublishedDate(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              Leave empty to use current date/time when publishing. Used in SEO metadata and RSS
+              feeds.
             </p>
           </div>
 
@@ -427,6 +536,55 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
                 <p className="mt-1 text-sm text-gray-500">
                   Comma-separated keywords for search engines
                 </p>
+              </div>
+
+              {/* Schema.org Structured Data */}
+              <div className="space-y-4 rounded-lg border border-gray-200 p-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900">
+                    Schema.org Structured Data
+                  </h4>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Article schema is auto-generated. Add additional schemas for rich results.
+                  </p>
+                </div>
+
+                {/* Show info about default Article schema */}
+                <div className="rounded-md border border-blue-200 bg-blue-50 p-3">
+                  <p className="text-sm font-medium text-blue-900">
+                    ✓ Default Article Schema (Auto-generated)
+                  </p>
+                  <p className="mt-1 text-xs text-blue-700">
+                    Includes: headline, description, author, publisher, datePublished, image
+                  </p>
+                </div>
+
+                {/* Additional Schemas Editor */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Additional Schemas <span className="font-normal text-gray-400">(optional)</span>
+                  </label>
+                  <JsonLdSchemaEditor schemas={additionalSchemas} onChange={setAdditionalSchemas} />
+                </div>
+
+                {/* Help Text */}
+                <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-sm">
+                  <p className="mb-2 font-medium text-gray-900">📚 Common Use Cases:</p>
+                  <ul className="list-inside list-disc space-y-1 text-xs text-gray-700">
+                    <li>
+                      <strong>FAQ Schema</strong>: For blog posts with Q&A sections
+                    </li>
+                    <li>
+                      <strong>HowTo Schema</strong>: For tutorial/guide articles
+                    </li>
+                    <li>
+                      <strong>Recipe Schema</strong>: For cooking/recipe content
+                    </li>
+                    <li>
+                      <strong>Product Schema</strong>: For product reviews/comparisons
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

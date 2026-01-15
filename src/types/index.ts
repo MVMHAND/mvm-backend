@@ -109,6 +109,7 @@ export type {
   BlogPost,
   BlogPostWithRelations,
   BlogPostStatus,
+  ContentType,
   BlogCategoryFormData,
   BlogContributorFormData,
   BlogPostFormData,
@@ -117,6 +118,8 @@ export type {
   ContributorValidationResult,
   PostValidationResult,
   SEOValidation,
+  SchemaType,
+  AdditionalSchema,
 } from './blog'
 
 // Allowed domains types
