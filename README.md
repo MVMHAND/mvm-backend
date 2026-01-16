@@ -229,4 +229,4 @@ export async function deleteUser(userId: string) {
 
 ## License
 
-Proprietary - All rights reserved
+Proprietary - All rights reserved MVM
