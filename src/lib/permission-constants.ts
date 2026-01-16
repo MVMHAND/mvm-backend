@@ -4,7 +4,7 @@
  *
  * Usage:
  *   import { Permissions } from '@/lib/permission-constants'
- *   await requirePermission(Permissions.BLOG_CREATE)
+ *   await requirePermission(Permissions.BLOG_VIEW)
  */
 export const Permissions = {
   // User Permissions
@@ -56,7 +56,6 @@ export const PermissionGroups = {
   ROLES: [Permissions.ROLES_VIEW, Permissions.ROLES_EDIT],
   BLOG: [
     Permissions.BLOG_VIEW,
-    Permissions.BLOG_CREATE,
     Permissions.BLOG_EDIT,
     Permissions.BLOG_DELETE,
     Permissions.BLOG_PUBLISH,
