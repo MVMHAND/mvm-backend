@@ -18,39 +18,43 @@ Complete guide for deploying My Virtual Mate admin panel to Vercel with Supabase
 
 ### Required Secrets Table
 
-| Secret Name                     | Storage Location | How to Obtain                                                      | Example Format                  | Required |
-| ------------------------------- | ---------------- | ------------------------------------------------------------------ | ------------------------------- | -------- |
-| `VERCEL_TOKEN`                  | GitHub Secrets   | Vercel Dashboard → Settings → Tokens → Create Token                | `abc123def456...` (72 chars)    | ✅ Yes   |
-| `VERCEL_ORG_ID`                 | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `team_abc123def456`             | ✅ Yes   |
-| `VERCEL_PROJECT_ID`             | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `prj_abc123def456`              | ✅ Yes   |
-| `SUPABASE_ACCESS_TOKEN`         | GitHub Secrets   | Supabase Dashboard → Account → Access Tokens → Generate New Token  | `sbp_abc123...`                 | ✅ Yes   |
-| `SUPABASE_PROJECT_ID`           | GitHub Secrets   | Supabase Dashboard → Project Settings → General → Project ID       | `abcdefghijklmnop` (16 chars)   | ✅ Yes   |
-| `SUPABASE_DB_PASSWORD`          | GitHub Secrets   | Supabase Dashboard → Project Settings → Database → Password        | Your database password          | ✅ Yes   |
-| `NEXT_PUBLIC_SUPABASE_URL`      | GitHub Secrets   | Supabase Dashboard → Project Settings → API → Project URL          | `https://abcdefg.supabase.co`   | ✅ Yes   |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets   | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT)         | ✅ Yes   |
-| `MAIN_SITE_URL`                 | GitHub Secrets   | Your public main site domain(s)                                    | `["https://myvirtualmate.com"]` | ✅ Yes   |
-| `RESEND_API_KEY`                | GitHub Secrets   | Resend Dashboard → API Keys                                        | `re_abc123...`                  | ✅ Yes   |
+| Secret Name                     | Storage Location | How to Obtain                                                      | Example Format                                  | Required |
+| ------------------------------- | ---------------- | ------------------------------------------------------------------ | ----------------------------------------------- | -------- |
+| `VERCEL_TOKEN`                  | GitHub Secrets   | Vercel Dashboard → Settings → Tokens → Create Token                | `abc123def456...` (72 chars)                    | ✅ Yes   |
+| `VERCEL_ORG_ID`                 | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `team_abc123def456`                             | ✅ Yes   |
+| `VERCEL_PROJECT_ID`             | GitHub Secrets   | Run `vercel link` locally, copy from `.vercel/project.json`        | `prj_abc123def456`                              | ✅ Yes   |
+| `SUPABASE_ACCESS_TOKEN`         | GitHub Secrets   | Supabase Dashboard → Account → Access Tokens → Generate New Token  | `sbp_abc123...`                                 | ✅ Yes   |
+| `SUPABASE_PROJECT_ID`           | GitHub Secrets   | Supabase Dashboard → Project Settings → General → Project ID       | `abcdefghijklmnop` (16 chars)                   | ✅ Yes   |
+| `SUPABASE_DB_PASSWORD`          | GitHub Secrets   | Supabase Dashboard → Project Settings → Database → Password        | Your database password                          | ✅ Yes   |
+| `NEXT_PUBLIC_SUPABASE_URL`      | GitHub Secrets   | Supabase Dashboard → Project Settings → API → Project URL          | `https://abcdefg.supabase.co`                   | ✅ Yes   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets   | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT)                         | ✅ Yes   |
+| `MAIN_SITE_URL`                 | GitHub Secrets   | Your public main site domain(s)                                    | `["https://myvirtualmate.com"]`                 | ✅ Yes   |
+| `RESEND_API_KEY`                | GitHub Secrets   | Resend Dashboard → API Keys                                        | `re_abc123...`                                  | ✅ Yes   |
+| `RESEND_FROM_EMAIL`             | GitHub Secrets   | Your verified sender email in Resend                               | `"My Virtual Mate <onboarding@yourdomain.com>"` | ✅ Yes   |
 
 ### Environment Variables for Vercel
 
 These should be set in **Vercel Dashboard** → Your Project → Settings → Environment Variables:
 
-| Variable Name                   | Environment | Value Source                                | Notes                             |
-| ------------------------------- | ----------- | ------------------------------------------- | --------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Production  | From Supabase Dashboard                     | Must match GitHub secret          |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production  | From Supabase Dashboard                     | Must match GitHub secret          |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Production  | Supabase Dashboard → API Keys → Secret key  | ⚠️ Keep secret, server-only       |
-| `RESEND_API_KEY`                | Production  | Resend Dashboard → API Keys                 | For email functionality           |
-| `NEXT_PUBLIC_SITE_URL`          | Production  | Your production domain                      | `https://admin.myvirtualmate.com` |
-| `MAIN_SITE_URL`                 | Production  | Your public main site domain(s)             | String URL or JSON array string   |
-| `BLOG_PREVIEW_URL`              | Production  | `https://preview--mvm-official.lovable.app` | Blog preview URL                  |
+| Variable Name                   | Environment | Value Source                               | Notes                                       |
+| ------------------------------- | ----------- | ------------------------------------------ | ------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Production  | From Supabase Dashboard                    | Must match GitHub secret                    |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production  | From Supabase Dashboard                    | Must match GitHub secret                    |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Production  | Supabase Dashboard → API Keys → Secret key | ⚠️ Keep secret, server-only                 |
+| `RESEND_API_KEY`                | Production  | Resend Dashboard → API Keys                | For email functionality                     |
+| `RESEND_FROM_EMAIL`             | Production  | Your verified sender email in Resend       | Format: `"Name <email@domain.com>"`         |
+| `NEXT_PUBLIC_SITE_URL`          | Production  | Your production domain                     | `https://admin.myvirtualmate.com`           |
+| `MAIN_SITE_URL`                 | Production  | Your public main site domain(s)            | JSON array string format                    |
+| `BLOG_PREVIEW_URL`              | Production  | Your blog preview URL                      | `https://preview--mvm-official.lovable.app` |
 
 `MAIN_SITE_URL` is required at build/runtime by `src/app/blog/[slug]/page.tsx`.
 
-Accepted formats:
+Accepted format (JSON array string):
 
-- `["https://myvirtualmate.com"]`
-- `["https://myvirtualmate.com", "https://myvirtualmate.com.au"]`
+- Single domain: `["https://myvirtualmate.com"]`
+- Multiple domains: `["https://myvirtualmate.com","https://myvirtualmate.com.au"]`
+
+Note: No spaces between array elements in the JSON string.
 
 ---
 
@@ -157,7 +161,7 @@ Get-Content .vercel\project.json
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
 4. Add each secret from the table above
-5. Verify all 9 secrets are added
+5. Verify all 10 secrets are added
 
 ### Step 9: Configure Vercel Environment Variables
 
@@ -168,7 +172,22 @@ Get-Content .vercel\project.json
 5. Set environment to **Production**
 6. Click **Save**
 
-### Step 10: Verify Supabase Migrations
+### Step 10: Configure Supabase Edge Functions Environment
+
+Edge Functions require environment variables to be set in Supabase:
+
+1. Go to Supabase Dashboard → **Edge Functions** → **Settings**
+2. Add the following secrets:
+   - `RESEND_API_KEY` - Your Resend API key (same as in Vercel)
+
+Alternatively, set via CLI:
+
+```bash
+# Set Edge Function secrets
+supabase secrets set RESEND_API_KEY=your_resend_api_key_here
+```
+
+### Step 11: Verify Supabase Migrations
 
 ```bash
 # Install Supabase CLI locally
@@ -186,7 +205,7 @@ supabase db diff
 # If there are pending migrations, they'll be applied on first deployment
 ```
 
-### Step 11: Test Workflow (Optional)
+### Step 12: Test Workflow (Optional)
 
 Create a test commit to verify setup:
 
@@ -563,13 +582,16 @@ supabase migration list
 
 #### Issue 5: "Failed to collect configuration for /admin/users/[id]" (Missing API key for Resend)
 
-**Cause:** `RESEND_API_KEY` is missing during the build, but server-side modules can still be evaluated during `next build` when Next.js collects route configuration/page data.
+**Cause:** `RESEND_API_KEY` or `RESEND_FROM_EMAIL` is missing during the build, but server-side modules can still be evaluated during `next build` when Next.js collects route configuration/page data.
 
 **Fix:**
 
 1. Add `RESEND_API_KEY` to **GitHub Repository Secrets** (Actions).
 2. Add `RESEND_API_KEY` to **Vercel Environment Variables** (Production).
-3. Re-run the workflow / redeploy.
+3. Add `RESEND_FROM_EMAIL` to **GitHub Repository Secrets** (Actions).
+4. Add `RESEND_FROM_EMAIL` to **Vercel Environment Variables** (Production).
+5. Verify the email format is correct: `"Name <email@domain.com>"`
+6. Re-run the workflow / redeploy.
 
 #### Issue 6: "Deployment succeeded but app shows 500 error"
 
@@ -694,5 +716,5 @@ If you encounter issues not covered here:
 
 ---
 
-**Last Updated:** December 2025  
+**Last Updated:** January 2025  
 **Maintained By:** DevOps Team
