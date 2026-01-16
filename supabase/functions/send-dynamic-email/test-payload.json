@@ -1,0 +1,40 @@
+{
+  "subject": "Partnership Inquiry - Test Submission",
+  "name": "John Doe",
+  "email": "your-test-email@example.com",
+  "source": {
+    "formName": "Contact Form",
+    "pageTitle": "Contact Us - My Virtual Mate",
+    "pageUrl": "https://myvirtualmate.com.au/contact"
+  },
+  "fields": [
+    {
+      "label": "Phone",
+      "value": "+1 234 567 8900"
+    },
+    {
+      "label": "Company",
+      "value": "Acme Corporation"
+    },
+    {
+      "label": "Service Interested In",
+      "value": "Virtual Assistant Services"
+    },
+    {
+      "label": "Industry",
+      "value": "Technology & SaaS"
+    },
+    {
+      "label": "Budget Range",
+      "value": "$5,000 - $10,000 per month"
+    },
+    {
+      "label": "Message",
+      "value": "Hello, I am interested in learning more about your virtual assistant services. We are a growing tech startup and need help with administrative tasks, customer support, and data entry. Please reach out to discuss further."
+    },
+    {
+      "label": "Preferred Contact Time",
+      "value": "Weekdays, 9 AM - 5 PM EST"
+    }
+  ]
+}

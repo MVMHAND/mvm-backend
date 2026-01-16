@@ -1,0 +1,25 @@
+project_id = "jrtpzvmxwpxkffyloibt"
+
+[auth]
+enabled = true
+
+[functions.blog-get-post]
+verify_jwt = false
+
+[functions.blog-list-posts]
+verify_jwt = false
+
+[functions.send-contact-email]
+verify_jwt = false
+
+[functions.send-dynamic-email]
+verify_jwt = false
+
+[functions.send-handbook-email]
+verify_jwt = false
+
+[functions.send-newsletter-subscription]
+verify_jwt = false
+
+[functions.send-ticket]
+verify_jwt = false
