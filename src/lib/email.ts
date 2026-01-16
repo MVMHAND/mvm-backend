@@ -10,7 +10,13 @@ function getResendClient(): Resend {
 }
 
 // Email configuration
-const FROM_EMAIL = 'My Virtual Mate <onboarding@resend.dev>' // Update with your verified domain
+function getFromEmail(): string {
+  if (!process.env.RESEND_FROM_EMAIL) {
+    throw new Error('RESEND_FROM_EMAIL is not configured')
+  }
+  return process.env.RESEND_FROM_EMAIL
+}
+
 const SITE_URL = getSiteUrl()
 
 // Brand colors for email templates
@@ -38,18 +44,27 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
   messageId?: string
 }> {
   try {
-    // Check if API key is configured
+    // Check if required environment variables are configured
+    const missingEnvVars: string[] = []
     if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured')
+      missingEnvVars.push('RESEND_API_KEY')
+    }
+    if (!process.env.RESEND_FROM_EMAIL) {
+      missingEnvVars.push('RESEND_FROM_EMAIL')
+    }
+
+    if (missingEnvVars.length > 0) {
+      console.error('Resend configuration missing:', missingEnvVars.join(', '))
       return {
         success: false,
-        error: 'Email service not configured. Please add RESEND_API_KEY to environment variables.',
+        error: `Email service not configured. Please add ${missingEnvVars.join(', ')} to environment variables.`,
       }
     }
 
     const resend = getResendClient()
+    const fromEmail = getFromEmail()
     const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+      from: fromEmail,
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
