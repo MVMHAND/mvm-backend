@@ -11,6 +11,8 @@ interface ImageUploaderProps {
   label?: string
   accept?: string
   hidePreview?: boolean
+  aspectRatio?: '16:9' | '1:1' | '4:3'
+  aspectRatioHelp?: string
 }
 
 export function ImageUploader({
@@ -20,6 +22,8 @@ export function ImageUploader({
   label = 'Upload Image',
   accept = 'image/jpeg,image/jpg,image/png,image/webp',
   hidePreview = false,
+  aspectRatio,
+  aspectRatioHelp,
 }: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(currentUrl || null)
   const [isDragging, setIsDragging] = useState(false)
@@ -121,21 +125,40 @@ export function ImageUploader({
 
   return (
     <div className="space-y-4">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        {aspectRatio && (
+          <span className="text-xs text-gray-500">
+            {aspectRatioHelp || `Recommended: ${aspectRatio} aspect ratio`}
+          </span>
+        )}
+      </div>
 
       {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</div>}
 
       {preview && !hidePreview ? (
         <div className="space-y-3">
-          <div className="relative overflow-hidden rounded-lg border border-gray-200">
+          <div
+            className={cn(
+              'relative overflow-hidden rounded-lg border border-gray-200',
+              aspectRatio === '16:9' && 'aspect-video',
+              aspectRatio === '1:1' && 'aspect-square',
+              aspectRatio === '4:3' && 'aspect-[4/3]'
+            )}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt="Preview" className="h-48 w-full object-cover" />
+            <img src={preview} alt="Preview" className="h-full w-full object-cover" />
             {pendingFile && !currentUrl && (
               <div className="absolute right-2 top-2 rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
                 Will upload on save
               </div>
             )}
           </div>
+          {aspectRatio && (
+            <p className="text-xs text-gray-500">
+              Preview shows how the image will appear in {aspectRatio} format on the blog
+            </p>
+          )}
           <div className="flex gap-2">
             <Button
               type="button"
@@ -232,7 +255,10 @@ export function ImageUploader({
               <div className="text-sm text-gray-600">
                 <span className="font-medium text-mvm-blue">Click to upload</span> or drag and drop
               </div>
-              <p className="text-xs text-gray-500">JPG, PNG, WebP up to {maxSizeMB}MB</p>
+              <p className="text-xs text-gray-500">
+                JPG, PNG, WebP up to {maxSizeMB}MB
+                {aspectRatio && ` • ${aspectRatio} aspect ratio recommended`}
+              </p>
             </div>
           )}
         </div>

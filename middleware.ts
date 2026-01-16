@@ -15,10 +15,8 @@ export async function middleware(request: NextRequest) {
 
     const isAuthenticated = !error && !!user
 
-    // Define public auth routes
-    const isAuthRoute =
-      request.nextUrl.pathname === '/admin/login' ||
-      request.nextUrl.pathname === '/admin/forgot-password'
+    // Define public auth routes (forgot-password is still under /admin for now)
+    const isAuthRoute = request.nextUrl.pathname === '/auth/forgot-password'
 
     // Protect ALL /admin routes (except auth routes)
     // This includes valid routes and 404s - unauthenticated users should never see admin 404s
@@ -26,7 +24,7 @@ export async function middleware(request: NextRequest) {
 
     if (isProtectedRoute && !isAuthenticated) {
       const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/admin/login'
+      redirectUrl.pathname = '/'
       redirectUrl.searchParams.set('message', 'Please log in to access this page')
       // Only set redirect for potentially valid routes (not obvious 404s)
       if (
@@ -37,24 +35,15 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    // Redirect to dashboard if already logged in and trying to access login
-    if (request.nextUrl.pathname === '/admin/login' && isAuthenticated) {
-      const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/admin'
-      return NextResponse.redirect(redirectUrl)
-    }
-
     return response
   } catch (error) {
     console.error('Middleware error:', error)
     // On error, redirect to login for all admin routes except auth pages
-    const isAuthRoute =
-      request.nextUrl.pathname === '/admin/login' ||
-      request.nextUrl.pathname === '/admin/forgot-password'
+    const isAuthRoute = request.nextUrl.pathname === '/auth/forgot-password'
 
     if (request.nextUrl.pathname.startsWith('/admin') && !isAuthRoute) {
       const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/admin/login'
+      redirectUrl.pathname = '/'
       redirectUrl.searchParams.set('message', 'Session expired. Please log in again.')
       return NextResponse.redirect(redirectUrl)
     }

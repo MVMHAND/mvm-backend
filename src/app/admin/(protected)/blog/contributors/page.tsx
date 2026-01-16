@@ -19,10 +19,7 @@ export default async function ContributorsPage({ searchParams }: ContributorsPag
   if (!result.success || !result.data) {
     return (
       <PageContainer>
-        <PageHeader
-          title="Blog Contributors"
-          description="Manage blog post contributors and authors"
-        />
+        <PageHeader title="Blog Contributors" description="Manage blog post contributors" />
         <ErrorMessage message={result.error || 'Failed to load contributors'} />
       </PageContainer>
     )
@@ -34,7 +31,7 @@ export default async function ContributorsPage({ searchParams }: ContributorsPag
     <PageContainer>
       <PageHeader
         title="Blog Contributors"
-        description={`Manage blog post contributors and authors (${total} total)`}
+        description={`Manage blog post contributors (${total} total)`}
       />
 
       <ContributorList

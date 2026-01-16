@@ -25,7 +25,7 @@ export const USER_STATUS = {
 // Routes
 export const ROUTES = {
   HOME: '/',
-  ADMIN_LOGIN: '/admin/login',
+  LOGIN: '/',
   ADMIN_DASHBOARD: '/admin',
   ADMIN_USERS: '/admin/users',
   ADMIN_ROLES: '/admin/roles',

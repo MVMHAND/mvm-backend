@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { verifySession } from '@/lib/dal'
+import { verifySession, requirePermission } from '@/lib/dal'
+import { Permissions } from '@/lib/permission-constants'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import { getCategoryWithUsers, validateCategoryDeletion } from '@/lib/blog/categories'
@@ -32,6 +33,8 @@ export async function getCategoriesAction(
   params: GetCategoriesParams = {}
 ): Promise<ActionResponse<PaginatedCategories>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.BLOG_CATEGORIES_MANAGE)
     const supabase = await createClient()
     const page = params.page || 1
     const limit = params.limit || 10
@@ -89,6 +92,8 @@ export async function getAllCategoriesForSelectAction(): Promise<
   ActionResponse<{ id: string; name: string }[]>
 > {
   try {
+    await verifySession()
+    await requirePermission(Permissions.BLOG_VIEW)
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -124,6 +129,8 @@ export async function getCategoryByIdAction(
   categoryId: string
 ): Promise<ActionResponse<BlogCategoryWithUsers>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.BLOG_CATEGORIES_MANAGE)
     const category = await getCategoryWithUsers(categoryId)
 
     if (!category) {
@@ -153,8 +160,9 @@ export async function createCategoryAction(
   formData: BlogCategoryFormData
 ): Promise<ActionResponse<BlogCategory>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_CATEGORIES_MANAGE)
     const supabase = await createClient()
 
     // Validate input
@@ -234,8 +242,9 @@ export async function updateCategoryAction(
   formData: BlogCategoryFormData
 ): Promise<ActionResponse<BlogCategory>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_CATEGORIES_MANAGE)
     const supabase = await createClient()
 
     // Validate input
@@ -331,8 +340,9 @@ export async function updateCategoryAction(
  */
 export async function deleteCategoryAction(categoryId: string): Promise<ActionResponse<null>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_CATEGORIES_MANAGE)
     const supabase = await createClient()
 
     // Get category

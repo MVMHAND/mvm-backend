@@ -3,6 +3,7 @@
 import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from '@/store/provider'
 import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -46,6 +47,7 @@ interface PostListProps {
 export function PostList({ posts, categories, contributors, pagination }: PostListProps) {
   const router = useRouter()
   const { success, error: showError } = useToast()
+  const { hasPermission } = useAuth()
   const [isPending, startTransition] = useTransition()
   const [actioningId, setActioningId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -142,10 +144,10 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
       },
       {
         key: 'contributor',
-        label: 'Author',
+        label: 'Contributor',
         type: 'select',
         options: contributors.map((c) => ({ value: c.id, label: c.full_name })),
-        placeholder: 'All authors',
+        placeholder: 'All contributors',
       },
     ],
     [categories, contributors]
@@ -189,8 +191,8 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         ),
       },
       {
-        key: 'author',
-        header: 'Author',
+        key: 'contributor',
+        header: 'Contributor',
         render: (post) => (
           <span className="text-sm text-gray-500">
             {contributors.find((c) => c.id === post.contributor_id)?.full_name || 'Unknown'}
@@ -219,26 +221,29 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         cellAlign: 'right',
         render: (post) => (
           <div className="flex justify-end gap-2">
-            <Link href={`/admin/blog/posts/${post.id}`}>
-              <Button size="sm" variant="outline">
-                Edit
-              </Button>
-            </Link>
-            {(post.status === 'draft' || post.status === 'unpublished') && (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => handlePublish(post.id)}
-                disabled={isPending && actioningId === post.id}
-              >
-                {isPending && actioningId === post.id
-                  ? 'Publishing...'
-                  : post.status === 'unpublished'
-                    ? 'Republish'
-                    : 'Publish'}
-              </Button>
+            {hasPermission('blog.edit') && (
+              <Link href={`/admin/blog/posts/${post.id}`}>
+                <Button size="sm" variant="outline">
+                  Edit
+                </Button>
+              </Link>
             )}
-            {post.status === 'published' && (
+            {hasPermission('blog.publish') &&
+              (post.status === 'draft' || post.status === 'unpublished') && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handlePublish(post.id)}
+                  disabled={isPending && actioningId === post.id}
+                >
+                  {isPending && actioningId === post.id
+                    ? 'Publishing...'
+                    : post.status === 'unpublished'
+                      ? 'Republish'
+                      : 'Publish'}
+                </Button>
+              )}
+            {hasPermission('blog.publish') && post.status === 'published' && (
               <Button
                 size="sm"
                 variant="outline"
@@ -248,7 +253,7 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
                 {isPending && actioningId === post.id ? 'Unpublishing...' : 'Unpublish'}
               </Button>
             )}
-            {post.status !== 'published' && (
+            {hasPermission('blog.delete') && post.status !== 'published' && (
               <Button
                 size="sm"
                 variant="danger"
@@ -281,9 +286,11 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         filters={filters}
         pagination={pagination}
         headerAction={
-          <Link href="/admin/blog/posts/new">
-            <Button>Create Post</Button>
-          </Link>
+          hasPermission('blog.edit') ? (
+            <Link href="/admin/blog/posts/new">
+              <Button>Create Post</Button>
+            </Link>
+          ) : null
         }
         emptyMessage="No posts yet. Create your first one!"
       />

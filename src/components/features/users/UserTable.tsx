@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useAuth } from '@/store/provider'
 import { Button } from '@/components/ui/Button'
 import {
   AdminTable,
@@ -69,6 +70,8 @@ const USER_FILTERS: FilterConfig[] = [
 ]
 
 export function UserTable({ users, pagination }: UserTableProps) {
+  const { hasPermission } = useAuth()
+
   const columns: Column<User>[] = [
     {
       key: 'user',
@@ -133,9 +136,11 @@ export function UserTable({ users, pagination }: UserTableProps) {
       filters={USER_FILTERS}
       pagination={pagination}
       headerAction={
-        <Link href="/admin/users/invite">
-          <Button>Invite User</Button>
-        </Link>
+        hasPermission('users.create') ? (
+          <Link href="/admin/users/invite">
+            <Button>Invite User</Button>
+          </Link>
+        ) : null
       }
       emptyMessage="No users found"
     />

@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { verifySession } from '@/lib/dal'
+import { verifySession, requirePermission } from '@/lib/dal'
+import { Permissions } from '@/lib/permission-constants'
 import { revalidatePath } from 'next/cache'
 import type { ActionResponse, Role, Permission, RoleWithPermissions } from '@/types'
 
@@ -10,6 +11,8 @@ import type { ActionResponse, Role, Permission, RoleWithPermissions } from '@/ty
  */
 export async function getRolesAction(): Promise<ActionResponse<Role[]>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.USERS_VIEW)
     const supabase = await createClient()
 
     const { data: roles, error } = await supabase
@@ -46,6 +49,8 @@ export async function getRolesWithCountsAction(
   search = ''
 ): Promise<ActionResponse<{ roles: (Role & { user_count: number })[]; total: number }>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.ROLES_VIEW)
     const supabase = await createClient()
 
     // Get roles
@@ -120,6 +125,8 @@ export async function getRoleByIdAction(
   roleId: string
 ): Promise<ActionResponse<RoleWithPermissions>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.ROLES_VIEW)
     const supabase = await createClient()
 
     // Get role
@@ -193,6 +200,8 @@ interface RoleUser {
  */
 export async function getRoleUsersAction(roleId: string): Promise<ActionResponse<RoleUser[]>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.ROLES_VIEW)
     const supabase = await createClient()
 
     const { data: users, error } = await supabase
@@ -230,6 +239,8 @@ export async function getPermissionsAction(): Promise<
   ActionResponse<{ permissions: Permission[]; grouped: Record<string, Permission[]> }>
 > {
   try {
+    await verifySession()
+    await requirePermission(Permissions.ROLES_VIEW)
     const supabase = await createClient()
 
     const { data: permissions, error } = await supabase
@@ -280,6 +291,8 @@ export async function getPermissionsAction(): Promise<
  */
 export async function getRolePermissionsAction(roleId: string): Promise<ActionResponse<string[]>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.ROLES_VIEW)
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -313,8 +326,9 @@ export async function getRolePermissionsAction(roleId: string): Promise<ActionRe
  */
 export async function createRoleAction(formData: FormData): Promise<ActionResponse<Role>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.ROLES_EDIT)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -395,8 +409,9 @@ export async function updateRoleAction(
   formData: FormData
 ): Promise<ActionResponse> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.ROLES_EDIT)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -487,8 +502,9 @@ export async function updateRoleAction(
  */
 export async function deleteRoleAction(roleId: string): Promise<ActionResponse> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.ROLES_EDIT)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -566,8 +582,9 @@ export async function updateRolePermissionsAction(
   permissionKeys: string[]
 ): Promise<ActionResponse> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.ROLES_EDIT)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 

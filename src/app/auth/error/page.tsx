@@ -43,7 +43,7 @@ export default function AuthErrorPage() {
               </p>
             </div>
 
-            <Link href="/admin/login">
+            <Link href="/">
               <Button className="w-full">Go to Login</Button>
             </Link>
 

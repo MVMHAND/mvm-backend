@@ -1,3 +1,5 @@
+import { Permissions } from '@/lib/permission-constants'
+
 /**
  * Menu item structure
  * - id: Unique identifier for the menu item
@@ -43,28 +45,28 @@ export const MENU_CONFIG: MenuItem[] = [
     label: 'Users',
     path: '/admin/users',
     icon: 'Users',
-    permissionKey: 'users.view',
+    permissionKey: Permissions.USERS_VIEW,
     relatedPermissions: [
       {
-        key: 'users.view',
+        key: Permissions.USERS_VIEW,
         label: 'View Users',
         group: 'Users',
         description: 'View user list and details',
       },
       {
-        key: 'users.create',
+        key: Permissions.USERS_CREATE,
         label: 'Create Users',
         group: 'Users',
         description: 'Invite and create new users',
       },
       {
-        key: 'users.edit',
+        key: Permissions.USERS_EDIT,
         label: 'Edit Users',
         group: 'Users',
         description: 'Edit user information',
       },
       {
-        key: 'users.delete',
+        key: Permissions.USERS_DELETE,
         label: 'Delete Users',
         group: 'Users',
         description: 'Delete or deactivate users',
@@ -76,46 +78,63 @@ export const MENU_CONFIG: MenuItem[] = [
     label: 'Roles & Permissions',
     path: '/admin/roles',
     icon: 'Shield',
-    permissionKey: 'roles.view',
+    permissionKey: Permissions.ROLES_VIEW,
     relatedPermissions: [
       {
-        key: 'roles.view',
+        key: Permissions.ROLES_VIEW,
         label: 'View Roles',
         group: 'Roles',
         description: 'View roles and permissions',
       },
       {
-        key: 'roles.create',
-        label: 'Create Roles',
+        key: Permissions.ROLES_EDIT,
+        label: 'Manage Roles',
         group: 'Roles',
-        description: 'Create new roles',
+        description: 'Create, edit, and delete roles and their permissions',
       },
-      {
-        key: 'roles.edit',
-        label: 'Edit Roles',
-        group: 'Roles',
-        description: 'Edit role information and permissions',
-      },
-      { key: 'roles.delete', label: 'Delete Roles', group: 'Roles', description: 'Delete roles' },
     ],
   },
   {
     id: 'blog',
     label: 'Blog',
     icon: 'BookOpen',
-    permissionKey: 'blog.view',
+    permissionKey: Permissions.BLOG_VIEW,
     relatedPermissions: [
       {
-        key: 'blog.view',
+        key: Permissions.BLOG_VIEW,
         label: 'View Blog',
         group: 'Blog',
         description: 'View blog posts, categories, and contributors',
       },
       {
-        key: 'blog.manage',
-        label: 'Manage Blog',
+        key: Permissions.BLOG_EDIT,
+        label: 'Create & Edit Blog Posts',
         group: 'Blog',
-        description: 'Full blog management (create, edit, delete, publish)',
+        description: 'Create and edit existing blog posts',
+      },
+      {
+        key: Permissions.BLOG_DELETE,
+        label: 'Delete Blog Posts',
+        group: 'Blog',
+        description: 'Delete blog posts',
+      },
+      {
+        key: Permissions.BLOG_PUBLISH,
+        label: 'Publish Blog Posts',
+        group: 'Blog',
+        description: 'Publish and unpublish blog posts',
+      },
+      {
+        key: Permissions.BLOG_CATEGORIES_MANAGE,
+        label: 'Manage Blog Categories',
+        group: 'Blog',
+        description: 'Create, edit, and delete blog categories',
+      },
+      {
+        key: Permissions.BLOG_CONTRIBUTORS_MANAGE,
+        label: 'Manage Blog Contributors',
+        group: 'Blog',
+        description: 'Create, edit, and delete blog contributors',
       },
     ],
     children: [
@@ -124,21 +143,21 @@ export const MENU_CONFIG: MenuItem[] = [
         label: 'Posts',
         path: '/admin/blog/posts',
         icon: 'FileText',
-        permissionKey: 'blog.view',
+        permissionKey: Permissions.BLOG_VIEW,
       },
       {
         id: 'blog-categories',
         label: 'Categories',
         path: '/admin/blog/categories',
         icon: 'FolderOpen',
-        permissionKey: 'blog.view',
+        permissionKey: Permissions.BLOG_VIEW,
       },
       {
         id: 'blog-contributors',
         label: 'Contributors',
         path: '/admin/blog/contributors',
         icon: 'Users',
-        permissionKey: 'blog.view',
+        permissionKey: Permissions.BLOG_VIEW,
       },
     ],
   },
@@ -147,10 +166,10 @@ export const MENU_CONFIG: MenuItem[] = [
     label: 'Audit Logs',
     path: '/admin/audit-logs',
     icon: 'FileText',
-    permissionKey: 'audit.view',
+    permissionKey: Permissions.AUDIT_VIEW,
     relatedPermissions: [
       {
-        key: 'audit.view',
+        key: Permissions.AUDIT_VIEW,
         label: 'View Audit Logs',
         group: 'Audit',
         description:
@@ -162,19 +181,13 @@ export const MENU_CONFIG: MenuItem[] = [
     id: 'settings',
     label: 'Settings',
     icon: 'Settings',
-    permissionKey: 'settings.view',
+    permissionKey: Permissions.SETTINGS_MANAGE,
     relatedPermissions: [
       {
-        key: 'settings.view',
-        label: 'View Settings',
-        group: 'Settings',
-        description: 'View and manage system settings',
-      },
-      {
-        key: 'settings.manage',
+        key: Permissions.SETTINGS_MANAGE,
         label: 'Manage Settings',
         group: 'Settings',
-        description: 'Full settings management access',
+        description: 'Manage system settings',
       },
     ],
     children: [
@@ -183,7 +196,7 @@ export const MENU_CONFIG: MenuItem[] = [
         label: 'Allowed Domains',
         path: '/admin/settings/allowed-domains',
         icon: 'Globe',
-        permissionKey: 'settings.view',
+        permissionKey: Permissions.SETTINGS_MANAGE,
       },
     ],
   },

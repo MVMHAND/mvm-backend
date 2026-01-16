@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useAuth } from '@/store/provider'
 import { Button } from '@/components/ui/Button'
 import { AdminTable, Column, TableBadge, DateCell } from '@/components/ui/AdminTable'
 import { formatDate } from '@/lib/utils'
@@ -15,6 +16,8 @@ interface RoleTableProps {
 }
 
 export function RoleTable({ roles }: RoleTableProps) {
+  const { hasPermission } = useAuth()
+
   const columns: Column<RoleWithCount>[] = [
     {
       key: 'role',
@@ -76,9 +79,11 @@ export function RoleTable({ roles }: RoleTableProps) {
       searchable
       searchPlaceholder="Search roles..."
       headerAction={
-        <Link href="/admin/roles/new">
-          <Button>Create Role</Button>
-        </Link>
+        hasPermission('roles.edit') ? (
+          <Link href="/admin/roles/new">
+            <Button>Create Role</Button>
+          </Link>
+        ) : null
       }
       emptyMessage="No roles found"
     />

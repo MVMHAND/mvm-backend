@@ -96,7 +96,7 @@ function AcceptInvitationForm() {
 
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        router.push('/admin/login')
+        router.push('/')
       }, 2000)
     } catch {
       setError('An unexpected error occurred')
@@ -142,10 +142,7 @@ function AcceptInvitationForm() {
             <h2 className="mt-6 text-3xl font-bold text-gray-900">Invalid Invitation</h2>
             <p className="mt-2 text-sm text-gray-600">{error}</p>
             <div className="mt-6">
-              <Link
-                href="/admin/login"
-                className="text-sm font-medium text-mvm-blue hover:text-mvm-blue/80"
-              >
+              <Link href="/" className="text-sm font-medium text-mvm-blue hover:text-mvm-blue/80">
                 Return to login
               </Link>
             </div>
@@ -220,7 +217,7 @@ function AcceptInvitationForm() {
           </Button>
 
           <div className="text-center text-sm">
-            <Link href="/admin/login" className="font-medium text-mvm-blue hover:text-mvm-blue/80">
+            <Link href="/" className="font-medium text-mvm-blue hover:text-mvm-blue/80">
               Already have an account? Log in
             </Link>
           </div>

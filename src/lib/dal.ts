@@ -26,7 +26,7 @@ import { createClient } from '@/lib/supabase/server'
  * same render pass will only make one request to Supabase.
  *
  * @returns User object if authenticated
- * @throws Redirects to /admin/login if not authenticated
+ * @throws Redirects to / if not authenticated
  *
  * @example
  * ```ts
@@ -59,7 +59,7 @@ export const verifySession = cache(async () => {
   } = await supabase.auth.getUser()
 
   if (error || !user) {
-    redirect('/admin/login?message=Please log in to access this page')
+    redirect('/?message=Please log in to access this page')
   }
 
   return user
@@ -129,7 +129,7 @@ export interface UserProfile {
  * export default async function DashboardPage() {
  *   const profile = await getUserProfile()
  *   if (!profile) {
- *     redirect('/admin/login')
+ *     redirect('/')
  *   }
  *   return <Dashboard user={profile} />
  * }
@@ -212,7 +212,7 @@ export const verifySessionWithProfile = cache(async (): Promise<UserProfile> => 
   const profile = await getUserProfile()
 
   if (!profile) {
-    redirect('/admin/login?message=Please log in to access this page')
+    redirect('/?message=Please log in to access this page')
   }
 
   return profile
@@ -305,26 +305,52 @@ export const hasPermission = cache(async (permissionKey: string): Promise<boolea
 })
 
 /**
- * Requires a specific permission, throws error if not authorized.
+ * Requires one or more permissions, throws error if not authorized.
  * Use this in Server Actions for cleaner code.
  *
- * @param permissionKey - The permission key required
- * @throws Error if user doesn't have the permission
+ * @param permissions - Single permission key or array of permission keys
+ * @param requireAll - If true, user must have ALL permissions. If false, user must have ANY permission (default: true)
+ * @throws Error if user doesn't have the required permission(s)
  *
  * @example
  * ```ts
- * export async function deleteUser(userId: string) {
- *   'use server'
- *   await verifySession()
- *   await requirePermission('users.delete')
- *   // Proceed with deletion
- * }
+ * // Single permission (backward compatible)
+ * await requirePermission('users.delete')
+ *
+ * // Multiple permissions - require ALL (default)
+ * await requirePermission(['blog.edit', 'blog.publish'])
+ *
+ * // Multiple permissions - require ANY (at least one)
+ * await requirePermission(['blog.edit', 'blog.delete'], false)
  * ```
  */
-export const requirePermission = async (permissionKey: string): Promise<void> => {
-  const hasAccess = await hasPermission(permissionKey)
+export const requirePermission = async (
+  permissions: string | string[],
+  requireAll: boolean = true
+): Promise<void> => {
+  const profile = await getUserProfile()
+
+  // Super Admin bypasses all permission checks
+  if (profile?.role?.is_super_admin) {
+    return
+  }
+
+  // Normalize to array
+  const permissionArray = Array.isArray(permissions) ? permissions : [permissions]
+
+  // Check each permission
+  const permissionChecks = await Promise.all(permissionArray.map((key) => hasPermission(key)))
+
+  // Determine if user has required permissions
+  const hasAccess = requireAll
+    ? permissionChecks.every((check) => check) // All must be true
+    : permissionChecks.some((check) => check) // At least one must be true
 
   if (!hasAccess) {
-    throw new Error(`Unauthorized: Missing required permission '${permissionKey}'`)
+    const operator = requireAll ? 'all' : 'any'
+    const permList = permissionArray.join(', ')
+    throw new Error(
+      `Unauthorized: Missing required permission(s). Need ${operator} of: ${permList}`
+    )
   }
 }

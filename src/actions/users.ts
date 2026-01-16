@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { verifySession } from '@/lib/dal'
+import { verifySession, requirePermission } from '@/lib/dal'
+import { Permissions } from '@/lib/permission-constants'
 import { revalidatePath } from 'next/cache'
 import { sendInvitationEmail } from '@/lib/email'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
@@ -38,6 +39,8 @@ export async function getUsersAction(
   status = ''
 ): Promise<ActionResponse<{ users: CombinedUser[]; total: number; pages: number }>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.USERS_VIEW)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -177,6 +180,8 @@ export async function getUsersAction(
  */
 export async function getUserByIdAction(userId: string): Promise<ActionResponse<UserWithRole>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.USERS_VIEW)
     const supabase = await createClient()
 
     const { data: user, error } = await supabase
@@ -210,6 +215,8 @@ export async function getUserByIdAction(userId: string): Promise<ActionResponse<
  */
 export async function inviteUserAction(formData: FormData): Promise<ActionResponse> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.USERS_CREATE)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -355,6 +362,8 @@ export async function updateUserAction(
   formData: FormData
 ): Promise<ActionResponse> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.USERS_EDIT)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -439,6 +448,8 @@ export async function toggleUserStatusAction(
   newStatus: 'active' | 'inactive'
 ): Promise<ActionResponse> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.USERS_EDIT)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 
@@ -517,6 +528,8 @@ export async function toggleUserStatusAction(
  */
 export async function deleteUserAction(userId: string): Promise<ActionResponse> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.USERS_DELETE)
     const supabase = await createClient()
     const adminClient = await createAdminClient()
 

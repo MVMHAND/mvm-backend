@@ -85,7 +85,7 @@ export function ResetPasswordForm() {
 
       // Redirect to login after 3 seconds
       setTimeout(() => {
-        router.push('/admin/login')
+        router.push('/')
       }, 3000)
     } catch {
       setError('An unexpected error occurred. Please try again.')
@@ -113,7 +113,7 @@ export function ResetPasswordForm() {
         </div>
 
         <div className="text-center">
-          <Link href="/admin/forgot-password" className="text-sm text-mvm-blue hover:underline">
+          <Link href="/auth/forgot-password" className="text-sm text-mvm-blue hover:underline">
             Request a new reset link
           </Link>
         </div>
@@ -133,7 +133,7 @@ export function ResetPasswordForm() {
         </div>
 
         <div className="text-center">
-          <Link href="/admin/login" className="text-sm text-mvm-blue hover:underline">
+          <Link href="/" className="text-sm text-mvm-blue hover:underline">
             Go to login now
           </Link>
         </div>

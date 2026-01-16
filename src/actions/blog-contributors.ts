@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { verifySession } from '@/lib/dal'
+import { verifySession, requirePermission } from '@/lib/dal'
+import { Permissions } from '@/lib/permission-constants'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import {
@@ -38,6 +39,8 @@ export async function getContributorsAction(
   params: GetContributorsParams = {}
 ): Promise<ActionResponse<PaginatedContributors>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.BLOG_CONTRIBUTORS_MANAGE)
     const supabase = await createClient()
     const page = params.page || 1
     const limit = params.limit || 10
@@ -95,6 +98,8 @@ export async function getAllContributorsForSelectAction(): Promise<
   ActionResponse<{ id: string; full_name: string }[]>
 > {
   try {
+    await verifySession()
+    await requirePermission(Permissions.BLOG_VIEW)
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -130,6 +135,8 @@ export async function getContributorByIdAction(
   contributorId: string
 ): Promise<ActionResponse<BlogContributorWithUsers>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.BLOG_CONTRIBUTORS_MANAGE)
     const contributor = await getContributorWithUsers(contributorId)
 
     if (!contributor) {
@@ -159,8 +166,9 @@ export async function createContributorAction(
   formData: BlogContributorFormData
 ): Promise<ActionResponse<BlogContributor>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_CONTRIBUTORS_MANAGE)
     const supabase = await createClient()
 
     // Validate input
@@ -263,8 +271,9 @@ export async function updateContributorAction(
   formData: BlogContributorFormData
 ): Promise<ActionResponse<BlogContributor>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_CONTRIBUTORS_MANAGE)
     const supabase = await createClient()
 
     // Validate input
@@ -388,8 +397,9 @@ export async function deleteContributorAction(
   contributorId: string
 ): Promise<ActionResponse<null>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_CONTRIBUTORS_MANAGE)
     const supabase = await createClient()
 
     // Get contributor

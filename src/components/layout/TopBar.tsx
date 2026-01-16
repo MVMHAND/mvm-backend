@@ -23,7 +23,7 @@ export function TopBar() {
   const handleLogout = async () => {
     setIsLoggingOut(true)
     await logoutAction()
-    router.push('/admin/login')
+    router.push('/')
   }
 
   return (

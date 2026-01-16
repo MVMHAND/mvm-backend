@@ -1,56 +1,60 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { APP_NAME, APP_TAGLINE, APP_DESCRIPTION } from '@/lib/constants'
+import { redirect } from 'next/navigation'
+import { getCurrentUser } from '@/lib/dal'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { LoginForm } from '@/components/features/auth/LoginForm'
+import { APP_NAME } from '@/lib/constants'
 
-export default function HomePage() {
+interface HomePageProps {
+  searchParams: Promise<{ message?: string; redirect?: string }>
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams
+  const message = params.message
+  const redirectTo = params.redirect
+
+  // Check if user is already authenticated - redirect to admin dashboard
+  const user = await getCurrentUser()
+
+  if (user) {
+    redirect(redirectTo || '/admin')
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-mvm p-4">
-      <div className="w-full max-w-4xl text-center text-white">
-        {/* Logo Placeholder */}
+    <div className="flex min-h-screen items-center justify-center bg-gradient-mvm p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
         <div className="mb-8 flex justify-center">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-            <span className="text-4xl font-bold text-white">MVM</span>
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+            <span className="text-3xl font-bold text-white">MVM</span>
           </div>
         </div>
 
-        {/* Heading */}
-        <h1 className="mb-4 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-          {APP_NAME}
-        </h1>
+        {/* Auth Message */}
+        {message && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
+            <p className="text-sm text-amber-800">{message}</p>
+          </div>
+        )}
 
-        {/* Tagline */}
-        <p className="mb-6 text-xl font-medium md:text-2xl">{APP_TAGLINE}</p>
+        {/* Login Card */}
+        <Card className="shadow-xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">{APP_NAME}</CardTitle>
+            <CardDescription className="text-base">
+              Admin Panel - Sign in to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LoginForm redirectTo={redirectTo} />
+          </CardContent>
+        </Card>
 
-        {/* Description */}
-        <p className="mx-auto mb-12 max-w-2xl text-lg opacity-90 md:text-xl">{APP_DESCRIPTION}</p>
-
-        {/* CTA Buttons */}
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="https://myvirtualmate.com">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="min-w-48 bg-white text-mvm-blue hover:bg-white/90"
-            >
-              Learn More
-            </Button>
-          </Link>
-          <Link href="/admin/login">
-            <Button
-              size="lg"
-              variant="outline"
-              className="min-w-48 border-white text-white hover:bg-white hover:text-mvm-blue"
-            >
-              Admin Login
-            </Button>
-          </Link>
-        </div>
-
-        {/* Footer Text */}
-        <p className="mt-16 text-sm opacity-75">
-          © {new Date().getFullYear()} My Virtual Mate. All rights reserved.
+        {/* Footer */}
+        <p className="mt-6 text-center text-sm text-white/90">
+          Access is invitation-only. Contact your administrator if you need access.
         </p>
       </div>
-    </main>
+    </div>
   )
 }

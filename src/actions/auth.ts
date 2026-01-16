@@ -106,7 +106,7 @@ export async function logoutAction(): Promise<ActionResponse> {
   }
 
   revalidatePath('/admin', 'layout')
-  redirect('/admin/login')
+  redirect('/')
 }
 
 /**

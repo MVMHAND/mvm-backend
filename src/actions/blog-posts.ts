@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { verifySession } from '@/lib/dal'
+import { verifySession, requirePermission } from '@/lib/dal'
+import { Permissions } from '@/lib/permission-constants'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import {
@@ -37,6 +38,8 @@ export async function getPostsAction(
   params: GetPostsParams = {}
 ): Promise<ActionResponse<PaginatedPosts>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.BLOG_VIEW)
     const supabase = await createClient()
     const page = params.page || 1
     const limit = params.limit || 10
@@ -103,6 +106,8 @@ export async function getPostByIdAction(
   postId: string
 ): Promise<ActionResponse<BlogPostWithRelations>> {
   try {
+    await verifySession()
+    await requirePermission(Permissions.BLOG_VIEW)
     const post = await getPostWithRelations(postId)
 
     if (!post) {
@@ -157,8 +162,9 @@ export async function createPostAction(
   formData: BlogPostFormData
 ): Promise<ActionResponse<BlogPost>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_EDIT)
     const supabase = await createClient()
 
     // Validate required fields - only title is always required
@@ -272,8 +278,9 @@ export async function updatePostAction(
   formData: BlogPostFormData
 ): Promise<ActionResponse<BlogPost>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_EDIT)
     const supabase = await createClient()
 
     // Get existing post
@@ -368,8 +375,9 @@ export async function updatePostAction(
  */
 export async function publishPostAction(postId: string): Promise<ActionResponse<BlogPost>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_PUBLISH)
     const supabase = await createClient()
 
     // Get post
@@ -448,8 +456,9 @@ export async function publishPostAction(postId: string): Promise<ActionResponse<
  */
 export async function unpublishPostAction(postId: string): Promise<ActionResponse<BlogPost>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_PUBLISH)
     const supabase = await createClient()
 
     // Unpublish post
@@ -503,8 +512,9 @@ export async function unpublishPostAction(postId: string): Promise<ActionRespons
  */
 export async function deletePostAction(postId: string): Promise<ActionResponse<null>> {
   try {
-    // SECURITY: Validate authentication with DAL
+    // SECURITY: Validate authentication and permission with DAL
     const user = await verifySession()
+    await requirePermission(Permissions.BLOG_DELETE)
     const supabase = await createClient()
 
     // Get post

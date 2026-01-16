@@ -119,7 +119,7 @@ export default function JsonLdSchemaEditor({ schemas, onChange }: Props) {
     const newSchema: AdditionalSchema = {
       id: `schema-${Date.now()}`,
       type,
-      data: { ...SCHEMA_TEMPLATES[type] } || { ...SCHEMA_TEMPLATES.Custom },
+      data: SCHEMA_TEMPLATES[type] ? { ...SCHEMA_TEMPLATES[type] } : { ...SCHEMA_TEMPLATES.Custom },
     }
     onChange([...schemas, newSchema])
     setExpandedSchemas(new Set([...expandedSchemas, newSchema.id]))

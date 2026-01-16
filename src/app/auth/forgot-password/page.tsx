@@ -1,23 +1,20 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/dal'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { LoginForm } from '@/components/features/auth/LoginForm'
+import { ForgotPasswordForm } from '@/components/features/auth/ForgotPasswordForm'
 import { APP_NAME } from '@/lib/constants'
 
-interface LoginPageProps {
-  searchParams: Promise<{ message?: string; redirect?: string }>
+export const metadata = {
+  title: `Forgot Password | ${APP_NAME}`,
+  description: 'Reset your password',
 }
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const params = await searchParams
-  const message = params.message
-  const redirectTo = params.redirect
-
-  // Check if user is already authenticated (optional check - doesn't redirect if not)
+export default async function ForgotPasswordPage() {
+  // Check if user is already authenticated - redirect to admin dashboard
   const user = await getCurrentUser()
 
   if (user) {
-    redirect(redirectTo || '/admin')
+    redirect('/admin')
   }
 
   return (
@@ -30,29 +27,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         </div>
 
-        {/* Auth Message */}
-        {message && (
-          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
-            <p className="text-sm text-amber-800">{message}</p>
-          </div>
-        )}
-
-        {/* Login Card */}
+        {/* Forgot Password Card */}
         <Card className="shadow-xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{APP_NAME}</CardTitle>
+            <CardTitle className="text-2xl">Forgot Password</CardTitle>
             <CardDescription className="text-base">
-              Admin Panel - Sign in to continue
+              Enter your email to receive a password reset link
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <LoginForm redirectTo={redirectTo} />
+            <ForgotPasswordForm />
           </CardContent>
         </Card>
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-white/90">
-          Access is invitation-only. Contact your administrator if you need access.
+          Remember your password? Go back to login.
         </p>
       </div>
     </div>

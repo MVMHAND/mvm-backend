@@ -337,6 +337,8 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
             onUpload={handleCoverUpload}
             currentUrl={coverImageUrl}
             maxSizeMB={5}
+            aspectRatio="16:9"
+            aspectRatioHelp="Blog cover images should be in 16:9 format"
           />
 
           {/* Category */}
@@ -367,7 +369,7 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
           {/* Contributor */}
           <div>
             <label htmlFor="contributor" className="mb-1 block text-sm font-medium text-gray-700">
-              Author{' '}
+              Contributor{' '}
               {post?.status !== 'draft' ? (
                 ''
               ) : (
@@ -380,7 +382,7 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
               onChange={(e) => setContributorId(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
             >
-              <option value="">Select an author</option>
+              <option value="">Select a contributor</option>
               {contributors.map((contributor) => (
                 <option key={contributor.id} value={contributor.id}>
                   {contributor.full_name}
@@ -555,7 +557,7 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
                     ✓ Default Article Schema (Auto-generated)
                   </p>
                   <p className="mt-1 text-xs text-blue-700">
-                    Includes: headline, description, author, publisher, datePublished, image
+                    Includes: headline, description, contributor, publisher, datePublished, image
                   </p>
                 </div>
 
