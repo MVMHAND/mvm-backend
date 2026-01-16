@@ -1,46 +1,42 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts'
+import { Resend } from 'npm:resend@2.0.0'
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 interface HandbookEmailRequest {
-  email: string;
+  email: string
 }
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { email }: HandbookEmailRequest = await req.json();
+    const { email }: HandbookEmailRequest = await req.json()
 
-    console.log("Processing email request for:", email);
+    console.log('Processing email request for:', email)
 
     if (!email) {
-      console.log("No email provided");
-      return new Response(
-        JSON.stringify({ error: "Email address is required" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
+      console.log('No email provided')
+      return new Response(JSON.stringify({ error: 'Email address is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      })
     }
 
-    console.log("Sending email via Resend...");
+    console.log('Sending email via Resend...')
 
     const emailResponse = await resend.emails.send({
-      from: "My Virtual Mate <clientsolutions@myvirtualmate.com.au>",
+      from: 'My Virtual Mate <clientsolutions@myvirtualmate.com.au>',
       to: [email],
-      subject: "Your Outsourcing Success Guide is Here! 📚",
+      subject: 'Your Outsourcing Success Guide is Here! 📚',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
           <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
@@ -105,50 +101,53 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>
       `,
-    });
+    })
 
-    console.log("Resend response:", emailResponse);
+    console.log('Resend response:', emailResponse)
 
     if (emailResponse.error) {
-      console.error("Resend error details:", emailResponse.error);
+      console.error('Resend error details:', emailResponse.error)
       return new Response(
-        JSON.stringify({ 
-          error: "Failed to send email",
-          details: emailResponse.error.message 
+        JSON.stringify({
+          error: 'Failed to send email',
+          details: emailResponse.error.message,
         }),
         {
           status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         }
-      );
+      )
     }
 
-    console.log("Email sent successfully with ID:", emailResponse.data?.id);
+    console.log('Email sent successfully with ID:', emailResponse.data?.id)
 
-    return new Response(JSON.stringify({
-      success: true,
-      message: "Handbook link sent successfully!",
-      id: emailResponse.data?.id
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
-  } catch (error: any) {
-    console.error("Error in send-handbook-email function:", error);
     return new Response(
-      JSON.stringify({ 
-        error: "Failed to send email",
-        details: error.message 
+      JSON.stringify({
+        success: true,
+        message: 'Handbook link sent successfully!',
+        id: emailResponse.data?.id,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
+      }
+    )
+  } catch (error: any) {
+    console.error('Error in send-handbook-email function:', error)
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to send email',
+        details: error.message,
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
-    );
+    )
   }
-};
+}
 
-serve(handler);
+serve(handler)

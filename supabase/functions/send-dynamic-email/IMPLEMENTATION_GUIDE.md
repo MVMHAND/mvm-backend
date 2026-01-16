@@ -47,29 +47,26 @@ The **Send Dynamic Email** function is a flexible, production-ready Supabase Edg
 
 ```typescript
 // Send both admin notification and customer confirmation
-const response = await fetch(
-  `${SUPABASE_URL}/functions/v1/send-dynamic-email`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-    body: JSON.stringify({
-      subject: "Contact Form Inquiry",
-      name: "John Doe",
-      email: "john@example.com",
-      fields: [
-        {
-          label: "Message",
-          value: "I'd like to know more about your services",
-        },
-      ],
-    }),
+const response = await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
   },
-);
+  body: JSON.stringify({
+    subject: 'Contact Form Inquiry',
+    name: 'John Doe',
+    email: 'john@example.com',
+    fields: [
+      {
+        label: 'Message',
+        value: "I'd like to know more about your services",
+      },
+    ],
+  }),
+})
 
-const result = await response.json();
+const result = await response.json()
 // { success: true, message: "...", requestId: "abc123", customerEmailSent: true }
 ```
 
@@ -88,31 +85,31 @@ POST /functions/v1/send-dynamic-email
 ```typescript
 interface DynamicEmailRequest {
   // REQUIRED FIELDS
-  subject: string; // Email subject (shown in admin notification)
-  email: string; // Customer's email address
+  subject: string // Email subject (shown in admin notification)
+  email: string // Customer's email address
 
   // OPTIONAL FIELDS
-  name?: string; // Customer's name (default: "there")
-  fields?: DynamicField[]; // Array of form fields
-  source?: SourceInfo; // Page/form tracking information
+  name?: string // Customer's name (default: "there")
+  fields?: DynamicField[] // Array of form fields
+  source?: SourceInfo // Page/form tracking information
 
   // NEW IN V2.0
-  sendCustomerEmail?: boolean; // Send customer email? (default: true)
+  sendCustomerEmail?: boolean // Send customer email? (default: true)
   customerEmail?: {
-    subject?: string; // Custom subject line
-    body?: string; // Custom HTML body
-  };
+    subject?: string // Custom subject line
+    body?: string // Custom HTML body
+  }
 }
 
 interface DynamicField {
-  label: string; // Field label (e.g., "Phone", "Company")
-  value: string; // Field value
+  label: string // Field label (e.g., "Phone", "Company")
+  value: string // Field value
 }
 
 interface SourceInfo {
-  formName?: string; // Form identifier (e.g., "Contact Form")
-  pageTitle?: string; // Page title
-  pageUrl?: string; // Full URL
+  formName?: string // Form identifier (e.g., "Contact Form")
+  pageTitle?: string // Page title
+  pageUrl?: string // Full URL
 }
 ```
 
@@ -146,15 +143,15 @@ interface SourceInfo {
 ```typescript
 // Only admin gets notified, customer receives nothing
 await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    subject: "Newsletter Signup",
-    email: "user@example.com",
-    fields: [{ label: "Lead Source", value: "Homepage Banner" }],
+    subject: 'Newsletter Signup',
+    email: 'user@example.com',
+    fields: [{ label: 'Lead Source', value: 'Homepage Banner' }],
     sendCustomerEmail: false, // 🚫 No customer email
   }),
-});
+})
 ```
 
 **Response:**
@@ -176,21 +173,21 @@ await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
 
 ```typescript
 await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    subject: "Event Registration",
-    name: "Jane Smith",
-    email: "jane@example.com",
+    subject: 'Event Registration',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
     fields: [
-      { label: "Event", value: "Annual Conference 2026" },
-      { label: "Ticket Type", value: "VIP Pass" },
+      { label: 'Event', value: 'Annual Conference 2026' },
+      { label: 'Ticket Type', value: 'VIP Pass' },
     ],
     customerEmail: {
       subject: "🎉 You're Registered! Annual Conference 2026", // ✨ Custom subject
     },
   }),
-});
+})
 ```
 
 **What the customer receives:**
@@ -235,24 +232,24 @@ const customHtmlTemplate = `
   </div>
 </body>
 </html>
-`;
+`
 
 await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    subject: "Order Confirmation",
-    email: "customer@example.com",
+    subject: 'Order Confirmation',
+    email: 'customer@example.com',
     fields: [
-      { label: "Order ID", value: "#12345" },
-      { label: "Total", value: "$99.99" },
+      { label: 'Order ID', value: '#12345' },
+      { label: 'Total', value: '$99.99' },
     ],
     customerEmail: {
-      subject: "Your Order #12345 is Confirmed!",
+      subject: 'Your Order #12345 is Confirmed!',
       body: customHtmlTemplate, // ✨ Completely custom HTML
     },
   }),
-});
+})
 ```
 
 ---
@@ -336,22 +333,22 @@ function ContactForm() {
 // Analytics tracking without notifying the customer
 async function trackLead(email: string, source: string) {
   await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      subject: "New Lead Captured",
+      subject: 'New Lead Captured',
       email: email,
       fields: [
-        { label: "Source", value: source },
-        { label: "Timestamp", value: new Date().toISOString() },
+        { label: 'Source', value: source },
+        { label: 'Timestamp', value: new Date().toISOString() },
       ],
       sendCustomerEmail: false, // Silent tracking
     }),
-  });
+  })
 }
 
 // Usage
-trackLead("prospect@example.com", "Homepage CTA Button");
+trackLead('prospect@example.com', 'Homepage CTA Button')
 ```
 
 ---
@@ -360,10 +357,10 @@ trackLead("prospect@example.com", "Homepage CTA Button");
 
 ```typescript
 async function registerForEvent(userData: {
-  name: string;
-  email: string;
-  eventName: string;
-  ticketType: string;
+  name: string
+  email: string
+  eventName: string
+  ticketType: string
 }) {
   const customEmailBody = `
     <!DOCTYPE html>
@@ -381,30 +378,27 @@ async function registerForEvent(userData: {
         <p>See you there!</p>
       </body>
     </html>
-  `;
+  `
 
-  const response = await fetch(
-    `${SUPABASE_URL}/functions/v1/send-dynamic-email`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        subject: "Event Registration",
-        name: userData.name,
-        email: userData.email,
-        fields: [
-          { label: "Event", value: userData.eventName },
-          { label: "Ticket Type", value: userData.ticketType },
-        ],
-        customerEmail: {
-          subject: `You're Registered for ${userData.eventName}!`,
-          body: customEmailBody,
-        },
-      }),
-    },
-  );
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      subject: 'Event Registration',
+      name: userData.name,
+      email: userData.email,
+      fields: [
+        { label: 'Event', value: userData.eventName },
+        { label: 'Ticket Type', value: userData.ticketType },
+      ],
+      customerEmail: {
+        subject: `You're Registered for ${userData.eventName}!`,
+        body: customEmailBody,
+      },
+    }),
+  })
 
-  return await response.json();
+  return await response.json()
 }
 ```
 
@@ -477,7 +471,7 @@ import { orderConfirmationTemplate } from './email-templates';
 
 ```typescript
 // Hardcode large HTML strings in your components
-const body = `<!DOCTYPE html><html><body>...5000 lines...</body></html>`;
+const body = `<!DOCTYPE html><html><body>...5000 lines...</body></html>`
 ```
 
 ---
@@ -599,7 +593,7 @@ await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
 {
   customEmail: {
     // Should be 'customerEmail'
-    subject: "...";
+    subject: '...'
   }
 }
 ```
@@ -611,7 +605,7 @@ await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
 {
   customerEmail: {
     // Correct field name
-    subject: "...";
+    subject: '...'
   }
 }
 ```
@@ -632,7 +626,7 @@ await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
 // ✅ CORRECT
 {
   customerEmail: {
-    body: `<!DOCTYPE html><html><body>...</body></html>`;
+    body: `<!DOCTYPE html><html><body>...</body></html>`
   }
 }
 ```
@@ -716,27 +710,27 @@ function generateOrderEmail(order: Order) {
         <p>Order ID: ${order.id}</p>
         <p>Total: $${order.total}</p>
         <ul>
-          ${order.items.map((item) => `<li>${item.name} - $${item.price}</li>`).join("")}
+          ${order.items.map((item) => `<li>${item.name} - $${item.price}</li>`).join('')}
         </ul>
       </body>
     </html>
-  `;
+  `
 
-  return template;
+  return template
 }
 
 // Usage
 await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
-  method: "POST",
+  method: 'POST',
   body: JSON.stringify({
-    subject: "Order Confirmation",
+    subject: 'Order Confirmation',
     email: customer.email,
     customerEmail: {
       subject: `Order #${order.id} Confirmed`,
       body: generateOrderEmail(order),
     },
   }),
-});
+})
 ```
 
 ---
@@ -744,27 +738,27 @@ await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
 ### A/B Testing Email Templates
 
 ```typescript
-function getEmailVariant(userId: string): "A" | "B" {
+function getEmailVariant(userId: string): 'A' | 'B' {
   // Simple hash-based A/B split
-  return parseInt(userId, 36) % 2 === 0 ? "A" : "B";
+  return parseInt(userId, 36) % 2 === 0 ? 'A' : 'B'
 }
 
-const variant = getEmailVariant(user.id);
+const variant = getEmailVariant(user.id)
 
 await fetch(`${SUPABASE_URL}/functions/v1/send-dynamic-email`, {
-  method: "POST",
+  method: 'POST',
   body: JSON.stringify({
-    subject: "Registration Confirmation",
+    subject: 'Registration Confirmation',
     email: user.email,
     fields: [
-      { label: "Variant", value: variant }, // Track in admin email
+      { label: 'Variant', value: variant }, // Track in admin email
     ],
     customerEmail: {
-      subject: variant === "A" ? "Welcome to MVM!" : "🎉 Welcome aboard!",
-      body: variant === "A" ? templateA : templateB,
+      subject: variant === 'A' ? 'Welcome to MVM!' : '🎉 Welcome aboard!',
+      body: variant === 'A' ? templateA : templateB,
     },
   }),
-});
+})
 ```
 
 ---

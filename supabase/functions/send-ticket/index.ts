@@ -1,30 +1,29 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts'
+import { Resend } from 'npm:resend@2.0.0'
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 interface TicketRequest {
-  fullName: string;
-  email: string;
-  department: string;
-  priority: string;
-  subject: string;
-  description: string;
-  recipientEmail: string;
+  fullName: string
+  email: string
+  department: string
+  priority: string
+  subject: string
+  description: string
+  recipientEmail: string
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Send ticket function called");
+  console.log('Send ticket function called')
 
   // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -36,23 +35,23 @@ const handler = async (req: Request): Promise<Response> => {
       subject,
       description,
       recipientEmail,
-    }: TicketRequest = await req.json();
+    }: TicketRequest = await req.json()
 
-    console.log("Ticket data received:", {
+    console.log('Ticket data received:', {
       fullName,
       email,
       department,
       priority,
       subject,
       recipientEmail,
-    });
+    })
 
     // Generate ticket number
-    const ticketNumber = `TICKET-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const ticketNumber = `TICKET-${Date.now()}-${Math.floor(Math.random() * 1000)}`
 
     // Send email to recipient (support team)
     const emailResponse = await resend.emails.send({
-      from: "Support Tickets <expressmate@myvirtualmate.com>",
+      from: 'Support Tickets <expressmate@myvirtualmate.com>',
       to: [recipientEmail],
       subject: `New Support Ticket: ${subject}`,
       html: `
@@ -64,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p style="margin: 5px 0;"><strong>Ticket Number:</strong> ${ticketNumber}</p>
             <p style="margin: 5px 0;"><strong>Priority:</strong> <span style="color: ${
-              priority === "Urgent" ? "#dc3545" : priority === "High" ? "#fd7e14" : "#28a745"
+              priority === 'Urgent' ? '#dc3545' : priority === 'High' ? '#fd7e14' : '#28a745'
             };">${priority}</span></p>
             <p style="margin: 5px 0;"><strong>Department:</strong> ${department}</p>
           </div>
@@ -87,13 +86,13 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
         </div>
       `,
-    });
+    })
 
-    console.log("Ticket email sent successfully:", emailResponse);
+    console.log('Ticket email sent successfully:', emailResponse)
 
     // Send confirmation email to customer
     const confirmationResponse = await resend.emails.send({
-      from: "Support <noreply@myvirtualmate.com>",
+      from: 'Support <noreply@myvirtualmate.com>',
       to: [email],
       subject: `Your Support Ticket Has Been Received - ${ticketNumber}`,
       html: `
@@ -123,34 +122,31 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
         </div>
       `,
-    });
+    })
 
-    console.log("Confirmation email sent successfully:", confirmationResponse);
+    console.log('Confirmation email sent successfully:', confirmationResponse)
 
     return new Response(
       JSON.stringify({
         success: true,
         ticketNumber,
-        message: "Ticket submitted successfully",
+        message: 'Ticket submitted successfully',
       }),
       {
         status: 200,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...corsHeaders,
         },
       }
-    );
+    )
   } catch (error: any) {
-    console.error("Error in send-ticket function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    console.error('Error in send-ticket function:', error)
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    })
   }
-};
+}
 
-serve(handler);
+serve(handler)

@@ -288,31 +288,30 @@
  * =============================================================================
  */
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts'
+import { Resend } from 'npm:resend@2.0.0'
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
 // MVM Brand Colors
-const MVM_BLUE = "#025fc7";
-const MVM_YELLOW = "#ba9309";
-const MVM_GRADIENT = `linear-gradient(135deg, ${MVM_BLUE} 0%, ${MVM_YELLOW} 100%)`;
+const MVM_BLUE = '#025fc7'
+const MVM_YELLOW = '#ba9309'
+const MVM_GRADIENT = `linear-gradient(135deg, ${MVM_BLUE} 0%, ${MVM_YELLOW} 100%)`
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 interface DynamicField {
-  label: string;
-  value: string;
+  label: string
+  value: string
 }
 
 interface SourceInfo {
-  pageTitle?: string;
-  pageUrl?: string;
-  formName?: string;
+  pageTitle?: string
+  pageUrl?: string
+  formName?: string
 }
 
 /**
@@ -320,8 +319,8 @@ interface SourceInfo {
  * Allows overriding default confirmation email behavior
  */
 interface CustomerEmailConfig {
-  subject?: string; // Custom subject line (overrides default)
-  body?: string; // Custom HTML body (overrides entire default template)
+  subject?: string // Custom subject line (overrides default)
+  body?: string // Custom HTML body (overrides entire default template)
 }
 
 /**
@@ -329,13 +328,13 @@ interface CustomerEmailConfig {
  * All fields maintain backward compatibility
  */
 interface DynamicEmailRequest {
-  subject: string; // REQUIRED: Email subject for admin notification
-  name?: string; // OPTIONAL: Sender's name
-  email: string; // REQUIRED: Sender's email address
-  fields?: DynamicField[]; // OPTIONAL: Dynamic form fields
-  source?: SourceInfo; // OPTIONAL: Source tracking information
-  sendCustomerEmail?: boolean; // OPTIONAL: Whether to send customer email (default: true)
-  customerEmail?: CustomerEmailConfig; // OPTIONAL: Custom customer email configuration
+  subject: string // REQUIRED: Email subject for admin notification
+  name?: string // OPTIONAL: Sender's name
+  email: string // REQUIRED: Sender's email address
+  fields?: DynamicField[] // OPTIONAL: Dynamic form fields
+  source?: SourceInfo // OPTIONAL: Source tracking information
+  sendCustomerEmail?: boolean // OPTIONAL: Whether to send customer email (default: true)
+  customerEmail?: CustomerEmailConfig // OPTIONAL: Custom customer email configuration
 }
 
 /**
@@ -343,17 +342,17 @@ interface DynamicEmailRequest {
  */
 const formatLabel = (label: string): string => {
   return label
-    .replace(/([A-Z])/g, " $1")
-    .replace(/_/g, " ")
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/_/g, ' ')
     .replace(/^\w/, (c) => c.toUpperCase())
-    .trim();
-};
+    .trim()
+}
 
 /**
  * Generates HTML for dynamic fields
  */
 const generateDynamicFieldsHtml = (fields: DynamicField[]): string => {
-  if (!fields || fields.length === 0) return "";
+  if (!fields || fields.length === 0) return ''
 
   return fields
     .map(
@@ -363,19 +362,19 @@ const generateDynamicFieldsHtml = (fields: DynamicField[]): string => {
           ${formatLabel(field.label)}
         </td>
         <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #1f2937; word-break: break-word;">
-          ${field.value || "N/A"}
+          ${field.value || 'N/A'}
         </td>
       </tr>
-    `,
+    `
     )
-    .join("");
-};
+    .join('')
+}
 
 /**
  * Generates the admin notification email HTML
  */
 const generateAdminEmailHtml = (data: DynamicEmailRequest): string => {
-  const dynamicFieldsHtml = generateDynamicFieldsHtml(data.fields || []);
+  const dynamicFieldsHtml = generateDynamicFieldsHtml(data.fields || [])
 
   return `
     <!DOCTYPE html>
@@ -398,13 +397,13 @@ const generateAdminEmailHtml = (data: DynamicEmailRequest): string => {
                     📬 New Form Submission
                   </h1>
                   <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px;">
-                    ${new Date().toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
+                    ${new Date().toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
                     })}
                   </p>
                 </td>
@@ -436,7 +435,7 @@ const generateAdminEmailHtml = (data: DynamicEmailRequest): string => {
                       <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 500; width: 35%;">Name</td>
                       <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 600;">${data.name}</td>
                     </tr>`
-                        : ""
+                        : ''
                     }
                     <tr>
                       <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 500;">Email</td>
@@ -468,7 +467,7 @@ const generateAdminEmailHtml = (data: DynamicEmailRequest): string => {
                 </td>
               </tr>
               `
-                  : ""
+                  : ''
               }
 
               <!-- Footer -->
@@ -495,14 +494,14 @@ const generateAdminEmailHtml = (data: DynamicEmailRequest): string => {
       </table>
     </body>
     </html>
-  `;
-};
+  `
+}
 
 /**
  * Generates the customer confirmation email HTML
  */
 const generateCustomerEmailHtml = (data: DynamicEmailRequest): string => {
-  const dynamicFieldsHtml = generateDynamicFieldsHtml(data.fields || []);
+  const dynamicFieldsHtml = generateDynamicFieldsHtml(data.fields || [])
 
   return `
     <!DOCTYPE html>
@@ -525,7 +524,7 @@ const generateCustomerEmailHtml = (data: DynamicEmailRequest): string => {
                     <span style="font-size: 32px;">✉️</span>
                   </div>
                   <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
-                    Thank You${data.name ? `, ${data.name}` : ""}!
+                    Thank You${data.name ? `, ${data.name}` : ''}!
                   </h1>
                   <p style="margin: 12px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px;">
                     We've received your message
@@ -560,7 +559,7 @@ const generateCustomerEmailHtml = (data: DynamicEmailRequest): string => {
                       ${dynamicFieldsHtml}
                     </table>
                     `
-                        : ""
+                        : ''
                     }
                   </div>
 
@@ -628,26 +627,24 @@ const generateCustomerEmailHtml = (data: DynamicEmailRequest): string => {
       </table>
     </body>
     </html>
-  `;
-};
+  `
+}
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight request
-  if (req.method === "OPTIONS") {
-    console.log("[send-dynamic-email] CORS preflight request received");
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    console.log('[send-dynamic-email] CORS preflight request received')
+    return new Response(null, { headers: corsHeaders })
   }
 
-  const requestId = crypto.randomUUID().slice(0, 8);
-  console.log(`[send-dynamic-email][${requestId}] ======= New Request =======`);
-  console.log(`[send-dynamic-email][${requestId}] Method: ${req.method}`);
-  console.log(
-    `[send-dynamic-email][${requestId}] Timestamp: ${new Date().toISOString()}`,
-  );
+  const requestId = crypto.randomUUID().slice(0, 8)
+  console.log(`[send-dynamic-email][${requestId}] ======= New Request =======`)
+  console.log(`[send-dynamic-email][${requestId}] Method: ${req.method}`)
+  console.log(`[send-dynamic-email][${requestId}] Timestamp: ${new Date().toISOString()}`)
 
   try {
     // Parse request body
-    const emailData: DynamicEmailRequest = await req.json();
+    const emailData: DynamicEmailRequest = await req.json()
 
     // Log received data
     console.log(
@@ -655,130 +652,118 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify(
         {
           subject: emailData.subject,
-          name: emailData.name || "(not provided)",
+          name: emailData.name || '(not provided)',
           email: emailData.email,
           fieldsCount: emailData.fields?.length || 0,
           source: emailData.source || null,
         },
         null,
-        2,
-      ),
-    );
+        2
+      )
+    )
 
     // Log source info if present
     if (emailData.source) {
-      console.log(`[send-dynamic-email][${requestId}] Source information:`);
+      console.log(`[send-dynamic-email][${requestId}] Source information:`)
       if (emailData.source.formName) {
-        console.log(
-          `[send-dynamic-email][${requestId}]   Form Name: ${emailData.source.formName}`,
-        );
+        console.log(`[send-dynamic-email][${requestId}]   Form Name: ${emailData.source.formName}`)
       }
       if (emailData.source.pageTitle) {
         console.log(
-          `[send-dynamic-email][${requestId}]   Page Title: ${emailData.source.pageTitle}`,
-        );
+          `[send-dynamic-email][${requestId}]   Page Title: ${emailData.source.pageTitle}`
+        )
       }
       if (emailData.source.pageUrl) {
-        console.log(
-          `[send-dynamic-email][${requestId}]   Page URL: ${emailData.source.pageUrl}`,
-        );
+        console.log(`[send-dynamic-email][${requestId}]   Page URL: ${emailData.source.pageUrl}`)
       }
     }
 
     // Validate required fields
     if (!emailData.subject || !emailData.email) {
       console.error(
-        `[send-dynamic-email][${requestId}] Validation failed - missing required fields (subject: ${!!emailData.subject}, email: ${!!emailData.email})`,
-      );
+        `[send-dynamic-email][${requestId}] Validation failed - missing required fields (subject: ${!!emailData.subject}, email: ${!!emailData.email})`
+      )
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Missing required fields. Please provide subject and email.",
+          error: 'Missing required fields. Please provide subject and email.',
         }),
         {
           status: 400,
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             ...corsHeaders,
           },
-        },
-      );
+        }
+      )
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(emailData.email)) {
       console.error(
-        `[send-dynamic-email][${requestId}] Validation failed - invalid email format: ${emailData.email}`,
-      );
+        `[send-dynamic-email][${requestId}] Validation failed - invalid email format: ${emailData.email}`
+      )
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Invalid email format.",
+          error: 'Invalid email format.',
         }),
         {
           status: 400,
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             ...corsHeaders,
           },
-        },
-      );
+        }
+      )
     }
 
     // Log dynamic fields if present
     if (emailData.fields && emailData.fields.length > 0) {
-      console.log(
-        `[send-dynamic-email][${requestId}] Dynamic fields received:`,
-      );
+      console.log(`[send-dynamic-email][${requestId}] Dynamic fields received:`)
       emailData.fields.forEach((field, index) => {
         console.log(
           `[send-dynamic-email][${requestId}]   ${index + 1}. ${
             field.label
-          }: ${field.value?.substring(0, 100)}${
-            field.value?.length > 100 ? "..." : ""
-          }`,
-        );
-      });
+          }: ${field.value?.substring(0, 100)}${field.value?.length > 100 ? '...' : ''}`
+        )
+      })
     }
 
     // Generate email HTML
-    const adminEmailHtml = generateAdminEmailHtml(emailData);
-    const customerEmailHtml = generateCustomerEmailHtml(emailData);
+    const adminEmailHtml = generateAdminEmailHtml(emailData)
+    const customerEmailHtml = generateCustomerEmailHtml(emailData)
 
-    console.log(
-      `[send-dynamic-email][${requestId}] Sending admin notification email...`,
-    );
+    console.log(`[send-dynamic-email][${requestId}] Sending admin notification email...`)
 
     // Build admin email subject with source details
-    const adminSubjectParts = [`📬 ${emailData.subject}`];
+    const adminSubjectParts = [`📬 ${emailData.subject}`]
     if (emailData.source?.formName) {
-      adminSubjectParts.push(`| ${emailData.source.formName}`);
+      adminSubjectParts.push(`| ${emailData.source.formName}`)
     }
     if (emailData.source?.pageTitle) {
-      adminSubjectParts.push(`| ${emailData.source.pageTitle}`);
+      adminSubjectParts.push(`| ${emailData.source.pageTitle}`)
     }
     if (emailData.source?.pageUrl) {
-      adminSubjectParts.push(`| ${emailData.source.pageUrl}`);
+      adminSubjectParts.push(`| ${emailData.source.pageUrl}`)
     }
-    const adminSubject = adminSubjectParts.join(" ");
+    const adminSubject = adminSubjectParts.join(' ')
 
-    console.log(
-      `[send-dynamic-email][${requestId}] Admin email subject: ${adminSubject}`,
-    );
+    console.log(`[send-dynamic-email][${requestId}] Admin email subject: ${adminSubject}`)
 
     // Send email to support team
     const supportEmailResponse = await resend.emails.send({
-      from: "Contact Form <sales.m@myvirtualmate.com>",
-      to: ["sales.m@myvirtualmate.com"],
+      from: 'Contact Form <sales.m@myvirtualmate.com>',
+      to: ['sales.m@myvirtualmate.com'],
       subject: adminSubject,
       html: adminEmailHtml,
-    });
+    })
 
     console.log(
       `[send-dynamic-email][${requestId}] Admin email sent successfully:`,
-      JSON.stringify(supportEmailResponse, null, 2),
-    );
+      JSON.stringify(supportEmailResponse, null, 2)
+    )
 
     // ========================================================================
     // CUSTOMER EMAIL LOGIC (with control and customization)
@@ -788,74 +773,66 @@ const handler = async (req: Request): Promise<Response> => {
     // Can be customized with customerEmail.subject and/or customerEmail.body
     // ========================================================================
 
-    const shouldSendCustomerEmail = emailData.sendCustomerEmail !== false; // Default to true
+    const shouldSendCustomerEmail = emailData.sendCustomerEmail !== false // Default to true
 
     if (shouldSendCustomerEmail) {
-      console.log(
-        `[send-dynamic-email][${requestId}] Preparing customer confirmation email...`,
-      );
+      console.log(`[send-dynamic-email][${requestId}] Preparing customer confirmation email...`)
 
       // Determine customer email subject (custom or default)
       const customerSubject = emailData.customerEmail?.subject
         ? emailData.customerEmail.subject
-        : `We've received your inquiry: ${emailData.subject}`;
+        : `We've received your inquiry: ${emailData.subject}`
 
       // Determine customer email body (custom or default template)
       const customerBody = emailData.customerEmail?.body
         ? emailData.customerEmail.body
-        : customerEmailHtml;
+        : customerEmailHtml
 
       // Log customization status
       if (emailData.customerEmail?.subject) {
-        console.log(
-          `[send-dynamic-email][${requestId}] Using CUSTOM subject: "${customerSubject}"`,
-        );
+        console.log(`[send-dynamic-email][${requestId}] Using CUSTOM subject: "${customerSubject}"`)
       } else {
         console.log(
-          `[send-dynamic-email][${requestId}] Using DEFAULT subject: "${customerSubject}"`,
-        );
+          `[send-dynamic-email][${requestId}] Using DEFAULT subject: "${customerSubject}"`
+        )
       }
 
       if (emailData.customerEmail?.body) {
         console.log(
-          `[send-dynamic-email][${requestId}] Using CUSTOM HTML body (${emailData.customerEmail.body.length} characters)`,
-        );
+          `[send-dynamic-email][${requestId}] Using CUSTOM HTML body (${emailData.customerEmail.body.length} characters)`
+        )
       } else {
-        console.log(
-          `[send-dynamic-email][${requestId}] Using DEFAULT template body`,
-        );
+        console.log(`[send-dynamic-email][${requestId}] Using DEFAULT template body`)
       }
 
       console.log(
-        `[send-dynamic-email][${requestId}] Sending customer confirmation email to: ${emailData.email}`,
-      );
+        `[send-dynamic-email][${requestId}] Sending customer confirmation email to: ${emailData.email}`
+      )
 
       // Send confirmation email to customer
       const customerEmailResponse = await resend.emails.send({
-        from: "My Virtual Mate <sales.m@myvirtualmate.com>",
+        from: 'My Virtual Mate <sales.m@myvirtualmate.com>',
         to: [emailData.email],
         subject: customerSubject,
         html: customerBody,
-      });
+      })
 
       console.log(
         `[send-dynamic-email][${requestId}] Customer confirmation email sent successfully:`,
-        JSON.stringify(customerEmailResponse, null, 2),
-      );
+        JSON.stringify(customerEmailResponse, null, 2)
+      )
     } else {
       console.log(
-        `[send-dynamic-email][${requestId}] ⚠️  Customer email DISABLED (sendCustomerEmail: false). Skipping customer confirmation email.`,
-      );
+        `[send-dynamic-email][${requestId}] ⚠️  Customer email DISABLED (sendCustomerEmail: false). Skipping customer confirmation email.`
+      )
     }
 
-    console.log(
-      `[send-dynamic-email][${requestId}] ======= Request Complete =======`,
-    );
+    console.log(`[send-dynamic-email][${requestId}] ======= Request Complete =======`)
 
     // Prepare success response with appropriate message
     const successMessage = shouldSendCustomerEmail
       ? "Thank you for reaching us. We'll get back to you soon."
-      : "Your submission has been received and our team has been notified.";
+      : 'Your submission has been received and our team has been notified.'
 
     return new Response(
       JSON.stringify({
@@ -867,49 +844,40 @@ const handler = async (req: Request): Promise<Response> => {
       {
         status: 200,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...corsHeaders,
         },
-      },
-    );
+      }
+    )
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-    const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    const errorStack = error instanceof Error ? error.stack : undefined
 
-    console.error(`[send-dynamic-email][${requestId}] ======= ERROR =======`);
-    console.error(
-      `[send-dynamic-email][${requestId}] Error message:`,
-      errorMessage,
-    );
+    console.error(`[send-dynamic-email][${requestId}] ======= ERROR =======`)
+    console.error(`[send-dynamic-email][${requestId}] Error message:`, errorMessage)
     if (errorStack) {
-      console.error(
-        `[send-dynamic-email][${requestId}] Stack trace:`,
-        errorStack,
-      );
+      console.error(`[send-dynamic-email][${requestId}] Stack trace:`, errorStack)
     }
     console.error(
       `[send-dynamic-email][${requestId}] Full error object:`,
-      JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
-    );
+      JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+    )
 
     return new Response(
       JSON.stringify({
         success: false,
-        error:
-          errorMessage ||
-          "Something went wrong. Please try again after sometime.",
+        error: errorMessage || 'Something went wrong. Please try again after sometime.',
         requestId: requestId,
       }),
       {
         status: 500,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...corsHeaders,
         },
-      },
-    );
+      }
+    )
   }
-};
+}
 
-serve(handler);
+serve(handler)

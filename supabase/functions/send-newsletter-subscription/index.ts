@@ -1,32 +1,31 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts'
+import { Resend } from 'npm:resend@2.0.0'
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 interface NewsletterRequest {
-  email: string;
+  email: string
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { email }: NewsletterRequest = await req.json();
-    console.log("Received newsletter subscription:", email);
+    const { email }: NewsletterRequest = await req.json()
+    console.log('Received newsletter subscription:', email)
 
     // Send notification email to support team
     const notificationResponse = await resend.emails.send({
-      from: "Newsletter <expressmate@myvirtualmate.com>",
-      to: ["expressmate@myvirtualmate.com"],
-      subject: "New Blog Newsletter Subscription",
+      from: 'Newsletter <expressmate@myvirtualmate.com>',
+      to: ['expressmate@myvirtualmate.com'],
+      subject: 'New Blog Newsletter Subscription',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333; border-bottom: 2px solid #025fc7; padding-bottom: 10px;">New Newsletter Subscription</h2>
@@ -42,39 +41,39 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>
       `,
-    });
+    })
 
-    console.log("Notification email sent successfully:", notificationResponse);
+    console.log('Notification email sent successfully:', notificationResponse)
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Successfully subscribed to the newsletter!",
+        message: 'Successfully subscribed to the newsletter!',
       }),
       {
         status: 200,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...corsHeaders,
         },
       }
-    );
+    )
   } catch (error: any) {
-    console.error("Error in send-newsletter-subscription function:", error);
+    console.error('Error in send-newsletter-subscription function:', error)
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || "Failed to subscribe. Please try again.",
+        error: error.message || 'Failed to subscribe. Please try again.',
       }),
       {
         status: 500,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...corsHeaders,
         },
       }
-    );
+    )
   }
-};
+}
 
-serve(handler);
+serve(handler)

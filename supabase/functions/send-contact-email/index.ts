@@ -1,36 +1,36 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts'
+import { Resend } from 'npm:resend@2.0.0'
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 interface ContactRequest {
-  name: string;
-  email: string;
-  phone?: string;
-  service: string;
-  industry: string;
-  subject: string;
-  message: string;
+  name: string
+  email: string
+  phone?: string
+  service: string
+  industry: string
+  subject: string
+  message: string
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const contactData: ContactRequest = await req.json();
-    console.log("Received contact form submission:", contactData);
+    const contactData: ContactRequest = await req.json()
+    console.log('Received contact form submission:', contactData)
 
     // Send email to support team
     const supportEmailResponse = await resend.emails.send({
-      from: "Contact Form <expressmate@myvirtualmate.com>",
-      to: ["expressmate@myvirtualmate.com"],
+      from: 'Contact Form <expressmate@myvirtualmate.com>',
+      to: ['expressmate@myvirtualmate.com'],
       subject: `New Contact Form Submission: ${contactData.subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -60,15 +60,15 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>
       `,
-    });
+    })
 
-    console.log("Support email sent successfully:", supportEmailResponse);
+    console.log('Support email sent successfully:', supportEmailResponse)
 
     // Send confirmation email to customer
     const customerEmailResponse = await resend.emails.send({
-      from: "My Virtual Mate <expressmate@myvirtualmate.com>",
+      from: 'My Virtual Mate <expressmate@myvirtualmate.com>',
       to: [contactData.email],
-      subject: "Thank you for contacting My Virtual Mate",
+      subject: 'Thank you for contacting My Virtual Mate',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #4CAF50;">Thank you for reaching out, ${contactData.name}!</h2>
@@ -99,39 +99,39 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>
       `,
-    });
+    })
 
-    console.log("Customer confirmation email sent successfully:", customerEmailResponse);
+    console.log('Customer confirmation email sent successfully:', customerEmailResponse)
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
-        message: "Thank you for reaching us. We'll get back to you soon."
+        message: "Thank you for reaching us. We'll get back to you soon.",
       }),
       {
         status: 200,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...corsHeaders,
         },
       }
-    );
+    )
   } catch (error: any) {
-    console.error("Error in send-contact-email function:", error);
+    console.error('Error in send-contact-email function:', error)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
-        error: error.message || "Something went wrong. Please try again after sometime."
+        error: error.message || 'Something went wrong. Please try again after sometime.',
       }),
       {
         status: 500,
-        headers: { 
-          "Content-Type": "application/json", 
-          ...corsHeaders 
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
         },
       }
-    );
+    )
   }
-};
+}
 
-serve(handler);
+serve(handler)
