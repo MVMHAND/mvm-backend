@@ -12,8 +12,7 @@ VALUES ('Super Admin', 'System super administrator with full access', TRUE, TRUE
 INSERT INTO user_roles (name, description, is_system)
 VALUES 
     ('Admin', 'Administrator with most permissions', TRUE),
-    ('Manager', 'Manager with limited administrative permissions', TRUE),
-    ('Support', 'Support staff with read-only access', TRUE);
+    ('Manager', 'Manager with limited administrative permissions', TRUE);
 
 -- ================================================
 -- SEED PERMISSIONS
@@ -66,16 +65,4 @@ AND p.permission_key IN (
     'roles.view',
     'blog.view', 'blog.manage',
     'audit.view'
-);
-
--- Assign read-only permissions to Support role
-INSERT INTO user_role_permissions (role_id, permission_key)
-SELECT r.id, p.permission_key
-FROM user_roles r
-CROSS JOIN user_permissions p
-WHERE r.name = 'Support'
-AND p.permission_key IN (
-    'users.view',
-    'roles.view',
-    'blog.view'
 );
