@@ -9,6 +9,12 @@ verify_jwt = false
 [functions.blog-list-posts]
 verify_jwt = false
 
+[functions.job-get-post]
+verify_jwt = false
+
+[functions.job-list-posts]
+verify_jwt = false
+
 [functions.send-contact-email]
 verify_jwt = false
 

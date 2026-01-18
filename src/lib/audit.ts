@@ -70,6 +70,16 @@ export const AUDIT_ACTION_TYPES = {
   BLOG_POST_DELETED: 'blog.post.deleted',
   BLOG_POST_PUBLISHED: 'blog.post.published',
   BLOG_POST_UNPUBLISHED: 'blog.post.unpublished',
+
+  // Job Posts
+  JOB_POST_CREATED: 'job_post_created',
+  JOB_POST_UPDATED: 'job_post_updated',
+  JOB_POST_PUBLISHED: 'job_post_published',
+  JOB_POST_UNPUBLISHED: 'job_post_unpublished',
+  JOB_POST_DELETED: 'job_post_deleted',
+  JOB_CATEGORY_CREATED: 'job_category_created',
+  JOB_CATEGORY_UPDATED: 'job_category_updated',
+  JOB_CATEGORY_DELETED: 'job_category_deleted',
 } as const
 
 /**

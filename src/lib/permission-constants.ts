@@ -30,6 +30,12 @@ export const Permissions = {
 
   // Settings Permissions
   SETTINGS_MANAGE: 'settings.manage',
+
+  // Job Posts Permissions
+  JOB_POSTS_VIEW: 'job-posts.view',
+  JOB_POSTS_EDIT: 'job-posts.edit',
+  JOB_POSTS_PUBLISH: 'job-posts.publish',
+  JOB_POSTS_DELETE: 'job-posts.delete',
 } as const
 
 // Type for permission keys
@@ -64,4 +70,10 @@ export const PermissionGroups = {
   ],
   AUDIT: [Permissions.AUDIT_VIEW],
   SETTINGS: [Permissions.SETTINGS_MANAGE],
+  JOB_POSTS: [
+    Permissions.JOB_POSTS_VIEW,
+    Permissions.JOB_POSTS_EDIT,
+    Permissions.JOB_POSTS_PUBLISH,
+    Permissions.JOB_POSTS_DELETE,
+  ],
 } as const

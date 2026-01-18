@@ -162,6 +162,54 @@ export const MENU_CONFIG: MenuItem[] = [
     ],
   },
   {
+    id: 'job-posts',
+    label: 'Job Posts',
+    icon: 'Briefcase',
+    permissionKey: Permissions.JOB_POSTS_VIEW,
+    relatedPermissions: [
+      {
+        key: Permissions.JOB_POSTS_VIEW,
+        label: 'View Job Posts',
+        group: 'Job Posts',
+        description: 'View job posts and categories',
+      },
+      {
+        key: Permissions.JOB_POSTS_EDIT,
+        label: 'Edit Job Posts',
+        group: 'Job Posts',
+        description: 'Create and edit job posts',
+      },
+      {
+        key: Permissions.JOB_POSTS_PUBLISH,
+        label: 'Publish Job Posts',
+        group: 'Job Posts',
+        description: 'Publish and unpublish job posts',
+      },
+      {
+        key: Permissions.JOB_POSTS_DELETE,
+        label: 'Delete Job Posts',
+        group: 'Job Posts',
+        description: 'Delete job posts',
+      },
+    ],
+    children: [
+      {
+        id: 'job-posts-list',
+        label: 'Posts',
+        path: '/admin/job-posts/posts',
+        icon: 'FileText',
+        permissionKey: Permissions.JOB_POSTS_VIEW,
+      },
+      {
+        id: 'job-posts-categories',
+        label: 'Categories',
+        path: '/admin/job-posts/categories',
+        icon: 'FolderOpen',
+        permissionKey: Permissions.JOB_POSTS_VIEW,
+      },
+    ],
+  },
+  {
     id: 'audit',
     label: 'Audit Logs',
     path: '/admin/audit-logs',

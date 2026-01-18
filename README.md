@@ -8,6 +8,7 @@ Internal administrative platform for managing users, roles, permissions, and blo
 - **User Management** - Complete CRUD operations for admin users with invitation system
 - **Role-Based Access Control** - Dynamic permissions with code-driven navigation
 - **Blog Management** - Full CMS for posts, categories, and contributors with rich text editing
+- **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and preview links
 - **Email Integration** - Automated invitations and password reset via Resend
 - **Super Admin** - Single immutable admin with full privileges
 - **Audit Logging** - Comprehensive tracking of all actions
@@ -71,6 +72,10 @@ RESEND_API_KEY=your-resend-api-key
 
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# Preview URLs
+BLOG_PREVIEW_URL="https://preview--mvm-official.lovable.app"
+JOB_PREVIEW_URL="https://preview--mvm-official.lovable.app"
 ```
 
 5. Run database migrations (see `supabase/migrations/` folder)
@@ -87,62 +92,49 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ```
 my-virtual-mate/
+├── docs/                               # Living architecture & security references
+│   ├── CANONICAL_IMPLEMENTATION_STYLE.md
+│   ├── CHANGELOG.md
+│   ├── DAL_MIGRATION_GUIDE.md
+│   ├── SECURITY_IMPLEMENTATION.md
+│   └── SECURITY_UPDATE_REACT2SHELL.md
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── admin/              # Admin panel routes
-│   │   │   ├── audit-logs/     # Audit log viewer
-│   │   │   ├── blog/           # Blog management
-│   │   │   │   ├── categories/ # Blog categories CRUD
-│   │   │   │   ├── contributors/ # Blog contributors CRUD
-│   │   │   │   └── posts/      # Blog posts CRUD
-│   │   │   ├── forgot-password/ # Password reset request
-│   │   │   ├── login/          # Admin login
-│   │   │   ├── roles/          # Role management
-│   │   │   └── users/          # User management
-│   │   └── auth/               # Auth callback routes
-│   │       ├── accept-invitation/ # Invitation acceptance
-│   │       ├── callback/       # OAuth callback
-│   │       ├── reset-password/ # Password reset
-│   │       └── setup-password/ # Initial password setup
-│   ├── actions/                # Server Actions
-│   │   ├── audit.ts            # Audit log actions
-│   │   ├── auth.ts             # Authentication actions
-│   │   ├── blog-categories.ts  # Blog category actions
-│   │   ├── blog-contributors.ts # Blog contributor actions
-│   │   ├── blog-posts.ts       # Blog post actions
-│   │   ├── invitations.ts      # User invitation actions
-│   │   ├── roles.ts            # Role management actions
-│   │   └── users.ts            # User management actions
+│   ├── app/
+│   │   ├── admin/
+│   │   │   ├── audit-logs/
+│   │   │   ├── blog/
+│   │   │   ├── job-posts/                # Job post CRUD & category management
+│   │   │   │   ├── posts/               # List, detail, create flows
+│   │   │   │   └── categories/          # Category list + detail pages
+│   │   │   ├── roles/
+│   │   │   └── users/
+│   │   └── auth/
+│   ├── actions/
+│   │   ├── job-posts.ts
+│   │   └── job-categories.ts
 │   ├── components/
-│   │   ├── features/           # Feature-specific components
-│   │   ├── layout/             # Layout components (Sidebar, Header)
-│   │   └── ui/                 # Reusable UI components
+│   │   └── features/job-posts/          # JobPostList, JobPostForm, Category UI
 │   ├── config/
-│   │   └── menu.ts             # Navigation menu configuration
+│   │   └── menu.ts
 │   ├── lib/
-│   │   ├── blog/               # Blog utilities
-│   │   ├── supabase/           # Supabase client configurations
-│   │   ├── audit.ts            # Audit logging utilities
-│   │   ├── constants.ts        # App constants
-│   │   ├── dal.ts              # ⭐ Data Access Layer (Auth/Authz)
-│   │   ├── email.ts            # Email templates and sending
-│   │   ├── permissions.ts      # Permission utilities (deprecated)
-│   │   └── utils.ts            # General utilities
-│   ├── store/                  # Zustand state management
-│   │   ├── slices/             # Store slices
-│   │   ├── middleware/         # Store middleware
-│   │   ├── index.ts            # Store configuration
-│   │   └── provider.tsx        # Store provider
-│   └── types/                  # TypeScript type definitions
-├── scripts/
-│   └── sync-permissions.ts     # Deploy-time permission sync
+│   │   ├── job-posts/                   # Domain helpers + validations
+│   │   └── audit.ts
+│   └── types/
+│       └── job-posts.ts
 ├── supabase/
-│   └── migrations/             # Database migration files
-├── public/                     # Static assets
-├── middleware.ts               # Route protection middleware
-├── SECURITY_IMPLEMENTATION.md  # Security architecture guide
-└── DAL_MIGRATION_GUIDE.md      # DAL migration & usage guide
+│   ├── functions/
+│   │   ├── job-get-post/
+│   │   └── job-list-posts/
+│   └── migrations/
+└── middleware.ts
 ```
+
+### Job Posts Module Overview
+
+- Full CRUD for job categories and posts powered by strict permissions (`job-posts.view/edit/publish/delete`).
+- Dedicated admin pages for list, detail, and form flows with audit logging for every mutation.
+- Automatic SEO + JSON-LD enrichment, preview URL generation, and publish validation helpers.
+- Supabase Edge Functions (`job-list-posts`, `job-get-post`) expose a read-only API for the public site to consume jobs without leaking admin credentials.
 
 ## Scripts
 
@@ -172,11 +164,16 @@ my-virtual-mate/
 - `permissions` - Permission definitions synced from code
 - `role_permissions` - Role-permission mappings
 
-### Blog Tables
+### Content Tables
 
 - `blog_categories` - Blog post categories
 - `blog_contributors` - Blog authors and contributors
 - `blog_posts` - Blog post content with rich text
+
+### Job Tables
+
+- `job_categories` - Taxonomy for grouping job posts with slug + post counts
+- `job_posts` - Complete job listing record including SEO metadata, salary data, and structured schema payloads
 
 ### System Tables
 
@@ -199,9 +196,9 @@ This project implements **industry-standard authentication and authorization** f
 
 ### Security Documentation
 
-- **`SECURITY_IMPLEMENTATION.md`** - Complete security architecture and patterns
-- **`DAL_MIGRATION_GUIDE.md`** - Migration guide for using the DAL
-- **`DAL_IMPLEMENTATION_SUMMARY.md`** - Implementation overview and status
+- **`docs/SECURITY_IMPLEMENTATION.md`** - Complete security architecture and patterns
+- **`docs/DAL_MIGRATION_GUIDE.md`** - Migration guide for using the DAL
+- **`docs/CANONICAL_IMPLEMENTATION_STYLE.md`** - Source of truth for implementation details
 
 ### Quick Security Example
 
