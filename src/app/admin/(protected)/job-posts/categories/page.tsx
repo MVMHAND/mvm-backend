@@ -2,6 +2,8 @@ import { JobCategoryList } from '@/components/features/job-posts/JobCategoryList
 import { getJobCategoriesAction } from '@/actions/job-categories'
 import { PageContainer, PageHeader, ErrorMessage } from '@/components/layout/PageLayout'
 
+export const dynamic = 'force-dynamic'
+
 export default async function JobCategoriesPage() {
   const result = await getJobCategoriesAction()
 
