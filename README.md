@@ -93,11 +93,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 ```
 my-virtual-mate/
 ├── docs/                               # Living architecture & security references
-│   ├── CANONICAL_IMPLEMENTATION_STYLE.md
-│   ├── CHANGELOG.md
 │   ├── DAL_MIGRATION_GUIDE.md
-│   ├── SECURITY_IMPLEMENTATION.md
-│   └── SECURITY_UPDATE_REACT2SHELL.md
+│   └── SECURITY_IMPLEMENTATION.md
+├── AGENT.md                            # In-repo assistant operating guide
+├── PROJECT_ANALYSIS_REPORT.md          # Workspace + infra discovery report
 ├── src/
 │   ├── app/
 │   │   ├── admin/
@@ -198,7 +197,11 @@ This project implements **industry-standard authentication and authorization** f
 
 - **`docs/SECURITY_IMPLEMENTATION.md`** - Complete security architecture and patterns
 - **`docs/DAL_MIGRATION_GUIDE.md`** - Migration guide for using the DAL
-- **`docs/CANONICAL_IMPLEMENTATION_STYLE.md`** - Source of truth for implementation details
+
+### Operational Documentation
+
+- **`AGENT.md`** - Active guardrails + expectations for assistants working in this repo
+- **`PROJECT_ANALYSIS_REPORT.md`** - Snapshot of current workspace layout, tooling, and verification steps
 
 ### Quick Security Example
 
