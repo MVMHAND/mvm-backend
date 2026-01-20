@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { JobPostForm } from '@/components/features/job-posts/JobPostForm'
+import { JobUrlDisplay } from '@/components/features/job-posts/JobUrlDisplay'
 import { getJobPostByIdAction } from '@/actions/job-posts'
 import { getJobCategoriesAction } from '@/actions/job-categories'
 import {
@@ -64,17 +65,23 @@ export default async function EditJobPostPage({ params }: EditJobPostPageProps) 
 
   return (
     <PageContainer>
-      <PageHeader title="Edit Job Post" description="Update job post information" />
+      <PageHeader
+        title="Edit Job Post"
+        description={`Update job post information • ${postResult.data.job_id}`}
+      />
 
-      <FormContainer>
-        <JobPostForm
-          post={postResult.data}
-          categories={categoriesResult.data}
-          isEditing
+      <div className="space-y-6">
+        <JobUrlDisplay
+          jobId={postResult.data.job_id}
+          status={postResult.data.status}
           mainSiteUrls={mainSiteUrls}
           jobPreviewUrl={jobPreviewUrl}
         />
-      </FormContainer>
+
+        <FormContainer>
+          <JobPostForm post={postResult.data} categories={categoriesResult.data} isEditing />
+        </FormContainer>
+      </div>
     </PageContainer>
   )
 }

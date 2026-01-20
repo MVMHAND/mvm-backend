@@ -10,7 +10,6 @@ import {
 interface JobCategory {
   id: string
   name: string
-  slug: string
 }
 
 interface JobPost {
@@ -30,10 +29,10 @@ interface JobPost {
   skills: string[]
   experience_level: string | null
   responsibilities: string[]
-  requirements: string[]
+  must_have_skills: string[]
   preferred_skills: string[]
   benefits: string[]
-  application_process: string | null
+
   published_at: string | null
   custom_posted_date: string | null
   seo_meta_title: string | null
@@ -92,10 +91,9 @@ serve(async (req) => {
         skills,
         experience_level,
         responsibilities,
-        requirements,
+        must_have_skills,
         preferred_skills,
         benefits,
-        application_process,
         published_at,
         custom_posted_date,
         status,
@@ -104,7 +102,7 @@ serve(async (req) => {
         seo_additional_schemas,
         created_at,
         updated_at,
-        category:job_categories(id, name, slug)
+        category:job_categories(id, name)
       `
       )
       .eq('job_id', job_id)
@@ -130,7 +128,7 @@ serve(async (req) => {
       isPublished: data.status === 'published',
       seo_additional_schemas: data.seo_additional_schemas || [],
       responsibilities: data.responsibilities || [],
-      requirements: data.requirements || [],
+      must_have_skills: data.must_have_skills || [],
       preferred_skills: data.preferred_skills || [],
       benefits: data.benefits || [],
       skills: data.skills || [],

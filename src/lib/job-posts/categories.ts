@@ -3,15 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 /**
  * Get all categories for select dropdown
  */
-export async function getAllCategoriesForSelect(): Promise<
-  { id: string; name: string; slug: string }[]
-> {
+export async function getAllCategoriesForSelect(): Promise<{ id: string; name: string }[]> {
   const supabase = await createClient()
 
-  const { data, error } = await supabase
-    .from('job_categories')
-    .select('id, name, slug')
-    .order('name')
+  const { data, error } = await supabase.from('job_categories').select('id, name').order('name')
 
   if (error) throw error
 
@@ -44,14 +39,4 @@ export async function canDeleteCategory(categoryId: string): Promise<{
   }
 
   return { canDelete: true }
-}
-
-/**
- * Generate slug from category name
- */
-export function generateCategorySlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
 }

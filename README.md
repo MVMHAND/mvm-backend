@@ -8,7 +8,7 @@ Internal administrative platform for managing users, roles, permissions, and blo
 - **User Management** - Complete CRUD operations for admin users with invitation system
 - **Role-Based Access Control** - Dynamic permissions with code-driven navigation
 - **Blog Management** - Full CMS for posts, categories, and contributors with rich text editing
-- **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and preview links
+- **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and copy-ready preview/live links
 - **Email Integration** - Automated invitations and password reset via Resend
 - **Super Admin** - Single immutable admin with full privileges
 - **Audit Logging** - Comprehensive tracking of all actions
@@ -112,7 +112,7 @@ my-virtual-mate/
 │   │   ├── job-posts.ts
 │   │   └── job-categories.ts
 │   ├── components/
-│   │   └── features/job-posts/          # JobPostList, JobPostForm, Category UI
+│   │   └── features/job-posts/          # JobPostList, JobPostForm, JobUrlDisplay, Category UI
 │   ├── config/
 │   │   └── menu.ts
 │   ├── lib/
@@ -171,8 +171,8 @@ my-virtual-mate/
 
 ### Job Tables
 
-- `job_categories` - Taxonomy for grouping job posts with slug + post counts
-- `job_posts` - Complete job listing record including SEO metadata, salary data, and structured schema payloads
+- `job_categories` - Lightweight taxonomy for grouping job posts (name + counts)
+- `job_posts` - Complete job listing record including SEO metadata, salary data, must_have_skills, publisher tracking, and structured schema payloads
 
 ### System Tables
 

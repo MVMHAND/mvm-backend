@@ -13,6 +13,7 @@ import {
   BookOpen,
   FolderOpen,
   Menu,
+  Briefcase,
 } from 'lucide-react'
 import { useAppStore, useSidebar } from '@/store/provider'
 import type { MenuItem } from '@/config/menu'
@@ -25,6 +26,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FileText,
   BookOpen,
   FolderOpen,
+  Briefcase,
 }
 
 export function Sidebar() {

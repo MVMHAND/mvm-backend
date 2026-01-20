@@ -23,12 +23,11 @@ export function JobCategoryForm({ category, isEditing = false }: JobCategoryForm
     setError(null)
     startTransition(async () => {
       const name = formData.get('name') as string
-      const description = formData.get('description') as string
 
       const result =
         isEditing && category
-          ? await updateJobCategoryAction(category.id, { name, description })
-          : await createJobCategoryAction({ name, description })
+          ? await updateJobCategoryAction(category.id, { name })
+          : await createJobCategoryAction({ name })
 
       if (result.success) {
         if (isEditing) {
@@ -64,19 +63,6 @@ export function JobCategoryForm({ category, isEditing = false }: JobCategoryForm
             placeholder="e.g., Engineering, Marketing"
             required
           />
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Description <span className="font-normal text-gray-400">(optional)</span>
-            </label>
-            <textarea
-              name="description"
-              defaultValue={category?.description || ''}
-              placeholder="Brief description of this category"
-              rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
-            />
-          </div>
 
           <div className="flex gap-4">
             <Button type="submit" disabled={isPending}>

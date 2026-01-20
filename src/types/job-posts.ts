@@ -23,8 +23,6 @@ export type ExperienceLevel =
 export interface JobCategory {
   id: string
   name: string
-  slug: string
-  description: string | null
   post_count: number
   created_at: string
   updated_at: string
@@ -32,7 +30,6 @@ export interface JobCategory {
 
 export interface JobCategoryFormData {
   name: string
-  description?: string
 }
 
 export interface JobPost {
@@ -43,7 +40,6 @@ export interface JobPost {
 
   // Content
   overview: string | null
-  cover_image_url: string | null
 
   // Job Details
   category_id: string | null
@@ -60,11 +56,10 @@ export interface JobPost {
 
   // Content Arrays
   responsibilities: string[]
-  requirements: string[]
+  must_have_skills: string[]
   preferred_skills: string[]
   benefits: string[]
   skills: string[]
-  application_process: string | null
 
   // Metadata
   experience_level: ExperienceLevel | null
@@ -85,6 +80,7 @@ export interface JobPost {
   updated_at: string
   created_by: string | null
   updated_by: string | null
+  published_by: string | null
 
   category?: JobCategory
 }
@@ -92,7 +88,6 @@ export interface JobPost {
 export interface JobPostFormData {
   title: string
   overview?: string
-  cover_image_url?: string
 
   category_id?: string
   department?: string
@@ -108,11 +103,10 @@ export interface JobPostFormData {
 
   // Multi-line text in form, converted to arrays on save
   responsibilities?: string
-  requirements?: string
+  must_have_skills?: string
   preferred_skills?: string
   benefits?: string
   skills?: string
-  application_process?: string
 
   experience_level?: ExperienceLevel
   status?: JobStatus

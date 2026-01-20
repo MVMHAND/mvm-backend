@@ -10,7 +10,6 @@ import {
 interface JobCategory {
   id: string
   name: string
-  slug: string
 }
 
 interface JobPostListItem {
@@ -83,7 +82,7 @@ serve(async (req) => {
         published_at,
         custom_posted_date,
         status,
-        category:job_categories(id, name, slug)
+        category:job_categories(id, name)
       `,
         { count: 'exact' }
       )

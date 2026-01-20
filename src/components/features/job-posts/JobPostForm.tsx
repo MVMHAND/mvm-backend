@@ -13,45 +13,24 @@ import type { JobPost, JobPostFormData, EmploymentType, ExperienceLevel } from '
 interface CategoryOption {
   id: string
   name: string
-  slug: string
 }
 
 interface JobPostFormProps {
   post?: JobPost
   categories: CategoryOption[]
   isEditing?: boolean
-  mainSiteUrls?: string[]
-  jobPreviewUrl?: string
 }
 
-export function JobPostForm({
-  post,
-  categories,
-  isEditing = false,
-  mainSiteUrls = [],
-  jobPreviewUrl,
-}: JobPostFormProps) {
+export function JobPostForm({ post, categories, isEditing = false }: JobPostFormProps) {
   const router = useRouter()
   const { success, error: showError } = useToast()
   const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
-
-  const copyToClipboard = async (url: string) => {
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopiedUrl(url)
-      setTimeout(() => setCopiedUrl(null), 2000)
-    } catch (err) {
-      console.error('Failed to copy:', err)
-    }
-  }
 
   // Form state with multi-line strings for array fields
   const [formData, setFormData] = useState<JobPostFormData>({
     title: post?.title || '',
     overview: post?.overview || '',
-    cover_image_url: post?.cover_image_url || '',
 
     category_id: post?.category_id || '',
     department: post?.department || '',
@@ -67,11 +46,10 @@ export function JobPostForm({
 
     // Convert arrays to multi-line strings
     responsibilities: post?.responsibilities?.join('\n') || '',
-    requirements: post?.requirements?.join('\n') || '',
+    must_have_skills: post?.must_have_skills?.join('\n') || '',
     preferred_skills: post?.preferred_skills?.join('\n') || '',
     benefits: post?.benefits?.join('\n') || '',
     skills: post?.skills?.join('\n') || '',
-    application_process: post?.application_process || '',
 
     experience_level: post?.experience_level || undefined,
     status: post?.status || 'published',
@@ -92,6 +70,18 @@ export function JobPostForm({
     if (!formData.employment_type) newErrors.employment_type = 'Employment type is required'
     if (!formData.overview?.trim()) newErrors.overview = 'Position overview is required'
     if (!formData.location?.trim()) newErrors.location = 'Location is required'
+
+    // Additional validation when publishing
+    const effectiveStatus = statusOverride || formData.status
+    if (effectiveStatus === 'published') {
+      if (!formData.category_id) newErrors.category_id = 'Category is required when publishing'
+      if (!formData.responsibilities?.trim())
+        newErrors.responsibilities = 'Responsibilities are required when publishing'
+      if (!formData.must_have_skills?.trim())
+        newErrors.must_have_skills = 'Must have skills are required when publishing'
+      if (!formData.preferred_skills?.trim())
+        newErrors.preferred_skills = 'Preferred skills are required when publishing'
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
@@ -137,224 +127,6 @@ export function JobPostForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={(e) => handleSubmit(e)} className="space-y-8">
-          {/* Job URL Preview (if editing) */}
-          {isEditing && post?.job_id && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Job URLs</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Job Preview URL - Always available */}
-                {jobPreviewUrl && (
-                  <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100">
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1 flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-700">Job Preview</span>
-                      </div>
-                      <a
-                        href={jobPreviewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="break-all text-sm text-mvm-blue hover:underline"
-                      >
-                        {jobPreviewUrl}
-                      </a>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(jobPreviewUrl)}
-                      className="shrink-0"
-                    >
-                      {copiedUrl === jobPreviewUrl ? (
-                        <span className="flex items-center gap-1">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                          Copied
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
-                          Copy
-                        </span>
-                      )}
-                    </Button>
-                  </div>
-                )}
-
-                {/* Main Site URLs - Only for published posts */}
-                {post.status === 'published' && mainSiteUrls.length > 0 && (
-                  <>
-                    <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-700">
-                            Primary Site URL
-                          </span>
-                          <span className="text-xs text-gray-500">(main production URL)</span>
-                        </div>
-                        <a
-                          href={`${mainSiteUrls[0]}/careers/${post.job_id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="break-all text-sm text-mvm-blue hover:underline"
-                        >
-                          {`${mainSiteUrls[0]}/careers/${post.job_id}`}
-                        </a>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(`${mainSiteUrls[0]}/careers/${post.job_id}`)}
-                        className="shrink-0"
-                      >
-                        {copiedUrl === `${mainSiteUrls[0]}/careers/${post.job_id}` ? (
-                          <span className="flex items-center gap-1">
-                            <svg
-                              className="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            Copied
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1">
-                            <svg
-                              className="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                              />
-                            </svg>
-                            Copy
-                          </span>
-                        )}
-                      </Button>
-                    </div>
-
-                    {mainSiteUrls.slice(1).map((siteUrl, index) => {
-                      const alternateUrl = `${siteUrl}/careers/${post.job_id}`
-                      return (
-                        <div
-                          key={siteUrl}
-                          className="flex items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-1 flex items-center gap-2">
-                              <span className="text-sm font-medium text-gray-700">
-                                Alternate Site URL {index + 1}
-                              </span>
-                              <span className="text-xs text-gray-500">(alternate domain)</span>
-                            </div>
-                            <a
-                              href={alternateUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="break-all text-sm text-mvm-blue hover:underline"
-                            >
-                              {alternateUrl}
-                            </a>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => copyToClipboard(alternateUrl)}
-                            className="shrink-0"
-                          >
-                            {copiedUrl === alternateUrl ? (
-                              <span className="flex items-center gap-1">
-                                <svg
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                Copied
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1">
-                                <svg
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                  />
-                                </svg>
-                                Copy
-                              </span>
-                            )}
-                          </Button>
-                        </div>
-                      )
-                    })}
-                  </>
-                )}
-
-                {post.status !== 'published' && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                    <p className="text-sm text-amber-800">
-                      <strong>Note:</strong> Production URLs will be available once this job post is
-                      published.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
@@ -394,19 +166,24 @@ export function JobPostForm({
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Category</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Category <span className="text-xs text-gray-500">(required for publishing)</span>
+                </label>
                 <select
                   value={formData.category_id || ''}
                   onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+                  className={`w-full rounded-lg border px-3 py-2 text-gray-900 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20 ${errors.category_id ? 'border-red-500' : 'border-gray-300'}`}
                 >
-                  <option value="">Select category (optional)</option>
+                  <option value="">Select category</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
                   ))}
                 </select>
+                {errors.category_id && (
+                  <p className="mt-1 text-sm text-red-600">{errors.category_id}</p>
+                )}
               </div>
 
               <Input
@@ -578,41 +355,59 @@ export function JobPostForm({
 
           {/* Responsibilities (Multi-line) */}
           <div className="space-y-4 border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-900">Responsibilities</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Responsibilities{' '}
+              <span className="text-xs font-normal text-gray-500">(required for publishing)</span>
+            </h3>
             <p className="text-sm text-gray-600">Enter one responsibility per line</p>
             <textarea
               value={formData.responsibilities}
               onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
               placeholder="Lead development of new features&#10;Conduct code reviews&#10;Mentor junior developers"
               rows={8}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+              className={`w-full rounded-lg border px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20 ${errors.responsibilities ? 'border-red-500' : 'border-gray-300'}`}
             />
+            {errors.responsibilities && (
+              <p className="mt-1 text-sm text-red-600">{errors.responsibilities}</p>
+            )}
           </div>
 
-          {/* Requirements (Multi-line) */}
+          {/* Must Have Skills (Multi-line)*/}
           <div className="space-y-4 border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-900">Requirements</h3>
-            <p className="text-sm text-gray-600">Enter one requirement per line</p>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Must Have Skills{' '}
+              <span className="text-xs font-normal text-gray-500">(required for publishing)</span>
+            </h3>
+            <p className="text-sm text-gray-600">Enter one skill/requirement per line</p>
             <textarea
-              value={formData.requirements}
-              onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+              value={formData.must_have_skills}
+              onChange={(e) => setFormData({ ...formData, must_have_skills: e.target.value })}
               placeholder="5+ years experience in software development&#10;Expert knowledge of TypeScript&#10;Experience with React and Node.js"
               rows={8}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+              className={`w-full rounded-lg border px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20 ${errors.must_have_skills ? 'border-red-500' : 'border-gray-300'}`}
             />
+            {errors.must_have_skills && (
+              <p className="mt-1 text-sm text-red-600">{errors.must_have_skills}</p>
+            )}
           </div>
 
           {/* Preferred Skills (Multi-line) */}
           <div className="space-y-4 border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-900">Preferred Skills (Optional)</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Preferred Skills{' '}
+              <span className="text-xs font-normal text-gray-500">(required for publishing)</span>
+            </h3>
             <p className="text-sm text-gray-600">Enter one skill per line</p>
             <textarea
               value={formData.preferred_skills}
               onChange={(e) => setFormData({ ...formData, preferred_skills: e.target.value })}
               placeholder="AWS/GCP experience&#10;GraphQL knowledge&#10;Technical leadership experience"
               rows={6}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+              className={`w-full rounded-lg border px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20 ${errors.preferred_skills ? 'border-red-500' : 'border-gray-300'}`}
             />
+            {errors.preferred_skills && (
+              <p className="mt-1 text-sm text-red-600">{errors.preferred_skills}</p>
+            )}
           </div>
 
           {/* Benefits (Multi-line) */}

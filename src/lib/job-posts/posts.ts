@@ -89,7 +89,7 @@ export function generateJobPostingSchema(post: JobPost): Record<string, unknown>
 
   if (baseSalary) schema.baseSalary = baseSalary
   if (post.responsibilities?.length > 0) schema.responsibilities = post.responsibilities.join('\n')
-  if (post.requirements?.length > 0) schema.qualifications = post.requirements.join('\n')
+  if (post.must_have_skills?.length > 0) schema.qualifications = post.must_have_skills.join('\n')
   if (post.skills?.length > 0) schema.skills = post.skills.join(', ')
   if (post.experience_level) {
     schema.experienceRequirements = post.experience_level.replace('-', ' ')
@@ -159,6 +159,7 @@ export function canPublishPost(post: Partial<JobPost>): {
   if (!post.overview?.trim()) errors.push('Position overview is required')
   if (!post.employment_type) errors.push('Employment type is required')
   if (!post.location?.trim()) errors.push('Location is required')
+  if (!post.category_id) errors.push('Category is required')
 
   const hasStructuredSalary = post.salary_min && post.salary_max
   const hasCustomSalary = post.salary_custom_text?.trim()
@@ -170,8 +171,12 @@ export function canPublishPost(post: Partial<JobPost>): {
     errors.push('At least one responsibility is required')
   }
 
-  if (!post.requirements || post.requirements.length === 0) {
-    errors.push('At least one requirement is required')
+  if (!post.must_have_skills || post.must_have_skills.length === 0) {
+    errors.push('At least one must have skill is required')
+  }
+
+  if (!post.preferred_skills || post.preferred_skills.length === 0) {
+    errors.push('At least one preferred skill is required')
   }
 
   return {

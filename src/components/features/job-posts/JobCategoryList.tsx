@@ -62,19 +62,7 @@ export function JobCategoryList({ categories, pagination }: JobCategoryListProps
       {
         key: 'name',
         header: 'Name',
-        render: (category) => (
-          <div>
-            <div className="font-medium text-gray-900">{category.name}</div>
-            {category.description && (
-              <div className="mt-1 text-sm text-gray-500">{category.description}</div>
-            )}
-          </div>
-        ),
-      },
-      {
-        key: 'slug',
-        header: 'Slug',
-        render: (category) => <span className="text-sm text-gray-500">{category.slug}</span>,
+        render: (category) => <div className="font-medium text-gray-900">{category.name}</div>,
       },
       {
         key: 'posts',

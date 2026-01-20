@@ -6,7 +6,7 @@ import { verifySession, requirePermission } from '@/lib/dal'
 import { Permissions } from '@/lib/permission-constants'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
 import type { JobCategory, JobCategoryFormData } from '@/types/job-posts'
-import { canDeleteCategory, generateCategorySlug } from '@/lib/job-posts/categories'
+import { canDeleteCategory } from '@/lib/job-posts/categories'
 
 type ActionResponse<T = unknown> =
   | { success: true; data: T; message?: string }
@@ -73,14 +73,10 @@ export async function createJobCategoryAction(
 
     const supabase = await createClient()
 
-    const slug = generateCategorySlug(formData.name)
-
     const { data, error } = await supabase
       .from('job_categories')
       .insert({
         name: formData.name,
-        slug,
-        description: formData.description || null,
       })
       .select()
       .single()
@@ -137,17 +133,10 @@ export async function updateJobCategoryAction(
       return { success: false, error: 'Category not found' }
     }
 
-    let slug = existingCategory.slug
-    if (formData.name !== existingCategory.name) {
-      slug = generateCategorySlug(formData.name)
-    }
-
     const { data, error } = await supabase
       .from('job_categories')
       .update({
         name: formData.name,
-        slug,
-        description: formData.description || null,
       })
       .eq('id', id)
       .select()
