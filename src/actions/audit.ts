@@ -87,6 +87,34 @@ export async function getAuditLogStatsAction(): Promise<ActionResponse<AuditLogS
 }
 
 /**
+ * Export audit logs to CSV (returns all logs matching filters)
+ */
+export async function exportAuditLogsAction(params: {
+  actionType?: string
+  actorId?: string
+  targetType?: string
+  startDate?: string
+  endDate?: string
+}): Promise<ActionResponse<PaginatedAuditLogs['logs']>> {
+  await verifySession()
+
+  // Get all logs matching filters (up to 10000 for export)
+  const result = await getAuditLogs({ ...params, page: 1, limit: 10000 })
+
+  if (!result.success) {
+    return {
+      success: false,
+      error: result.error || 'Failed to export audit logs',
+    }
+  }
+
+  return {
+    success: true,
+    data: (result.data as PaginatedAuditLogs).logs,
+  }
+}
+
+/**
  * Delete old audit logs (cleanup) - Super Admin only
  */
 export async function deleteOldAuditLogsAction(daysToKeep: number = 90): Promise<ActionResponse> {

@@ -53,12 +53,17 @@ export async function loginAction(formData: FormData): Promise<ActionResponse> {
     }
   }
 
-  // Update last login timestamp
+  // Update last login timestamp (use admin client to bypass RLS)
   if (data.user) {
-    await supabase
+    const adminSupabase = await createAdminClient()
+    const { error: updateError } = await adminSupabase
       .from('users')
       .update({ last_login: new Date().toISOString() })
       .eq('id', data.user.id)
+
+    if (updateError) {
+      console.error('Failed to update last_login:', updateError)
+    }
 
     // Log successful login
     await createAuditLog({

@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { createJobCategoryAction, updateJobCategoryAction } from '@/actions/job-categories'
-import type { JobCategory } from '@/types/job-posts'
+import { AuditInfo } from '@/components/features/shared/AuditInfo'
+import type { JobCategoryWithUsers } from '@/types/job-posts'
 
 interface JobCategoryFormProps {
-  category?: JobCategory
+  category?: JobCategoryWithUsers
   isEditing?: boolean
 }
 
@@ -64,7 +65,18 @@ export function JobCategoryForm({ category, isEditing = false }: JobCategoryForm
             required
           />
 
-          <div className="flex gap-4">
+          {isEditing && category && (
+            <AuditInfo
+              createdBy={category.creator}
+              createdAt={category.created_at}
+              updatedBy={category.updater}
+              updatedAt={category.updated_at}
+              variant="detailed"
+              className="mt-6"
+            />
+          )}
+
+          <div className="flex gap-4 pt-6">
             <Button type="submit" disabled={isPending}>
               {isPending
                 ? isEditing

@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/contexts/ToastContext'
@@ -116,6 +117,11 @@ export function AllowedDomainsList({ domains, pagination }: AllowedDomainsListPr
         cellAlign: 'right',
         render: (domain) => (
           <div className="flex justify-end gap-2">
+            <Link href={`/admin/settings/allowed-domains/${domain.id}`}>
+              <Button size="sm" variant="outline">
+                Edit
+              </Button>
+            </Link>
             <Button
               size="sm"
               variant="outline"

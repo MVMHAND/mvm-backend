@@ -23,7 +23,8 @@ import {
   unpublishJobPostAction,
 } from '@/actions/job-posts'
 import { formatDateTime } from '@/lib/utils'
-import type { JobPost } from '@/types/job-posts'
+import { AuditTooltip } from '@/components/features/shared/AuditTooltip'
+import type { JobPostWithUsers } from '@/types/job-posts'
 
 interface CategoryOption {
   id: string
@@ -31,7 +32,7 @@ interface CategoryOption {
 }
 
 interface JobPostListProps {
-  posts: JobPost[]
+  posts: JobPostWithUsers[]
   categories: CategoryOption[]
   pagination?: {
     page: number
@@ -156,7 +157,7 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
     [categories]
   )
 
-  const columns: Column<JobPost>[] = useMemo(
+  const columns: Column<JobPostWithUsers>[] = useMemo(
     () => [
       {
         key: 'title',
@@ -215,7 +216,16 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
         header: 'Posted',
         render: (post) => {
           const date = post.custom_posted_date || post.published_at || post.created_at
-          return <DateCell date={date} formatter={formatDateTime} />
+          return (
+            <AuditTooltip
+              createdBy={post.creator}
+              createdAt={post.created_at}
+              updatedBy={post.updater}
+              updatedAt={post.updated_at}
+            >
+              <DateCell date={date} formatter={formatDateTime} />
+            </AuditTooltip>
+          )
         },
       },
       {

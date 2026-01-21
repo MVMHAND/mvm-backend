@@ -4,7 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { verifySession } from '@/lib/dal'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog } from '@/lib/audit'
-import type { ActionResponse, AllowedDomain, AllowedDomainFormData } from '@/types'
+import type {
+  ActionResponse,
+  AllowedDomain,
+  AllowedDomainFormData,
+  AllowedDomainWithUsers,
+} from '@/types'
 
 /**
  * Get all allowed domains with pagination
@@ -52,6 +57,49 @@ export async function getAllowedDomainsAction(params?: {
     }
   } catch (error) {
     console.error('Error in getAllowedDomainsAction:', error)
+    return {
+      success: false,
+      error: 'An unexpected error occurred',
+    }
+  }
+}
+
+/**
+ * Get a single allowed domain by ID with user relations
+ */
+export async function getAllowedDomainByIdAction(
+  domainId: string
+): Promise<ActionResponse<AllowedDomainWithUsers>> {
+  try {
+    await verifySession()
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('public_allowed_domains')
+      .select(
+        `
+        *,
+        creator:created_by(name, email),
+        updater:updated_by(name, email)
+      `
+      )
+      .eq('id', domainId)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return { success: false, error: 'Domain not found' }
+      }
+      console.error('Error fetching allowed domain:', error)
+      return { success: false, error: 'Failed to fetch domain' }
+    }
+
+    return {
+      success: true,
+      data: data as AllowedDomainWithUsers,
+    }
+  } catch (error) {
+    console.error('Error in getAllowedDomainByIdAction:', error)
     return {
       success: false,
       error: 'An unexpected error occurred',

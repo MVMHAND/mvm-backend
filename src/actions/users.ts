@@ -26,6 +26,7 @@ export interface CombinedUser {
     is_super_admin: boolean
   }
   created_at: string
+  last_login: string | null
   invitation_expires_at?: string | null
 }
 
@@ -77,6 +78,7 @@ export async function getUsersAction(
         status: 'invited' as const,
         role: inv.role,
         created_at: inv.created_at,
+        last_login: null,
         invitation_expires_at: inv.expires_at,
       }))
 
@@ -128,6 +130,7 @@ export async function getUsersAction(
       status: p.status,
       role: p.role,
       created_at: p.created_at,
+      last_login: p.last_login,
       invitation_expires_at: null,
     }))
 
@@ -150,6 +153,7 @@ export async function getUsersAction(
         status: 'invited' as const,
         role: inv.role,
         created_at: inv.created_at,
+        last_login: null,
         invitation_expires_at: inv.expires_at,
       }))
 

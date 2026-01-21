@@ -24,8 +24,13 @@ interface GetPostsParams {
   contributor?: string
 }
 
+interface BlogPostListItem extends BlogPost {
+  creator?: { name: string; email: string } | null
+  updater?: { name: string; email: string } | null
+}
+
 interface PaginatedPosts {
-  posts: BlogPost[]
+  posts: BlogPostListItem[]
   total: number
   page: number
   pages: number
@@ -46,10 +51,17 @@ export async function getPostsAction(
     const search = params.search || ''
     const offset = (page - 1) * limit
 
-    // Build query
+    // Build query with creator/updater relations for audit display
     let query = supabase
       .from('blog_posts')
-      .select('*', { count: 'exact' })
+      .select(
+        `
+        *,
+        creator:created_by(name, email),
+        updater:updated_by(name, email)
+      `,
+        { count: 'exact' }
+      )
       .order('created_at', { ascending: false })
 
     // Add search filter
@@ -466,6 +478,7 @@ export async function unpublishPostAction(postId: string): Promise<ActionRespons
       .from('blog_posts')
       .update({
         status: 'unpublished',
+        published_by: null,
       })
       .eq('id', postId)
       .select()

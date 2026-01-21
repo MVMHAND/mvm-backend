@@ -8,8 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { useToast } from '@/contexts/ToastContext'
 import { createJobPostAction, updateJobPostAction } from '@/actions/job-posts'
-import type { JobPost, JobPostFormData, EmploymentType, ExperienceLevel } from '@/types/job-posts'
+import type {
+  JobPostWithUsers,
+  JobPostFormData,
+  EmploymentType,
+  ExperienceLevel,
+} from '@/types/job-posts'
 import { RichTextEditor } from '@/components/features/blog/RichTextEditor'
+import { AuditInfo } from '@/components/features/shared/AuditInfo'
 
 interface CategoryOption {
   id: string
@@ -17,7 +23,7 @@ interface CategoryOption {
 }
 
 interface JobPostFormProps {
-  post?: JobPost
+  post?: JobPostWithUsers
   categories: CategoryOption[]
   isEditing?: boolean
 }
@@ -491,6 +497,19 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
               </p>
             </div>
           </div>
+
+          {/* Audit Information */}
+          {isEditing && post && (
+            <AuditInfo
+              createdBy={post.creator}
+              createdAt={post.created_at}
+              updatedBy={post.updater}
+              updatedAt={post.updated_at}
+              publishedBy={post.publisher}
+              publishedAt={post.published_at}
+              variant="detailed"
+            />
+          )}
 
           {/* Actions */}
           <div className="flex items-center justify-between gap-4 border-t pt-6">

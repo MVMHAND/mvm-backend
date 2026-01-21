@@ -26,6 +26,13 @@ export interface JobCategory {
   post_count: number
   created_at: string
   updated_at: string
+  created_by: string | null
+  updated_by: string | null
+}
+
+export interface JobCategoryWithUsers extends JobCategory {
+  creator?: { name: string; email: string } | null
+  updater?: { name: string; email: string } | null
 }
 
 export interface JobCategoryFormData {
@@ -127,6 +134,12 @@ export interface GetJobPostsParams {
 
 export interface JobPostWithCategory extends Omit<JobPost, 'category'> {
   category: JobCategory | null
+}
+
+export interface JobPostWithUsers extends JobPost {
+  creator?: { name: string; email: string } | null
+  updater?: { name: string; email: string } | null
+  publisher?: { name: string; email: string } | null
 }
 
 export interface JobPostFilters {

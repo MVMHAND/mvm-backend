@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { createCategoryAction, updateCategoryAction } from '@/actions/blog-categories'
-import type { BlogCategory } from '@/types'
+import { AuditInfo } from '@/components/features/shared/AuditInfo'
+import type { BlogCategoryWithUsers } from '@/types'
 
 interface CategoryFormProps {
-  category?: BlogCategory
+  category?: BlogCategoryWithUsers
   isEditing?: boolean
 }
 
@@ -64,7 +65,18 @@ export function CategoryForm({ category, isEditing = false }: CategoryFormProps)
             required
           />
 
-          <div className="flex gap-4">
+          {isEditing && category && (
+            <AuditInfo
+              createdBy={category.creator}
+              createdAt={category.created_at}
+              updatedBy={category.updater}
+              updatedAt={category.updated_at}
+              variant="detailed"
+              className="mt-6"
+            />
+          )}
+
+          <div className="flex gap-4 pt-6">
             <Button type="submit" disabled={isPending}>
               {isPending
                 ? isEditing

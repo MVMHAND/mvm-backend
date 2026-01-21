@@ -16,8 +16,9 @@ import {
   checkSlugExistsAction,
 } from '@/actions/blog-posts'
 import { slugify } from '@/lib/utils'
-import type { BlogPost, ContentType, AdditionalSchema } from '@/types'
+import type { BlogPostWithRelations, ContentType, AdditionalSchema } from '@/types'
 import JsonLdSchemaEditor from './JsonLdSchemaEditor'
+import { AuditInfo } from '@/components/features/shared/AuditInfo'
 
 interface CategoryOption {
   id: string
@@ -30,7 +31,7 @@ interface ContributorOption {
 }
 
 interface PostFormProps {
-  post?: BlogPost
+  post?: BlogPostWithRelations
   categories: CategoryOption[]
   contributors: ContributorOption[]
   isEditing?: boolean
@@ -590,6 +591,19 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
               </div>
             </div>
           </div>
+
+          {/* Audit Information */}
+          {isEditing && post && (
+            <AuditInfo
+              createdBy={post.creator}
+              createdAt={post.created_at}
+              updatedBy={post.updater}
+              updatedAt={post.updated_at}
+              publishedBy={post.publisher}
+              publishedAt={post.published_date}
+              variant="detailed"
+            />
+          )}
 
           {/* Actions */}
           <div className="flex gap-4 border-t pt-6">

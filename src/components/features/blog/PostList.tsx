@@ -20,7 +20,13 @@ import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { StatusBadge } from './StatusBadge'
 import { deletePostAction, publishPostAction, unpublishPostAction } from '@/actions/blog-posts'
 import { formatDateTime } from '@/lib/utils'
+import { AuditTooltip } from '@/components/features/shared/AuditTooltip'
 import type { BlogPost } from '@/types'
+
+interface BlogPostWithAudit extends BlogPost {
+  creator?: { name: string; email: string } | null
+  updater?: { name: string; email: string } | null
+}
 
 interface CategoryOption {
   id: string
@@ -33,7 +39,7 @@ interface ContributorOption {
 }
 
 interface PostListProps {
-  posts: BlogPost[]
+  posts: BlogPostWithAudit[]
   categories: CategoryOption[]
   contributors: ContributorOption[]
   pagination?: {
@@ -153,7 +159,7 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
     [categories, contributors]
   )
 
-  const columns: Column<BlogPost>[] = useMemo(
+  const columns: Column<BlogPostWithAudit>[] = useMemo(
     () => [
       {
         key: 'post',
@@ -205,14 +211,18 @@ export function PostList({ posts, categories, contributors, pagination }: PostLi
         render: (post) => <StatusBadge status={post.status} />,
       },
       {
-        key: 'published',
-        header: 'Published',
-        render: (post) =>
-          post.published_date ? (
-            <DateCell date={post.published_date} formatter={formatDateTime} />
-          ) : (
-            <span className="text-gray-400">—</span>
-          ),
+        key: 'created',
+        header: 'Created',
+        render: (post) => (
+          <AuditTooltip
+            createdBy={post.creator}
+            createdAt={post.created_at}
+            updatedBy={post.updater}
+            updatedAt={post.updated_at}
+          >
+            <DateCell date={post.created_at} formatter={formatDateTime} />
+          </AuditTooltip>
+        ),
       },
       {
         key: 'actions',

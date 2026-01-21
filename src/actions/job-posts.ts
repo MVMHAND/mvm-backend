@@ -5,7 +5,12 @@ import { createClient } from '@/lib/supabase/server'
 import { verifySession, requirePermission } from '@/lib/dal'
 import { Permissions } from '@/lib/permission-constants'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
-import type { JobPost, JobPostFormData, GetJobPostsParams } from '@/types/job-posts'
+import type {
+  JobPost,
+  JobPostFormData,
+  GetJobPostsParams,
+  JobPostWithUsers,
+} from '@/types/job-posts'
 import {
   generateSeoTitle,
   generateSeoDescription,
@@ -22,7 +27,7 @@ type ActionResponse<T = unknown> =
  */
 export async function getJobPostsAction(params: GetJobPostsParams = {}): Promise<
   ActionResponse<{
-    posts: JobPost[]
+    posts: JobPostWithUsers[]
     total: number
     page: number
     pages: number
@@ -39,7 +44,16 @@ export async function getJobPostsAction(params: GetJobPostsParams = {}): Promise
 
     let query = supabase
       .from('job_posts')
-      .select('*, category:job_categories(id, name)', { count: 'exact' })
+      .select(
+        `
+        *,
+        category:job_categories(id, name),
+        creator:created_by(name, email),
+        updater:updated_by(name, email),
+        publisher:published_by(name, email)
+      `,
+        { count: 'exact' }
+      )
       .order('created_at', { ascending: false })
 
     if (params.search) {
@@ -62,7 +76,7 @@ export async function getJobPostsAction(params: GetJobPostsParams = {}): Promise
     return {
       success: true,
       data: {
-        posts: (data as JobPost[]) || [],
+        posts: (data as JobPostWithUsers[]) || [],
         total: count || 0,
         page,
         pages: Math.ceil((count || 0) / limit),
@@ -77,7 +91,7 @@ export async function getJobPostsAction(params: GetJobPostsParams = {}): Promise
 /**
  * Get single job post by ID
  */
-export async function getJobPostByIdAction(id: string): Promise<ActionResponse<JobPost>> {
+export async function getJobPostByIdAction(id: string): Promise<ActionResponse<JobPostWithUsers>> {
   try {
     await verifySession()
     await requirePermission(Permissions.JOB_POSTS_VIEW)
@@ -85,7 +99,15 @@ export async function getJobPostByIdAction(id: string): Promise<ActionResponse<J
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('job_posts')
-      .select('*, category:job_categories(id, name)')
+      .select(
+        `
+        *,
+        category:job_categories(id, name),
+        creator:created_by(name, email),
+        updater:updated_by(name, email),
+        publisher:published_by(name, email)
+      `
+      )
       .eq('id', id)
       .single()
 
@@ -94,7 +116,7 @@ export async function getJobPostByIdAction(id: string): Promise<ActionResponse<J
       return { success: false, error: 'Job post not found' }
     }
 
-    return { success: true, data: data as JobPost }
+    return { success: true, data: data as JobPostWithUsers }
   } catch (error) {
     console.error('Unexpected error in getJobPostByIdAction:', error)
     return { success: false, error: 'An unexpected error occurred' }
@@ -316,7 +338,7 @@ export async function publishJobPostAction(id: string): Promise<ActionResponse<J
 
     const { data, error } = await supabase
       .from('job_posts')
-      .update({ status: 'published', published_by: user.id })
+      .update({ status: 'published', published_by: user.id, published_at: new Date() })
       .eq('id', id)
       .select('*, category:job_categories(id, name)')
       .single()
@@ -359,7 +381,10 @@ export async function unpublishJobPostAction(id: string): Promise<ActionResponse
 
     const { data, error } = await supabase
       .from('job_posts')
-      .update({ status: 'unpublished' })
+      .update({
+        status: 'unpublished',
+        published_by: null,
+      })
       .eq('id', id)
       .select('*, category:job_categories(id, name)')
       .single()

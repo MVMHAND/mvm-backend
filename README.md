@@ -5,14 +5,17 @@ Internal administrative platform for managing users, roles, permissions, and blo
 ## Features
 
 - **Secure Authentication** - Invitation-only access via Supabase Auth with password reset flow
-- **User Management** - Complete CRUD operations for admin users with invitation system
+- **User Management** - Complete CRUD operations for admin users with invitation system and last login tracking
 - **Role-Based Access Control** - Dynamic permissions with code-driven navigation
 - **Blog Management** - Full CMS for posts, categories, and contributors with rich text editing
 - **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and copy-ready preview/live links with rich text authoring for responsibilities, skills, and benefits
 - **Unified URL Generation** - Centralized URL builder keeps preview/social/production links consistent across blog and job posts
 - **Email Integration** - Automated invitations and password reset via Resend
 - **Super Admin** - Single immutable admin with full privileges
-- **Audit Logging** - Comprehensive tracking of all actions
+- **Audit Logging** - Comprehensive tracking of all actions with creator/updater/publisher attribution across all entities
+- **Audit Tooltips** - Inline hover tooltips display creator and updater information with timestamps throughout the admin interface
+- **Audit Export** - CSV export functionality for audit logs with filtering capabilities
+- **Settings Management** - Allowed domains configuration for email invitations with full audit trail
 
 ## Tech Stack
 
@@ -101,23 +104,32 @@ my-virtual-mate/
 ├── src/
 │   ├── app/
 │   │   ├── admin/
-│   │   │   ├── audit-logs/
+│   │   │   ├── audit-logs/             # Audit log viewer with export
 │   │   │   ├── blog/
-│   │   │   ├── job-posts/                # Job post CRUD & category management
-│   │   │   │   ├── posts/               # List, detail, create flows
-│   │   │   │   └── categories/          # Category list + detail pages
+│   │   │   ├── job-posts/              # Job post CRUD & category management
+│   │   │   │   ├── posts/             # List, detail, create flows
+│   │   │   │   └── categories/        # Category list + detail pages
 │   │   │   ├── roles/
+│   │   │   ├── settings/              # System settings (allowed domains)
 │   │   │   └── users/
 │   │   └── auth/
 │   ├── actions/
+│   │   ├── allowed-domains.ts
+│   │   ├── audit.ts
 │   │   ├── job-posts.ts
 │   │   └── job-categories.ts
 │   ├── components/
-│   │   └── features/job-posts/          # JobPostList, JobPostForm, JobUrlDisplay, Category UI
+│   │   ├── features/
+│   │   │   ├── audit/                 # AuditLogFilters, AuditLogExport
+│   │   │   ├── job-posts/             # JobPostList, JobPostForm, JobUrlDisplay
+│   │   │   ├── settings/              # AllowedDomainForm, AllowedDomainsList
+│   │   │   └── shared/                # AuditInfo, AuditTooltip (reusable)
+│   │   └── ui/
+│   │       └── Tooltip.tsx            # Generic tooltip component
 │   ├── config/
 │   │   └── menu.ts
 │   ├── lib/
-│   │   ├── job-posts/                   # Domain helpers + validations
+│   │   ├── job-posts/                 # Domain helpers + validations
 │   │   └── audit.ts
 │   └── types/
 │       └── job-posts.ts
@@ -126,6 +138,8 @@ my-virtual-mate/
 │   │   ├── job-get-post/
 │   │   └── job-list-posts/
 │   └── migrations/
+│       ├── 20260122000001_add_audit_fields_to_job_categories.sql
+│       └── 20260122000002_add_published_by_to_job_posts.sql
 └── middleware.ts
 ```
 
@@ -174,8 +188,8 @@ my-virtual-mate/
 
 ### Job Tables
 
-- `job_categories` - Lightweight taxonomy for grouping job posts (name + counts)
-- `job_posts` - Complete job listing record including SEO metadata, salary data, HTML content blocks (responsibilities, must_have_skills, preferred_skills, benefits), publisher tracking, and structured schema payloads
+- `job_categories` - Lightweight taxonomy for grouping job posts with full audit tracking (name, counts, created_by, updated_by)
+- `job_posts` - Complete job listing record including SEO metadata, salary data, HTML content blocks (responsibilities, must_have_skills, preferred_skills, benefits), full audit trail (created_by, updated_by, published_by), and structured schema payloads
 
 ### System Tables
 

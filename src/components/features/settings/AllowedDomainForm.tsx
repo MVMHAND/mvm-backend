@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { createAllowedDomainAction, updateAllowedDomainAction } from '@/actions/allowed-domains'
-import type { AllowedDomain } from '@/types'
+import { AuditInfo } from '@/components/features/shared/AuditInfo'
+import type { AllowedDomainWithUsers } from '@/types'
 
 interface AllowedDomainFormProps {
-  domain?: AllowedDomain
+  domain?: AllowedDomainWithUsers
   isEditing?: boolean
 }
 
@@ -108,6 +109,17 @@ export function AllowedDomainForm({ domain, isEditing = false }: AllowedDomainFo
               Active (allow this domain to access the blog API)
             </label>
           </div>
+
+          {isEditing && domain && (
+            <AuditInfo
+              createdBy={domain.creator}
+              createdAt={domain.created_at}
+              updatedBy={domain.updater}
+              updatedAt={domain.updated_at}
+              variant="detailed"
+              className="mt-6"
+            />
+          )}
 
           <div className="flex gap-4 border-t pt-6">
             <Button type="submit" disabled={isPending}>

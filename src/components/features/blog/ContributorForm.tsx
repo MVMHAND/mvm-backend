@@ -12,10 +12,11 @@ import {
   updateContributorAction,
   uploadContributorAvatarAction,
 } from '@/actions/blog-contributors'
-import type { BlogContributor } from '@/types'
+import { AuditInfo } from '@/components/features/shared/AuditInfo'
+import type { BlogContributorWithUsers } from '@/types'
 
 interface ContributorFormProps {
-  contributor?: BlogContributor
+  contributor?: BlogContributorWithUsers
   isEditing?: boolean
 }
 
@@ -308,7 +309,18 @@ export function ContributorForm({ contributor, isEditing = false }: ContributorF
             </div>
           </div>
 
-          <div className="flex gap-4">
+          {isEditing && contributor && (
+            <AuditInfo
+              createdBy={contributor.creator}
+              createdAt={contributor.created_at}
+              updatedBy={contributor.updater}
+              updatedAt={contributor.updated_at}
+              variant="detailed"
+              className="mt-6"
+            />
+          )}
+
+          <div className="flex gap-4 pt-6">
             <Button type="submit" disabled={isPending}>
               {isPending
                 ? isEditing

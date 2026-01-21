@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { verifySession, requirePermission } from '@/lib/dal'
 import { Permissions } from '@/lib/permission-constants'
 import { createAuditLog, AUDIT_ACTION_TYPES } from '@/lib/audit'
-import type { JobCategory, JobCategoryFormData } from '@/types/job-posts'
+import type { JobCategory, JobCategoryFormData, JobCategoryWithUsers } from '@/types/job-posts'
 import { canDeleteCategory } from '@/lib/job-posts/categories'
 
 type ActionResponse<T = unknown> =
@@ -39,22 +39,34 @@ export async function getJobCategoriesAction(): Promise<ActionResponse<JobCatego
 }
 
 /**
- * Get single job category by ID
+ * Get single job category by ID with user relations
  */
-export async function getJobCategoryByIdAction(id: string): Promise<ActionResponse<JobCategory>> {
+export async function getJobCategoryByIdAction(
+  id: string
+): Promise<ActionResponse<JobCategoryWithUsers>> {
   try {
     await verifySession()
     await requirePermission(Permissions.JOB_POSTS_VIEW)
 
     const supabase = await createClient()
-    const { data, error } = await supabase.from('job_categories').select('*').eq('id', id).single()
+    const { data, error } = await supabase
+      .from('job_categories')
+      .select(
+        `
+        *,
+        creator:created_by(name, email),
+        updater:updated_by(name, email)
+      `
+      )
+      .eq('id', id)
+      .single()
 
     if (error) {
       console.error('Error fetching job category:', error)
       return { success: false, error: 'Category not found' }
     }
 
-    return { success: true, data: data as JobCategory }
+    return { success: true, data: data as JobCategoryWithUsers }
   } catch (error) {
     console.error('Unexpected error in getJobCategoryByIdAction:', error)
     return { success: false, error: 'An unexpected error occurred' }
@@ -77,6 +89,8 @@ export async function createJobCategoryAction(
       .from('job_categories')
       .insert({
         name: formData.name,
+        created_by: user.id,
+        updated_by: user.id,
       })
       .select()
       .single()
@@ -137,6 +151,7 @@ export async function updateJobCategoryAction(
       .from('job_categories')
       .update({
         name: formData.name,
+        updated_by: user.id,
       })
       .eq('id', id)
       .select()

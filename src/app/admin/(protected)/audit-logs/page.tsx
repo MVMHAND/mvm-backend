@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AuditLogTable } from '@/components/features/audit/AuditLogTable'
 import { AuditLogFilters } from '@/components/features/audit/AuditLogFilters'
 import { AuditLogStats } from '@/components/features/audit/AuditLogStats'
+import { AuditLogExport } from '@/components/features/audit/AuditLogExport'
 import { getAuditLogStatsAction } from '@/actions/audit'
 import { PageContainer, PageHeader, PageSection } from '@/components/layout/PageLayout'
 
@@ -48,9 +49,19 @@ export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps
 
       {/* Audit Log Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Activity History</CardTitle>
-          <CardDescription>Complete log of all system activities</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Activity History</CardTitle>
+            <CardDescription>Complete log of all system activities</CardDescription>
+          </div>
+          <AuditLogExport
+            filters={{
+              actionType: params.actionType,
+              targetType: params.targetType,
+              startDate: params.startDate,
+              endDate: params.endDate,
+            }}
+          />
         </CardHeader>
         <CardContent>
           <AuditLogTable
