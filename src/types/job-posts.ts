@@ -69,9 +69,6 @@ export interface JobPost {
   published_at: string | null
   custom_posted_date: string | null
 
-  // URL fields
-  primary_site_url: string | null
-
   // SEO
   seo_meta_title: string | null
   seo_meta_description: string | null

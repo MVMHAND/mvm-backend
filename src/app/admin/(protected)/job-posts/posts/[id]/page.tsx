@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import { JobPostForm } from '@/components/features/job-posts/JobPostForm'
-import { JobUrlDisplay } from '@/components/features/job-posts/JobUrlDisplay'
+import { ContentUrlDisplay } from '@/components/features/shared/ContentUrlDisplay'
 import { getJobPostByIdAction } from '@/actions/job-posts'
 import { getJobCategoriesAction } from '@/actions/job-categories'
+import { generateJobUrls } from '@/lib/urls/content-urls'
 import {
   PageContainer,
   PageHeader,
@@ -12,18 +13,6 @@ import {
 
 interface EditJobPostPageProps {
   params: Promise<{ id: string }>
-}
-
-const getMainSiteUrls = (): string[] => {
-  const envValue = process.env.MAIN_SITE_URL
-  if (!envValue) throw new Error('MAIN_SITE_URL is not defined')
-
-  try {
-    const parsed = JSON.parse(envValue)
-    return Array.isArray(parsed) ? parsed : [parsed]
-  } catch {
-    return [envValue]
-  }
 }
 
 export default async function EditJobPostPage({ params }: EditJobPostPageProps) {
@@ -51,17 +40,8 @@ export default async function EditJobPostPage({ params }: EditJobPostPageProps) 
     )
   }
 
-  const mainSiteUrls = getMainSiteUrls()
-  const jobPreviewBaseUrl = process.env.JOB_PREVIEW_URL || process.env.BLOG_PREVIEW_URL
-  if (!jobPreviewBaseUrl) {
-    throw new Error('JOB_PREVIEW_URL or BLOG_PREVIEW_URL is not defined')
-  }
-
-  const jobPreviewUrlBase = `${jobPreviewBaseUrl}/careers/${postResult.data.job_id}`
-  const jobPreviewUrl =
-    postResult.data.status === 'published'
-      ? jobPreviewUrlBase
-      : `${jobPreviewUrlBase}${jobPreviewUrlBase.includes('?') ? '&' : '?'}preview=true`
+  // Generate URLs using centralized utility
+  const urls = generateJobUrls(postResult.data.job_id, postResult.data.status)
 
   return (
     <PageContainer>
@@ -71,11 +51,11 @@ export default async function EditJobPostPage({ params }: EditJobPostPageProps) 
       />
 
       <div className="space-y-6">
-        <JobUrlDisplay
-          jobId={postResult.data.job_id}
+        <ContentUrlDisplay
+          title="Job URLs"
+          previewUrl={urls.previewUrl}
+          productionUrls={urls.productionUrls}
           status={postResult.data.status}
-          mainSiteUrls={mainSiteUrls}
-          jobPreviewUrl={jobPreviewUrl}
         />
 
         <FormContainer>

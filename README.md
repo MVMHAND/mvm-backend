@@ -9,6 +9,7 @@ Internal administrative platform for managing users, roles, permissions, and blo
 - **Role-Based Access Control** - Dynamic permissions with code-driven navigation
 - **Blog Management** - Full CMS for posts, categories, and contributors with rich text editing
 - **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and copy-ready preview/live links with rich text authoring for responsibilities, skills, and benefits
+- **Unified URL Generation** - Centralized URL builder keeps preview/social/production links consistent across blog and job posts
 - **Email Integration** - Automated invitations and password reset via Resend
 - **Super Admin** - Single immutable admin with full privileges
 - **Audit Logging** - Comprehensive tracking of all actions
@@ -72,10 +73,10 @@ RESEND_API_KEY=your-resend-api-key
 
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+MAIN_SITE_URL=["https://myvirtualmate.com","https://myvirtualmate.com.au"]
 
-# Preview URLs
-BLOG_PREVIEW_URL="https://preview--mvm-official.lovable.app"
-JOB_PREVIEW_URL="https://preview--mvm-official.lovable.app"
+# Preview Environment
+PREVIEW_URL="https://preview--mvm-official.lovable.app"
 ```
 
 5. Run database migrations (see `supabase/migrations/` folder)
@@ -132,7 +133,7 @@ my-virtual-mate/
 
 - Full CRUD for job categories and posts powered by strict permissions (`job-posts.view/edit/publish/delete`).
 - Dedicated admin pages for list, detail, and form flows with audit logging for every mutation.
-- Automatic SEO + JSON-LD enrichment, preview URL generation, and publish validation helpers.
+- Automatic SEO + JSON-LD enrichment, centralized URL generation (preview/social/production), and publish validation helpers.
 - Supabase Edge Functions (`job-list-posts`, `job-get-post`) expose a read-only API for the public site to consume jobs without leaking admin credentials.
 - Sequential `JOB-000001` style IDs with collision-safe generation keep records human-friendly while remaining unique.
 - Inline TipTap editors persist HTML for responsibilities, must-have skills, preferred skills, and benefits so publishing validations run against real formatted content instead of arrays.

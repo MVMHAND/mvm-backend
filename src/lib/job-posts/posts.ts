@@ -98,10 +98,3 @@ export function splitByNewline(text: string): string[] {
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
 }
-
-/**
- * Generate primary site URL
- */
-export function generatePrimarySiteUrl(jobId: string): string {
-  return `https://myvirtualmate.com/careers/${jobId}`
-}

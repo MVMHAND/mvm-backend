@@ -4,21 +4,26 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 
-interface BlogUrlDisplayProps {
-  slug: string
-  status: 'draft' | 'published' | 'unpublished'
-  mainSiteUrls: string[]
-  socialPreviewUrl: string
-  blogPreviewUrl: string
+type ContentStatus = 'draft' | 'published' | 'unpublished'
+
+interface ContentUrlDisplayProps {
+  title: string
+  previewUrl: string
+  socialPreviewUrl?: string | null
+  productionUrls: {
+    primary: string | null
+    alternates: string[]
+  }
+  status: ContentStatus
 }
 
-export function BlogUrlDisplay({
-  slug,
-  status,
-  mainSiteUrls,
+export function ContentUrlDisplay({
+  title,
+  previewUrl,
   socialPreviewUrl,
-  blogPreviewUrl,
-}: BlogUrlDisplayProps) {
+  productionUrls,
+  status,
+}: ContentUrlDisplayProps) {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
 
   const copyToClipboard = async (url: string) => {
@@ -94,14 +99,14 @@ export function BlogUrlDisplay({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Blog URLs</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {/* Blog Preview URL - Always available */}
-        <UrlRow label="Blog Preview" url={blogPreviewUrl} />
+        {/* Preview URL - Always shown */}
+        <UrlRow label="Preview" url={previewUrl} />
 
-        {/* Social Media Preview URL - Only for published posts */}
-        {status === 'published' && (
+        {/* Social Media Preview URL - Only for published content with social preview */}
+        {socialPreviewUrl && status === 'published' && (
           <UrlRow
             label="Social Media Preview"
             url={socialPreviewUrl}
@@ -109,20 +114,22 @@ export function BlogUrlDisplay({
           />
         )}
 
-        {/* Main Site URLs - Only for published posts */}
+        {/* Production URLs - Only for published */}
         {status === 'published' && (
           <>
-            <UrlRow
-              label="Primary Site URL"
-              url={`${mainSiteUrls[0]}/blog/${slug}`}
-              description="main production URL"
-            />
-
-            {mainSiteUrls.slice(1).map((siteUrl, index) => (
+            {productionUrls.primary && (
               <UrlRow
-                key={siteUrl}
+                label="Primary Site URL"
+                url={productionUrls.primary}
+                description="main production URL"
+              />
+            )}
+
+            {productionUrls.alternates.map((url, index) => (
+              <UrlRow
+                key={url}
                 label={`Alternate Site URL ${index + 1}`}
-                url={`${siteUrl}/blog/${slug}`}
+                url={url}
                 description="alternate domain"
               />
             ))}
@@ -132,7 +139,8 @@ export function BlogUrlDisplay({
         {status !== 'published' && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
             <p className="text-sm text-amber-800">
-              <strong>Note:</strong> Production URLs will be available once this post is published.
+              <strong>Note:</strong> Production URLs will be available once this content is
+              published.
             </p>
           </div>
         )}

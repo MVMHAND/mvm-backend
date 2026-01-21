@@ -9,7 +9,6 @@ import type { JobPost, JobPostFormData, GetJobPostsParams } from '@/types/job-po
 import {
   generateSeoTitle,
   generateSeoDescription,
-  generatePrimarySiteUrl,
   splitByNewline,
   canPublishPost,
 } from '@/lib/job-posts/posts'
@@ -168,17 +167,6 @@ export async function createJobPostAction(
 
     const jobPost = data as JobPost
 
-    // Generate primary_site_url
-    const primary_site_url = generatePrimarySiteUrl(jobPost.job_id)
-
-    // Update with URL
-    const { data: updatedData } = await supabase
-      .from('job_posts')
-      .update({ primary_site_url })
-      .eq('id', jobPost.id)
-      .select('*, category:job_categories(id, name)')
-      .single()
-
     await createAuditLog({
       actorId: user.id,
       actionType: AUDIT_ACTION_TYPES.JOB_POST_CREATED,
@@ -191,7 +179,7 @@ export async function createJobPostAction(
 
     return {
       success: true,
-      data: (updatedData as JobPost) || jobPost,
+      data: jobPost,
       message: 'Job post created successfully',
     }
   } catch (error) {
