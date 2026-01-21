@@ -54,11 +54,13 @@ export interface JobPost {
   salary_period: string
   salary_custom_text: string | null
 
-  // Content Arrays
-  responsibilities: string[]
-  must_have_skills: string[]
-  preferred_skills: string[]
-  benefits: string[]
+  // Rich Text Content (HTML from TipTap editor)
+  responsibilities: string
+  must_have_skills: string
+  preferred_skills: string
+  benefits: string
+
+  // Skills array (JSON array for tags)
   skills: string[]
 
   // Metadata
@@ -73,7 +75,6 @@ export interface JobPost {
   // SEO
   seo_meta_title: string | null
   seo_meta_description: string | null
-  seo_additional_schemas: JsonLdSchema[]
 
   // Timestamps
   created_at: string
@@ -101,11 +102,13 @@ export interface JobPostFormData {
   salary_period?: string
   salary_custom_text?: string
 
-  // Multi-line text in form, converted to arrays on save
+  // Rich text HTML content (from TipTap editor)
   responsibilities?: string
   must_have_skills?: string
   preferred_skills?: string
   benefits?: string
+
+  // Skills as multi-line text, converted to array on save
   skills?: string
 
   experience_level?: ExperienceLevel
@@ -114,12 +117,6 @@ export interface JobPostFormData {
 
   seo_meta_title?: string
   seo_meta_description?: string
-  seo_additional_schemas?: JsonLdSchema[]
-}
-
-export interface JsonLdSchema {
-  type: string
-  data: Record<string, unknown>
 }
 
 export interface GetJobPostsParams {

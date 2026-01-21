@@ -9,9 +9,6 @@ import type { JobPost, JobPostFormData, GetJobPostsParams } from '@/types/job-po
 import {
   generateSeoTitle,
   generateSeoDescription,
-  generateJobPostingSchema,
-  generateOrganizationSchema,
-  generateBreadcrumbSchema,
   generatePrimarySiteUrl,
   splitByNewline,
   canPublishPost,
@@ -120,17 +117,7 @@ export async function createJobPostAction(
     const seoTitle = formData.seo_meta_title || generateSeoTitle(formData)
     const seoDescription = formData.seo_meta_description || generateSeoDescription(formData)
 
-    // Split multi-line fields into arrays
-    const responsibilities = formData.responsibilities
-      ? splitByNewline(formData.responsibilities)
-      : []
-    const must_have_skills = formData.must_have_skills
-      ? splitByNewline(formData.must_have_skills)
-      : []
-    const preferred_skills = formData.preferred_skills
-      ? splitByNewline(formData.preferred_skills)
-      : []
-    const benefits = formData.benefits ? splitByNewline(formData.benefits) : []
+    // Skills an array (for tags), split from multi-line text
     const skills = formData.skills ? splitByNewline(formData.skills) : []
 
     const insertData: Record<string, unknown> = {
@@ -149,10 +136,12 @@ export async function createJobPostAction(
       salary_period: formData.salary_period || 'hourly',
       salary_custom_text: formData.salary_custom_text || null,
 
-      responsibilities,
-      must_have_skills,
-      preferred_skills,
-      benefits,
+      // HTML content fields (from TipTap editor)
+      responsibilities: formData.responsibilities || '',
+      must_have_skills: formData.must_have_skills || '',
+      preferred_skills: formData.preferred_skills || '',
+      benefits: formData.benefits || '',
+      // Skills array (for tags)
       skills,
 
       experience_level: formData.experience_level || null,
@@ -161,7 +150,6 @@ export async function createJobPostAction(
 
       seo_meta_title: seoTitle,
       seo_meta_description: seoDescription,
-      seo_additional_schemas: formData.seo_additional_schemas || [],
 
       created_by: user.id,
       updated_by: user.id,
@@ -183,24 +171,10 @@ export async function createJobPostAction(
     // Generate primary_site_url
     const primary_site_url = generatePrimarySiteUrl(jobPost.job_id)
 
-    // Generate schemas
-    const jobPostingSchema = generateJobPostingSchema(jobPost)
-    const organizationSchema = generateOrganizationSchema()
-    const breadcrumbSchema = generateBreadcrumbSchema(jobPost)
-
-    const schemas = [
-      { type: 'JobPosting', data: jobPostingSchema },
-      { type: 'Organization', data: organizationSchema },
-      { type: 'BreadcrumbList', data: breadcrumbSchema },
-    ]
-
-    // Update with URL and schemas
+    // Update with URL
     const { data: updatedData } = await supabase
       .from('job_posts')
-      .update({
-        primary_site_url,
-        seo_additional_schemas: schemas,
-      })
+      .update({ primary_site_url })
       .eq('id', jobPost.id)
       .select('*, category:job_categories(id, name)')
       .single()
@@ -252,17 +226,7 @@ export async function updateJobPostAction(
     const seoTitle = formData.seo_meta_title || generateSeoTitle(formData)
     const seoDescription = formData.seo_meta_description || generateSeoDescription(formData)
 
-    // Split multi-line fields into arrays
-    const responsibilities = formData.responsibilities
-      ? splitByNewline(formData.responsibilities)
-      : []
-    const must_have_skills = formData.must_have_skills
-      ? splitByNewline(formData.must_have_skills)
-      : []
-    const preferred_skills = formData.preferred_skills
-      ? splitByNewline(formData.preferred_skills)
-      : []
-    const benefits = formData.benefits ? splitByNewline(formData.benefits) : []
+    // Skills is still an array (for tags), split from multi-line text
     const skills = formData.skills ? splitByNewline(formData.skills) : []
 
     const updateData: Record<string, unknown> = {
@@ -280,10 +244,12 @@ export async function updateJobPostAction(
       salary_period: formData.salary_period || 'hourly',
       salary_custom_text: formData.salary_custom_text || null,
 
-      responsibilities,
-      must_have_skills,
-      preferred_skills,
-      benefits,
+      // HTML content fields (from TipTap editor)
+      responsibilities: formData.responsibilities || '',
+      must_have_skills: formData.must_have_skills || '',
+      preferred_skills: formData.preferred_skills || '',
+      benefits: formData.benefits || '',
+      // Skills array (for tags)
       skills,
 
       experience_level: formData.experience_level || null,
@@ -309,19 +275,6 @@ export async function updateJobPostAction(
     }
 
     const jobPost = data as JobPost
-
-    // Regenerate schemas (URL doesn't change as job_id is immutable)
-    const jobPostingSchema = generateJobPostingSchema(jobPost)
-    const organizationSchema = generateOrganizationSchema()
-    const breadcrumbSchema = generateBreadcrumbSchema(jobPost)
-
-    const schemas = [
-      { type: 'JobPosting', data: jobPostingSchema },
-      { type: 'Organization', data: organizationSchema },
-      { type: 'BreadcrumbList', data: breadcrumbSchema },
-    ]
-
-    await supabase.from('job_posts').update({ seo_additional_schemas: schemas }).eq('id', id)
 
     await createAuditLog({
       actorId: user.id,

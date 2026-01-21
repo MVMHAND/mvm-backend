@@ -9,6 +9,7 @@ import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
 import { useToast } from '@/contexts/ToastContext'
 import { createJobPostAction, updateJobPostAction } from '@/actions/job-posts'
 import type { JobPost, JobPostFormData, EmploymentType, ExperienceLevel } from '@/types/job-posts'
+import { RichTextEditor } from '@/components/features/blog/RichTextEditor'
 
 interface CategoryOption {
   id: string
@@ -27,7 +28,7 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
   const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Form state with multi-line strings for array fields
+  // Form state - responsibilities, must_have_skills, preferred_skills, benefits are HTML from TipTap editor
   const [formData, setFormData] = useState<JobPostFormData>({
     title: post?.title || '',
     overview: post?.overview || '',
@@ -44,11 +45,12 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
     salary_period: post?.salary_period || 'hourly',
     salary_custom_text: post?.salary_custom_text || '',
 
-    // Convert arrays to multi-line strings
-    responsibilities: post?.responsibilities?.join('\n') || '',
-    must_have_skills: post?.must_have_skills?.join('\n') || '',
-    preferred_skills: post?.preferred_skills?.join('\n') || '',
-    benefits: post?.benefits?.join('\n') || '',
+    // HTML content fields (from TipTap editor)
+    responsibilities: post?.responsibilities || '',
+    must_have_skills: post?.must_have_skills || '',
+    preferred_skills: post?.preferred_skills || '',
+    benefits: post?.benefits || '',
+    // Skills is multi-line text converted to array
     skills: post?.skills?.join('\n') || '',
 
     experience_level: post?.experience_level || undefined,
@@ -353,73 +355,69 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
             )}
           </div>
 
-          {/* Responsibilities (Multi-line) */}
+          {/* Responsibilities (Rich Text) */}
           <div className="space-y-4 border-t pt-6">
             <h3 className="text-lg font-semibold text-gray-900">
               Responsibilities{' '}
               <span className="text-xs font-normal text-gray-500">(required for publishing)</span>
             </h3>
-            <p className="text-sm text-gray-600">Enter one responsibility per line</p>
-            <textarea
-              value={formData.responsibilities}
-              onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
-              placeholder="Lead development of new features&#10;Conduct code reviews&#10;Mentor junior developers"
-              rows={8}
-              className={`w-full rounded-lg border px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20 ${errors.responsibilities ? 'border-red-500' : 'border-gray-300'}`}
+            <p className="text-sm text-gray-600">
+              Use the editor to format responsibilities. Use bullet lists for multiple items.
+            </p>
+            <RichTextEditor
+              value={formData.responsibilities || ''}
+              onChange={(value) => setFormData({ ...formData, responsibilities: value })}
             />
             {errors.responsibilities && (
               <p className="mt-1 text-sm text-red-600">{errors.responsibilities}</p>
             )}
           </div>
 
-          {/* Must Have Skills (Multi-line)*/}
+          {/* Must Have Skills (Rich Text) */}
           <div className="space-y-4 border-t pt-6">
             <h3 className="text-lg font-semibold text-gray-900">
               Must Have Skills{' '}
               <span className="text-xs font-normal text-gray-500">(required for publishing)</span>
             </h3>
-            <p className="text-sm text-gray-600">Enter one skill/requirement per line</p>
-            <textarea
-              value={formData.must_have_skills}
-              onChange={(e) => setFormData({ ...formData, must_have_skills: e.target.value })}
-              placeholder="5+ years experience in software development&#10;Expert knowledge of TypeScript&#10;Experience with React and Node.js"
-              rows={8}
-              className={`w-full rounded-lg border px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20 ${errors.must_have_skills ? 'border-red-500' : 'border-gray-300'}`}
+            <p className="text-sm text-gray-600">
+              Use the editor to format required skills. Use bullet lists for multiple items.
+            </p>
+            <RichTextEditor
+              value={formData.must_have_skills || ''}
+              onChange={(value) => setFormData({ ...formData, must_have_skills: value })}
             />
             {errors.must_have_skills && (
               <p className="mt-1 text-sm text-red-600">{errors.must_have_skills}</p>
             )}
           </div>
 
-          {/* Preferred Skills (Multi-line) */}
+          {/* Preferred Skills (Rich Text) */}
           <div className="space-y-4 border-t pt-6">
             <h3 className="text-lg font-semibold text-gray-900">
               Preferred Skills{' '}
               <span className="text-xs font-normal text-gray-500">(required for publishing)</span>
             </h3>
-            <p className="text-sm text-gray-600">Enter one skill per line</p>
-            <textarea
-              value={formData.preferred_skills}
-              onChange={(e) => setFormData({ ...formData, preferred_skills: e.target.value })}
-              placeholder="AWS/GCP experience&#10;GraphQL knowledge&#10;Technical leadership experience"
-              rows={6}
-              className={`w-full rounded-lg border px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20 ${errors.preferred_skills ? 'border-red-500' : 'border-gray-300'}`}
+            <p className="text-sm text-gray-600">
+              Use the editor to format preferred skills. Use bullet lists for multiple items.
+            </p>
+            <RichTextEditor
+              value={formData.preferred_skills || ''}
+              onChange={(value) => setFormData({ ...formData, preferred_skills: value })}
             />
             {errors.preferred_skills && (
               <p className="mt-1 text-sm text-red-600">{errors.preferred_skills}</p>
             )}
           </div>
 
-          {/* Benefits (Multi-line) */}
+          {/* Benefits (Rich Text) */}
           <div className="space-y-4 border-t pt-6">
             <h3 className="text-lg font-semibold text-gray-900">Benefits (Optional)</h3>
-            <p className="text-sm text-gray-600">Enter one benefit per line</p>
-            <textarea
-              value={formData.benefits}
-              onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
-              placeholder="Competitive salary package&#10;Flexible working hours&#10;Professional development budget"
-              rows={6}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
+            <p className="text-sm text-gray-600">
+              Use the editor to format benefits. Use bullet lists for multiple items.
+            </p>
+            <RichTextEditor
+              value={formData.benefits || ''}
+              onChange={(value) => setFormData({ ...formData, benefits: value })}
             />
           </div>
 

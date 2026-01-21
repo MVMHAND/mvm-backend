@@ -31,119 +31,22 @@ export function generateSeoDescription(post: Partial<JobPost> | JobPostFormData)
 }
 
 /**
- * Generate JobPosting schema for SEO/AEO
+ * Strip HTML tags to get plain text
  */
-export function generateJobPostingSchema(post: JobPost): Record<string, unknown> {
-  const postedDate = post.custom_posted_date || post.published_at || post.created_at
-  const validThrough = new Date(postedDate)
-  validThrough.setDate(validThrough.getDate() + 30)
-
-  let baseSalary: Record<string, unknown> | undefined
-  if (post.salary_custom_text?.trim()) {
-    baseSalary = {
-      '@type': 'MonetaryAmount',
-      currency: post.salary_currency || 'AUD',
-      value: post.salary_custom_text,
-    }
-  } else if (post.salary_min && post.salary_max) {
-    baseSalary = {
-      '@type': 'MonetaryAmount',
-      currency: post.salary_currency,
-      value: {
-        '@type': 'QuantitativeValue',
-        minValue: post.salary_min,
-        maxValue: post.salary_max,
-        unitText: (post.salary_period || 'HOUR').toUpperCase(),
-      },
-    }
-  }
-
-  const schema: Record<string, unknown> = {
-    '@context': 'https://schema.org',
-    '@type': 'JobPosting',
-    title: post.title,
-    description: post.overview,
-    datePosted: postedDate,
-    validThrough: validThrough.toISOString(),
-    employmentType: post.employment_type.toUpperCase().replace(/-/g, '_'),
-    identifier: {
-      '@type': 'PropertyValue',
-      name: 'Job ID',
-      value: post.job_id,
-    },
-    hiringOrganization: {
-      '@type': 'Organization',
-      name: 'My Virtual Mate',
-      sameAs: 'https://myvirtualmate.com',
-      logo: 'https://myvirtualmate.com/logo.png',
-    },
-    jobLocation: {
-      '@type': 'Place',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: post.location || 'Australia',
-        addressCountry: 'AU',
-      },
-    },
-  }
-
-  if (baseSalary) schema.baseSalary = baseSalary
-  if (post.responsibilities?.length > 0) schema.responsibilities = post.responsibilities.join('\n')
-  if (post.must_have_skills?.length > 0) schema.qualifications = post.must_have_skills.join('\n')
-  if (post.skills?.length > 0) schema.skills = post.skills.join(', ')
-  if (post.experience_level) {
-    schema.experienceRequirements = post.experience_level.replace('-', ' ')
-  }
-
-  return schema
+export function stripHtmlTags(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 /**
- * Generate Organization schema
+ * Check if HTML content has meaningful text
  */
-export function generateOrganizationSchema(): Record<string, unknown> {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'My Virtual Mate',
-    url: 'https://myvirtualmate.com',
-    logo: 'https://myvirtualmate.com/logo.png',
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'HR',
-      email: 'careers@myvirtualmate.com',
-    },
-  }
-}
-
-/**
- * Generate BreadcrumbList schema
- */
-export function generateBreadcrumbSchema(post: JobPost): Record<string, unknown> {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: 'https://myvirtualmate.com',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Careers',
-        item: 'https://myvirtualmate.com/careers',
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: post.title,
-        item: `https://myvirtualmate.com/careers/${post.job_id}`,
-      },
-    ],
-  }
+export function hasHtmlContent(html: string | undefined | null): boolean {
+  if (!html) return false
+  const text = stripHtmlTags(html)
+  return text.length > 0
 }
 
 /**
@@ -167,16 +70,17 @@ export function canPublishPost(post: Partial<JobPost>): {
     errors.push('Salary information is required')
   }
 
-  if (!post.responsibilities || post.responsibilities.length === 0) {
-    errors.push('At least one responsibility is required')
+  // Check HTML content fields
+  if (!hasHtmlContent(post.responsibilities)) {
+    errors.push('Responsibilities content is required')
   }
 
-  if (!post.must_have_skills || post.must_have_skills.length === 0) {
-    errors.push('At least one must have skill is required')
+  if (!hasHtmlContent(post.must_have_skills)) {
+    errors.push('Must have skills content is required')
   }
 
-  if (!post.preferred_skills || post.preferred_skills.length === 0) {
-    errors.push('At least one preferred skill is required')
+  if (!hasHtmlContent(post.preferred_skills)) {
+    errors.push('Preferred skills content is required')
   }
 
   return {
@@ -186,7 +90,7 @@ export function canPublishPost(post: Partial<JobPost>): {
 }
 
 /**
- * Split multi-line text into array
+ * Split multi-line text into array (for skills field only)
  */
 export function splitByNewline(text: string): string[] {
   return text

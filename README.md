@@ -8,7 +8,7 @@ Internal administrative platform for managing users, roles, permissions, and blo
 - **User Management** - Complete CRUD operations for admin users with invitation system
 - **Role-Based Access Control** - Dynamic permissions with code-driven navigation
 - **Blog Management** - Full CMS for posts, categories, and contributors with rich text editing
-- **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and copy-ready preview/live links
+- **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and copy-ready preview/live links with rich text authoring for responsibilities, skills, and benefits
 - **Email Integration** - Automated invitations and password reset via Resend
 - **Super Admin** - Single immutable admin with full privileges
 - **Audit Logging** - Comprehensive tracking of all actions
@@ -134,6 +134,8 @@ my-virtual-mate/
 - Dedicated admin pages for list, detail, and form flows with audit logging for every mutation.
 - Automatic SEO + JSON-LD enrichment, preview URL generation, and publish validation helpers.
 - Supabase Edge Functions (`job-list-posts`, `job-get-post`) expose a read-only API for the public site to consume jobs without leaking admin credentials.
+- Sequential `JOB-000001` style IDs with collision-safe generation keep records human-friendly while remaining unique.
+- Inline TipTap editors persist HTML for responsibilities, must-have skills, preferred skills, and benefits so publishing validations run against real formatted content instead of arrays.
 
 ## Scripts
 
@@ -172,7 +174,7 @@ my-virtual-mate/
 ### Job Tables
 
 - `job_categories` - Lightweight taxonomy for grouping job posts (name + counts)
-- `job_posts` - Complete job listing record including SEO metadata, salary data, must_have_skills, publisher tracking, and structured schema payloads
+- `job_posts` - Complete job listing record including SEO metadata, salary data, HTML content blocks (responsibilities, must_have_skills, preferred_skills, benefits), publisher tracking, and structured schema payloads
 
 ### System Tables
 

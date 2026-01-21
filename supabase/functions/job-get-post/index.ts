@@ -28,16 +28,16 @@ interface JobPost {
   salary_custom_text: string | null
   skills: string[]
   experience_level: string | null
-  responsibilities: string[]
-  must_have_skills: string[]
-  preferred_skills: string[]
-  benefits: string[]
+  // HTML content fields (from TipTap editor)
+  responsibilities: string
+  must_have_skills: string
+  preferred_skills: string
+  benefits: string
 
   published_at: string | null
   custom_posted_date: string | null
   seo_meta_title: string | null
   seo_meta_description: string | null
-  seo_additional_schemas: Record<string, unknown>[]
   created_at: string
   updated_at: string
   category: JobCategory | null
@@ -99,7 +99,6 @@ serve(async (req) => {
         status,
         seo_meta_title,
         seo_meta_description,
-        seo_additional_schemas,
         created_at,
         updated_at,
         category:job_categories(id, name)
@@ -126,11 +125,12 @@ serve(async (req) => {
       posted_date: data.custom_posted_date || data.published_at,
       salary_display: formatSalaryDisplay(data),
       isPublished: data.status === 'published',
-      seo_additional_schemas: data.seo_additional_schemas || [],
-      responsibilities: data.responsibilities || [],
-      must_have_skills: data.must_have_skills || [],
-      preferred_skills: data.preferred_skills || [],
-      benefits: data.benefits || [],
+      // HTML content fields
+      responsibilities: data.responsibilities || '',
+      must_have_skills: data.must_have_skills || '',
+      preferred_skills: data.preferred_skills || '',
+      benefits: data.benefits || '',
+      // Skills array
       skills: data.skills || [],
     }
 
