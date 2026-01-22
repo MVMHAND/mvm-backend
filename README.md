@@ -85,9 +85,11 @@ PREVIEW_URL="https://preview--mvm-official.lovable.app"
 
 > **Note:** `MAIN_SITE_URLS` must be a valid JSON array string (even when you only have one domain) because `/blog/[slug]` parses it at build time to generate metadata and redirect non-bot traffic to the corresponding public site.
 
-5. Run database migrations (see `supabase/migrations/` folder)
+5. (Optional) Create a `.env.prod` file that mirrors `.env.local` but contains **production** credentials for Supabase CLI automation. At minimum it must define `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_DB_PASSWORD` so the deployment scripts can discover the project reference and database password securely.
 
-6. Start the development server:
+6. Run database migrations (see `supabase/migrations/` folder)
+
+7. Start the development server:
 
 ```bash
 npm run dev
@@ -157,16 +159,22 @@ my-virtual-mate/
 
 ## Scripts
 
-| Command                    | Description                                   |
-| -------------------------- | --------------------------------------------- |
-| `npm run dev`              | Start development server                      |
-| `npm run build`            | Build for production (auto-syncs permissions) |
-| `npm run start`            | Start production server                       |
-| `npm run sync-permissions` | Sync permissions from menu config to database |
-| `npm run lint`             | Run ESLint                                    |
-| `npm run format`           | Format code with Prettier                     |
-| `npm run format:check`     | Check code formatting                         |
-| `npm run type-check`       | Check TypeScript types                        |
+| Command                        | Description                                                    |
+| -------------------------------| ---------------------------------------------------------------|
+| `npm run dev`                  | Start development server                                       |
+| `npm run build`                | Build for production (auto-syncs permissions)                  |
+| `npm run start`                | Start production server                                        |
+| `npm run sync-permissions`     | Sync permissions from menu config to database                  |
+| `npm run lint`                 | Run ESLint                                                     |
+| `npm run format`               | Format code with Prettier                                      |
+| `npm run format:check`         | Check code formatting                                          |
+| `npm run type-check`           | Check TypeScript types                                         |
+| `npm run supabase:login`       | Authenticate Supabase CLI locally                              |
+| `npm run supabase:link:prod`   | Link local CLI to the production project using `.env.prod`     |
+| `npm run supabase:push:prod`   | Push pending SQL migrations to production via Supabase CLI     |
+| `npm run supabase:deploy:prod` | Deploy Edge Functions to production (env-aware script)         |
+| `npm run supabase:list:prod`   | List deployed Edge Functions for verification                  |
+| `npm run deploy:prod`          | Run push + deploy + list in sequence for production validation |
 
 ## Branding
 

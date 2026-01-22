@@ -11,7 +11,7 @@ CREATE TYPE location_type_enum AS ENUM ('remote', 'hybrid', 'onsite');
 -- Job Categories Table
 -- ============================================
 CREATE TABLE job_categories (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(100) NOT NULL UNIQUE,
   slug VARCHAR(100) NOT NULL UNIQUE,
   description TEXT,
@@ -24,7 +24,7 @@ CREATE TABLE job_categories (
 -- Job Posts Table
 -- ============================================
 CREATE TABLE job_posts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(255) NOT NULL,
   slug VARCHAR(255) NOT NULL UNIQUE,
 
