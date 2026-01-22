@@ -60,7 +60,7 @@ npm install
 3. Set up environment variables:
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env.local
 ```
 
 4. Configure `.env.local` with your credentials:
@@ -73,12 +73,13 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Resend Email API
 RESEND_API_KEY=your-resend-api-key
+RESEND_FROM_EMAIL="My Virtual Mate <onboarding@yourdomain.com>"
 
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 MAIN_SITE_URL=["https://myvirtualmate.com","https://myvirtualmate.com.au"]
 
-# Preview Environment
+# Preview Environment (single URL for all content types)
 PREVIEW_URL="https://preview--mvm-official.lovable.app"
 ```
 

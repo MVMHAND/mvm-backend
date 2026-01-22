@@ -45,7 +45,7 @@ These should be set in **Vercel Dashboard** → Your Project → Settings → En
 | `RESEND_FROM_EMAIL`             | Production  | Your verified sender email in Resend       | Format: `"Name <email@domain.com>"`         |
 | `NEXT_PUBLIC_SITE_URL`          | Production  | Your production domain                     | `https://admin.myvirtualmate.com`           |
 | `MAIN_SITE_URL`                 | Production  | Your public main site domain(s)            | JSON array string format                    |
-| `BLOG_PREVIEW_URL`              | Production  | Your blog preview URL                      | `https://preview--mvm-official.lovable.app` |
+| `PREVIEW_URL`                   | Production  | Preview URL for all content types          | `https://preview--mvm-official.lovable.app` |
 
 `MAIN_SITE_URL` is required at build/runtime by `src/app/blog/[slug]/page.tsx`.
 
