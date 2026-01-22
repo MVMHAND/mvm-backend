@@ -46,17 +46,17 @@ interface JobUrlParams {
 type ContentUrlParams = BlogUrlParams | JobUrlParams
 
 /**
- * Parse MAIN_SITE_URL from env (handles array or string)
+ * Parse MAIN_SITE_URLS from env (handles array or string)
  */
 export function getMainSiteUrls(): string[] {
-  const mainSiteUrl = process.env.MAIN_SITE_URL
-  if (!mainSiteUrl) return []
+  const mainSiteUrls = process.env.MAIN_SITE_URLS
+  if (!mainSiteUrls) return []
 
   try {
-    const parsed = JSON.parse(mainSiteUrl)
+    const parsed = JSON.parse(mainSiteUrls)
     return Array.isArray(parsed) ? parsed : [parsed]
   } catch {
-    return [mainSiteUrl]
+    return [mainSiteUrls]
   }
 }
 

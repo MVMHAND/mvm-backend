@@ -28,7 +28,7 @@ Complete guide for deploying My Virtual Mate admin panel to Vercel with Supabase
 | `SUPABASE_DB_PASSWORD`          | GitHub Secrets   | Supabase Dashboard → Project Settings → Database → Password        | Your database password                          | ✅ Yes   |
 | `NEXT_PUBLIC_SUPABASE_URL`      | GitHub Secrets   | Supabase Dashboard → Project Settings → API → Project URL          | `https://abcdefg.supabase.co`                   | ✅ Yes   |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | GitHub Secrets   | Supabase Dashboard → Project Settings → API Keys → Publishable key | `eyJhbGc...` (long JWT)                         | ✅ Yes   |
-| `MAIN_SITE_URL`                 | GitHub Secrets   | Your public main site domain(s)                                    | `["https://myvirtualmate.com"]`                 | ✅ Yes   |
+| `MAIN_SITE_URLS`                | GitHub Secrets   | Your public main site domain(s)                                    | `["https://myvirtualmate.com"]`                 | ✅ Yes   |
 | `RESEND_API_KEY`                | GitHub Secrets   | Resend Dashboard → API Keys                                        | `re_abc123...`                                  | ✅ Yes   |
 | `RESEND_FROM_EMAIL`             | GitHub Secrets   | Your verified sender email in Resend                               | `"My Virtual Mate <onboarding@yourdomain.com>"` | ✅ Yes   |
 
@@ -44,10 +44,10 @@ These should be set in **Vercel Dashboard** → Your Project → Settings → En
 | `RESEND_API_KEY`                | Production  | Resend Dashboard → API Keys                | For email functionality                     |
 | `RESEND_FROM_EMAIL`             | Production  | Your verified sender email in Resend       | Format: `"Name <email@domain.com>"`         |
 | `NEXT_PUBLIC_SITE_URL`          | Production  | Your production domain                     | `https://admin.myvirtualmate.com`           |
-| `MAIN_SITE_URL`                 | Production  | Your public main site domain(s)            | JSON array string format                    |
+| `MAIN_SITE_URLS`                | Production  | Your public main site domain(s)            | JSON array string format                    |
 | `PREVIEW_URL`                   | Production  | Preview URL for all content types          | `https://preview--mvm-official.lovable.app` |
 
-`MAIN_SITE_URL` is required at build/runtime by `src/app/blog/[slug]/page.tsx`.
+`MAIN_SITE_URLS` is required at build/runtime by `src/app/blog/[slug]/page.tsx`.
 
 Accepted format (JSON array string):
 
@@ -569,14 +569,14 @@ supabase migration list
 4. Commit `package-lock.json` if updated
 5. Push to trigger new deployment
 
-#### Issue 4: "Failed to collect configuration for /blog/[slug]" (MAIN_SITE_URL is not defined)
+#### Issue 4: "Failed to collect configuration for /blog/[slug]" (MAIN_SITE_URLS is not defined)
 
-**Cause:** `MAIN_SITE_URL` is missing during the build, but `/blog/[slug]` requires it to generate metadata and redirect non-bot traffic.
+**Cause:** `MAIN_SITE_URLS` is missing during the build, but `/blog/[slug]` requires it to generate metadata and redirect non-bot traffic.
 
 **Fix:**
 
-1. Add `MAIN_SITE_URL` to **GitHub Repository Secrets** (Actions).
-2. Add `MAIN_SITE_URL` to **Vercel Environment Variables** (Production).
+1. Add `MAIN_SITE_URLS` to **GitHub Repository Secrets** (Actions).
+2. Add `MAIN_SITE_URLS` to **Vercel Environment Variables** (Production).
 3. Use a supported format (JSON array string).
 4. Re-run the workflow / redeploy.
 

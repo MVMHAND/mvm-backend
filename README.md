@@ -77,11 +77,13 @@ RESEND_FROM_EMAIL="My Virtual Mate <onboarding@yourdomain.com>"
 
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-MAIN_SITE_URL=["https://myvirtualmate.com","https://myvirtualmate.com.au"]
+MAIN_SITE_URLS=["https://myvirtualmate.com","https://myvirtualmate.com.au"]
 
 # Preview Environment (single URL for all content types)
 PREVIEW_URL="https://preview--mvm-official.lovable.app"
 ```
+
+> **Note:** `MAIN_SITE_URLS` must be a valid JSON array string (even when you only have one domain) because `/blog/[slug]` parses it at build time to generate metadata and redirect non-bot traffic to the corresponding public site.
 
 5. Run database migrations (see `supabase/migrations/` folder)
 

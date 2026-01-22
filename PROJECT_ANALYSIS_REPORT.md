@@ -156,7 +156,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 RESEND_API_KEY=your-resend-api-key
 RESEND_FROM_EMAIL="My Virtual Mate <onboarding@yourdomain.com>"
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-MAIN_SITE_URL=["https://myvirtualmate.com","https://myvirtualmate.com.au"]
+MAIN_SITE_URLS=["https://myvirtualmate.com","https://myvirtualmate.com.au"]
 PREVIEW_URL="https://preview--mvm-official.lovable.app"
 ```
 

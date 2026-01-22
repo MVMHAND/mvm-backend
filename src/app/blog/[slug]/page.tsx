@@ -10,10 +10,10 @@ interface PageProps {
   }>
 }
 
-// Parse MAIN_SITE_URL from environment variable (array format)
+// Parse MAIN_SITE_URLS from environment variable (array format)
 const getMainSiteUrls = (): string[] => {
-  const envValue = process.env.MAIN_SITE_URL
-  if (!envValue) throw new Error('MAIN_SITE_URL is not defined')
+  const envValue = process.env.MAIN_SITE_URLS
+  if (!envValue) throw new Error('MAIN_SITE_URLS is not defined')
 
   try {
     const parsed = JSON.parse(envValue)
