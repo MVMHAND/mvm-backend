@@ -291,6 +291,15 @@
 import { serve } from 'https://deno.land/std@0.190.0/http/server.ts'
 import { Resend } from 'npm:resend@2.0.0'
 
+// =============================================================================
+// ENVIRONMENT CONFIGURATION
+// =============================================================================
+// Set ENVIRONMENT=development to enable dev mode (logs emails instead of sending)
+// Set ENVIRONMENT=production (or leave unset) to send actual emails
+const ENVIRONMENT = Deno.env.get('ENVIRONMENT') || 'production'
+const IS_DEV_MODE = ENVIRONMENT === 'development'
+
+// Initialize Resend API (not used in dev mode, but kept for production)
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
 // MVM Brand Colors
@@ -301,6 +310,42 @@ const MVM_GRADIENT = `linear-gradient(135deg, ${MVM_BLUE} 0%, ${MVM_YELLOW} 100%
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// =============================================================================
+// DEVELOPMENT MODE EMAIL MOCK
+// =============================================================================
+/**
+ * Mock email sender for development environment
+ * Logs email details to console instead of actually sending
+ */
+interface MockEmailParams {
+  from: string
+  to: string[]
+  subject: string
+  html: string
+}
+
+const sendMockEmail = (params: MockEmailParams, requestId: string, emailType: 'ADMIN' | 'CUSTOMER') => {
+  console.log(`\n${'='.repeat(80)}`)
+  console.log(`🔧 DEV MODE - ${emailType} EMAIL (NOT ACTUALLY SENT)`)
+  console.log(`${'='.repeat(80)}`)
+  console.log(`📧 From: ${params.from}`)
+  console.log(`📬 To: ${params.to.join(', ')}`)
+  console.log(`📝 Subject: ${params.subject}`)
+  console.log(`📄 HTML Length: ${params.html.length} characters`)
+  console.log(`\n--- HTML PREVIEW (first 500 chars) ---`)
+  console.log(params.html.substring(0, 500) + '...')
+  console.log(`--- END HTML PREVIEW ---\n`)
+  console.log(`${'='.repeat(80)}\n`)
+  
+  // Return mock response matching Resend API format
+  return {
+    id: `dev-mock-${crypto.randomUUID()}`,
+    from: params.from,
+    to: params.to,
+    created_at: new Date().toISOString(),
+  }
 }
 
 interface DynamicField {
@@ -639,6 +684,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   const requestId = crypto.randomUUID().slice(0, 8)
   console.log(`[send-dynamic-email][${requestId}] ======= New Request =======`)
+  console.log(`[send-dynamic-email][${requestId}] Environment: ${ENVIRONMENT} ${IS_DEV_MODE ? '🔧 (DEV MODE - Emails will be LOGGED, not sent)' : '📧 (PRODUCTION - Emails will be sent)'}`)
   console.log(`[send-dynamic-email][${requestId}] Method: ${req.method}`)
   console.log(`[send-dynamic-email][${requestId}] Timestamp: ${new Date().toISOString()}`)
 
@@ -752,16 +798,31 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`[send-dynamic-email][${requestId}] Admin email subject: ${adminSubject}`)
 
-    // Send email to support team
-    const supportEmailResponse = await resend.emails.send({
-      from: 'Contact Form <sales.m@myvirtualmate.com>',
-      to: ['sales.m@myvirtualmate.com'],
-      subject: adminSubject,
-      html: adminEmailHtml,
-    })
+    // Send email to support team (or mock in dev mode)
+    let supportEmailResponse
+    if (IS_DEV_MODE) {
+      console.log(`[send-dynamic-email][${requestId}] 🔧 DEV MODE ENABLED - Logging admin email instead of sending`)
+      supportEmailResponse = sendMockEmail(
+        {
+          from: 'Contact Form <sales.m@myvirtualmate.com>',
+          to: ['sales.m@myvirtualmate.com'],
+          subject: adminSubject,
+          html: adminEmailHtml,
+        },
+        requestId,
+        'ADMIN'
+      )
+    } else {
+      supportEmailResponse = await resend.emails.send({
+        from: 'Contact Form <sales.m@myvirtualmate.com>',
+        to: ['sales.m@myvirtualmate.com'],
+        subject: adminSubject,
+        html: adminEmailHtml,
+      })
+    }
 
     console.log(
-      `[send-dynamic-email][${requestId}] Admin email sent successfully:`,
+      `[send-dynamic-email][${requestId}] Admin email ${IS_DEV_MODE ? 'logged' : 'sent'} successfully:`,
       JSON.stringify(supportEmailResponse, null, 2)
     )
 
@@ -806,19 +867,34 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       console.log(
-        `[send-dynamic-email][${requestId}] Sending customer confirmation email to: ${emailData.email}`
+        `[send-dynamic-email][${requestId}] ${IS_DEV_MODE ? 'Logging' : 'Sending'} customer confirmation email to: ${emailData.email}`
       )
 
-      // Send confirmation email to customer
-      const customerEmailResponse = await resend.emails.send({
-        from: 'My Virtual Mate <sales.m@myvirtualmate.com>',
-        to: [emailData.email],
-        subject: customerSubject,
-        html: customerBody,
-      })
+      // Send confirmation email to customer (or mock in dev mode)
+      let customerEmailResponse
+      if (IS_DEV_MODE) {
+        console.log(`[send-dynamic-email][${requestId}] 🔧 DEV MODE ENABLED - Logging customer email instead of sending`)
+        customerEmailResponse = sendMockEmail(
+          {
+            from: 'My Virtual Mate <sales.m@myvirtualmate.com>',
+            to: [emailData.email],
+            subject: customerSubject,
+            html: customerBody,
+          },
+          requestId,
+          'CUSTOMER'
+        )
+      } else {
+        customerEmailResponse = await resend.emails.send({
+          from: 'My Virtual Mate <sales.m@myvirtualmate.com>',
+          to: [emailData.email],
+          subject: customerSubject,
+          html: customerBody,
+        })
+      }
 
       console.log(
-        `[send-dynamic-email][${requestId}] Customer confirmation email sent successfully:`,
+        `[send-dynamic-email][${requestId}] Customer confirmation email ${IS_DEV_MODE ? 'logged' : 'sent'} successfully:`,
         JSON.stringify(customerEmailResponse, null, 2)
       )
     } else {

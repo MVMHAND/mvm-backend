@@ -86,6 +86,20 @@ PREVIEW_URL="https://preview--mvm-official.lovable.app"
 
 > **Note:** `MAIN_SITE_URLS` must be a valid JSON array string (even when you only have one domain) because `/blog/[slug]` parses it at build time to generate metadata and redirect non-bot traffic to the corresponding public site.
 
+### Supabase Edge Function Environment
+
+The Supabase Edge Function `send-dynamic-email` now supports a development-friendly toggle so you can test email payloads without sending live traffic:
+
+```env
+# supabase/.env (used by `supabase functions serve`)
+ENVIRONMENT=development # Logs mock emails instead of sending
+RESEND_API_KEY=your-resend-api-key
+```
+
+- Set `ENVIRONMENT=development` locally to log outbound admin/customer emails.
+- Set `ENVIRONMENT=production` (or remove the variable) in production deployments to send real emails through Resend.
+- `RESEND_API_KEY` remains required for authenticated Resend requests in production.
+
 5. (Optional) Create a `.env.prod` file that mirrors `.env.local` but contains **production** credentials for Supabase CLI automation. At minimum it must define `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_DB_PASSWORD` so the deployment scripts can discover the project reference and database password securely.
 
 6. Run database migrations (see `supabase/migrations/` folder)
