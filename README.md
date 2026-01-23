@@ -16,6 +16,7 @@ Internal administrative platform for managing users, roles, permissions, and blo
 - **Audit Tooltips** - Inline hover tooltips display creator and updater information with timestamps throughout the admin interface
 - **Audit Export** - CSV export functionality for audit logs with filtering capabilities
 - **Settings Management** - Allowed domains configuration for email invitations with full audit trail
+- **Secure Media Storage** - Private Supabase Storage bucket for admin avatars with signed URL delivery and automatic refresh logic
 
 ## Tech Stack
 
@@ -219,6 +220,7 @@ This project implements **industry-standard authentication and authorization** f
 - **Immutable Super Admin** - Cannot be edited or deleted
 - **Server-side mutations** - All data changes go through Server Actions
 - **Secure tokens** - Invitation and password reset tokens with expiration
+- **Private Media Delivery** - User avatar uploads are stored in a non-public bucket and exposed via short-lived signed URLs
 - **React cache()** - Optimized performance with memoized auth checks
 
 ### Security Documentation
