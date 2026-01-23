@@ -12,6 +12,46 @@ import { randomBytes, createHash } from 'crypto'
 import { getSiteUrl } from '@/lib/utils'
 
 /**
+ * Generate a signed URL for an avatar path stored in the database
+ * @param avatarPath - The storage path (e.g., "userId/filename.jpg") or full URL
+ * @returns Signed URL valid for 1 hour, or null if path is invalid
+ */
+async function getAvatarSignedUrl(avatarPath: string | null): Promise<string | null> {
+  if (!avatarPath) return null
+  
+  try {
+    const supabase = await createClient()
+    
+    // Extract path if it's a full URL (for backward compatibility with existing data)
+    let filePath = avatarPath
+    if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
+      const url = new URL(avatarPath)
+      const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/user-avatars\/(.+)/)
+      if (pathMatch && pathMatch[1]) {
+        filePath = pathMatch[1]
+      } else {
+        console.error('Could not extract path from avatar URL:', avatarPath)
+        return null
+      }
+    }
+    
+    const { data, error } = await supabase.storage
+      .from('user-avatars')
+      .createSignedUrl(filePath, 3600) // 1 hour expiry
+    
+    if (error || !data) {
+      console.error('Error generating signed URL for avatar:', error)
+      return null
+    }
+    
+    return data.signedUrl
+  } catch (error) {
+    console.error('Error in getAvatarSignedUrl:', error)
+    return null
+  }
+}
+
+/**
  * Combined user type that includes both active users and pending invitations
  */
 export interface CombinedUser {
@@ -122,17 +162,22 @@ export async function getUsersAction(
     }
 
     // If no status filter (showing all), also get pending invitations
-    let allUsers: CombinedUser[] = (profiles || []).map((p) => ({
-      id: p.id,
-      name: p.name,
-      email: p.email,
-      avatar_url: p.avatar_url,
-      status: p.status,
-      role: p.role,
-      created_at: p.created_at,
-      last_login: p.last_login,
-      invitation_expires_at: null,
-    }))
+    // Generate signed URLs for all avatars
+    const usersWithSignedUrls = await Promise.all(
+      (profiles || []).map(async (p) => ({
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        avatar_url: await getAvatarSignedUrl(p.avatar_url),
+        status: p.status,
+        role: p.role,
+        created_at: p.created_at,
+        last_login: p.last_login,
+        invitation_expires_at: null,
+      }))
+    )
+    
+    let allUsers: CombinedUser[] = usersWithSignedUrls
 
     let total = profileCount || 0
 
@@ -199,6 +244,11 @@ export async function getUserByIdAction(userId: string): Promise<ActionResponse<
         success: false,
         error: 'User not found',
       }
+    }
+
+    // Generate signed URL for avatar if present
+    if (user.avatar_url) {
+      user.avatar_url = await getAvatarSignedUrl(user.avatar_url)
     }
 
     return {
@@ -727,16 +777,12 @@ export async function uploadAvatarAction(
       }
     }
 
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from('user-avatars').getPublicUrl(filePath)
-
-    // Update profile with new avatar URL using admin client (to bypass RLS)
+    // Store the file path (not URL) since we'll generate signed URLs on-demand
+    // Update profile with new avatar path using admin client (to bypass RLS)
     const { error: updateError } = await adminClient
       .from('users')
       .update({
-        avatar_url: publicUrl,
+        avatar_url: filePath,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)
@@ -749,12 +795,17 @@ export async function uploadAvatarAction(
       }
     }
 
+    // Generate a signed URL for immediate use (valid for 1 hour)
+    const { data: signedUrlData } = await supabase.storage
+      .from('user-avatars')
+      .createSignedUrl(filePath, 3600)
+
     revalidatePath('/admin/users')
     revalidatePath(`/admin/users/${userId}`)
 
     return {
       success: true,
-      data: { avatar_url: publicUrl },
+      data: { avatar_url: signedUrlData?.signedUrl || filePath },
       message: 'Avatar uploaded successfully',
     }
   } catch (error) {

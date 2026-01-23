@@ -87,3 +87,29 @@ export function getSiteUrl(): string {
 
   return siteUrl
 }
+
+/**
+ * Extract storage path from avatar URL (removes base URL to get just the path)
+ * @param avatarUrl - Full avatar URL from database
+ * @returns Storage path (e.g., "userId/filename.jpg") or null if invalid
+ */
+export function extractAvatarPath(avatarUrl: string | null): string | null {
+  if (!avatarUrl) return null
+  
+  try {
+    const url = new URL(avatarUrl)
+    const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/user-avatars\/(.+)/)
+    if (pathMatch && pathMatch[1]) {
+      return pathMatch[1]
+    }
+    
+    const signedMatch = url.pathname.match(/\/storage\/v1\/object\/sign\/user-avatars\/(.+)/)
+    if (signedMatch && signedMatch[1]) {
+      return signedMatch[1]
+    }
+    
+    return null
+  } catch {
+    return null
+  }
+}

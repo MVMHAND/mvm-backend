@@ -4,6 +4,46 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 /**
+ * Generate a signed URL for an avatar path stored in the database
+ * @param avatarPath - The storage path (e.g., "userId/filename.jpg") or full URL
+ * @returns Signed URL valid for 1 hour, or null if path is invalid
+ */
+async function getAvatarSignedUrl(avatarPath: string | null): Promise<string | null> {
+  if (!avatarPath) return null
+  
+  try {
+    const supabase = await createClient()
+    
+    // Extract path if it's a full URL (for backward compatibility with existing data)
+    let filePath = avatarPath
+    if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
+      const url = new URL(avatarPath)
+      const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/user-avatars\/(.+)/)
+      if (pathMatch && pathMatch[1]) {
+        filePath = pathMatch[1]
+      } else {
+        console.error('Could not extract path from avatar URL:', avatarPath)
+        return null
+      }
+    }
+    
+    const { data, error } = await supabase.storage
+      .from('user-avatars')
+      .createSignedUrl(filePath, 3600) // 1 hour expiry
+    
+    if (error || !data) {
+      console.error('Error generating signed URL for avatar:', error)
+      return null
+    }
+    
+    return data.signedUrl
+  } catch (error) {
+    console.error('Error in getAvatarSignedUrl:', error)
+    return null
+  }
+}
+
+/**
  * Data Access Layer (DAL) - Security Layer
  *
  * This module provides centralized authentication verification for Server Components,
@@ -179,11 +219,14 @@ export const getUserProfile = cache(async (): Promise<UserProfile | null> => {
     is_system: boolean
   }
 
+  // Generate signed URL for avatar if present
+  const avatarUrl = await getAvatarSignedUrl(profile.avatar_url)
+
   return {
     id: profile.id,
     name: profile.name,
     email: profile.email,
-    avatar_url: profile.avatar_url,
+    avatar_url: avatarUrl,
     status: profile.status,
     role_id: profile.role_id,
     role,
