@@ -15,6 +15,7 @@
     "supabase:push:prod": "supabase db push",
     "supabase:deploy:prod": "node -r dotenv/config scripts/supabase-deploy.js",
     "supabase:list:prod": "node -r dotenv/config scripts/supabase-list.js",
+    "supabase:functions:serve:local": "npx supabase functions serve --env-file .\\supabase\\.env.local",
     "deploy:prod": "npm run supabase:push:prod && npm run supabase:deploy:prod && npm run supabase:list:prod"
   },
   "dependencies": {

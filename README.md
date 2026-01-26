@@ -174,22 +174,23 @@ my-virtual-mate/
 
 ## Scripts
 
-| Command                        | Description                                                    |
-| -------------------------------| ---------------------------------------------------------------|
-| `npm run dev`                  | Start development server                                       |
-| `npm run build`                | Build for production (auto-syncs permissions)                  |
-| `npm run start`                | Start production server                                        |
-| `npm run sync-permissions`     | Sync permissions from menu config to database                  |
-| `npm run lint`                 | Run ESLint                                                     |
-| `npm run format`               | Format code with Prettier                                      |
-| `npm run format:check`         | Check code formatting                                          |
-| `npm run type-check`           | Check TypeScript types                                         |
-| `npm run supabase:login`       | Authenticate Supabase CLI locally                              |
-| `npm run supabase:link:prod`   | Link local CLI to the production project using `.env.prod`     |
-| `npm run supabase:push:prod`   | Push pending SQL migrations to production via Supabase CLI     |
-| `npm run supabase:deploy:prod` | Deploy Edge Functions to production (env-aware script)         |
-| `npm run supabase:list:prod`   | List deployed Edge Functions for verification                  |
-| `npm run deploy:prod`          | Run push + deploy + list in sequence for production validation |
+| Command                                  | Description                                                    |
+| -----------------------------------------| ---------------------------------------------------------------|
+| `npm run dev`                            | Start development server                                       |
+| `npm run build`                          | Build for production (auto-syncs permissions)                  |
+| `npm run start`                          | Start production server                                        |
+| `npm run sync-permissions`               | Sync permissions from menu config to database                  |
+| `npm run lint`                           | Run ESLint                                                     |
+| `npm run format`                         | Format code with Prettier                                      |
+| `npm run format:check`                   | Check code formatting                                          |
+| `npm run type-check`                     | Check TypeScript types                                         |
+| `npm run supabase:login`                 | Authenticate Supabase CLI locally                              |
+| `npm run supabase:link:prod`             | Link local CLI to the production project using `.env.prod`     |
+| `npm run supabase:push:prod`             | Push pending SQL migrations to production via Supabase CLI     |
+| `npm run supabase:deploy:prod`           | Deploy Edge Functions to production (env-aware script)         |
+| `npm run supabase:list:prod`             | List deployed Edge Functions for verification                  |
+| `npm run supabase:functions:serve:local` | Run Supabase Edge Functions locally with `supabase/.env.local` |
+| `npm run deploy:prod`                    | Run push + deploy + list in sequence for production validation |
 
 ## Branding
 
