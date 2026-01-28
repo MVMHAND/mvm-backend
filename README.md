@@ -9,6 +9,7 @@ Internal administrative platform for managing users, roles, permissions, and blo
 - **Role-Based Access Control** - Dynamic permissions with code-driven navigation
 - **Blog Management** - Full CMS for posts, categories, and contributors with rich text editing
 - **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and copy-ready preview/live links with rich text authoring for responsibilities, skills, and benefits
+- **Application Email Routing** - Job posts auto-populate and validate creator email addresses so admins can publish copy-ready "apply via email" listings without exposing external forms
 - **Unified URL Generation** - Centralized URL builder keeps preview/social/production links consistent across blog and job posts
 - **Email Integration** - Automated invitations and password reset via Resend
 - **Super Admin** - Single immutable admin with full privileges
