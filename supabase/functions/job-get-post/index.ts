@@ -36,8 +36,7 @@ interface JobPost {
 
   published_at: string | null
   custom_posted_date: string | null
-  seo_meta_title: string | null
-  seo_meta_description: string | null
+  application_email: string
   created_at: string
   updated_at: string
   category: JobCategory | null
@@ -97,8 +96,7 @@ serve(async (req) => {
         published_at,
         custom_posted_date,
         status,
-        seo_meta_title,
-        seo_meta_description,
+        application_email,
         created_at,
         updated_at,
         category:job_categories(id, name)

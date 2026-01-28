@@ -76,9 +76,8 @@ export interface JobPost {
   published_at: string | null
   custom_posted_date: string | null
 
-  // SEO
-  seo_meta_title: string | null
-  seo_meta_description: string | null
+  // Application
+  application_email: string
 
   // Timestamps
   created_at: string
@@ -119,8 +118,7 @@ export interface JobPostFormData {
   status?: JobStatus
   custom_posted_date?: string
 
-  seo_meta_title?: string
-  seo_meta_description?: string
+  application_email?: string
 }
 
 export interface GetJobPostsParams {

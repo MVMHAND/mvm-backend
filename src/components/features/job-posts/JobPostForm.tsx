@@ -16,6 +16,7 @@ import type {
 } from '@/types/job-posts'
 import { RichTextEditor } from '@/components/features/blog/RichTextEditor'
 import { AuditInfo } from '@/components/features/shared/AuditInfo'
+import { useUser } from '@/store/provider'
 
 interface CategoryOption {
   id: string
@@ -33,6 +34,7 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
   const { success, error: showError } = useToast()
   const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const user = useUser()
 
   // Form state - responsibilities, must_have_skills, preferred_skills, benefits are HTML from TipTap editor
   const [formData, setFormData] = useState<JobPostFormData>({
@@ -65,8 +67,7 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
       ? new Date(post.custom_posted_date).toISOString().slice(0, 16)
       : '',
 
-    seo_meta_title: post?.seo_meta_title || '',
-    seo_meta_description: post?.seo_meta_description || '',
+    application_email: post?.application_email || user?.email || '',
   })
 
   const handleSubmit = async (e: FormEvent, statusOverride?: 'draft' | 'published') => {
@@ -78,6 +79,14 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
     if (!formData.employment_type) newErrors.employment_type = 'Employment type is required'
     if (!formData.overview?.trim()) newErrors.overview = 'Position overview is required'
     if (!formData.location?.trim()) newErrors.location = 'Location is required'
+
+    // Validate application email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!formData.application_email?.trim()) {
+      newErrors.application_email = 'Application email is required'
+    } else if (!emailRegex.test(formData.application_email)) {
+      newErrors.application_email = 'Please enter a valid email address'
+    }
 
     // Additional validation when publishing
     const effectiveStatus = statusOverride || formData.status
@@ -442,38 +451,22 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
             />
           </div>
 
-          {/* SEO Settings */}
+          {/* Application Information */}
           <div className="space-y-4 border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-900">SEO Settings</h3>
-            <p className="text-sm text-gray-600">Leave empty to auto-generate from job details</p>
+            <h3 className="text-lg font-semibold text-gray-900">Application Information</h3>
 
             <div>
               <Input
-                label="Meta Title"
-                value={formData.seo_meta_title || ''}
-                onChange={(e) => setFormData({ ...formData, seo_meta_title: e.target.value })}
-                maxLength={60}
-                placeholder="SEO-optimized title"
+                label="Application Email"
+                type="email"
+                value={formData.application_email || ''}
+                onChange={(e) => setFormData({ ...formData, application_email: e.target.value })}
+                placeholder="careers@myvirtualmate.com"
+                required
+                error={errors.application_email}
               />
               <p className="mt-1 text-sm text-gray-500">
-                {formData.seo_meta_title?.length || 0}/60 characters
-              </p>
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Meta Description
-              </label>
-              <textarea
-                value={formData.seo_meta_description || ''}
-                onChange={(e) => setFormData({ ...formData, seo_meta_description: e.target.value })}
-                maxLength={160}
-                rows={3}
-                placeholder="SEO-optimized description"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-mvm-blue focus:outline-none focus:ring-2 focus:ring-mvm-blue focus:ring-opacity-20"
-              />
-              <p className="mt-1 text-sm text-gray-500">
-                {formData.seo_meta_description?.length || 0}/160 characters
+                Email address where candidates should send their applications
               </p>
             </div>
           </div>

@@ -12,10 +12,9 @@ import type {
   JobPostWithUsers,
 } from '@/types/job-posts'
 import {
-  generateSeoTitle,
-  generateSeoDescription,
   splitByNewline,
   canPublishPost,
+  isValidEmail,
 } from '@/lib/job-posts/posts'
 
 type ActionResponse<T = unknown> =
@@ -135,8 +134,14 @@ export async function createJobPostAction(
 
     const supabase = await createClient()
 
-    const seoTitle = formData.seo_meta_title || generateSeoTitle(formData)
-    const seoDescription = formData.seo_meta_description || generateSeoDescription(formData)
+    // Get user email for application_email default
+    const userEmail = user.email || user.user_metadata?.email || 'careers@myvirtualmate.com'
+    const applicationEmail = formData.application_email?.trim() || userEmail
+
+    // Validate email format
+    if (!isValidEmail(applicationEmail)) {
+      return { success: false, error: 'Valid application email is required' }
+    }
 
     // Skills an array (for tags), split from multi-line text
     const skills = formData.skills ? splitByNewline(formData.skills) : []
@@ -169,8 +174,7 @@ export async function createJobPostAction(
       status: formData.status || 'published',
       custom_posted_date: formData.custom_posted_date || null,
 
-      seo_meta_title: seoTitle,
-      seo_meta_description: seoDescription,
+      application_email: applicationEmail,
 
       created_by: user.id,
       updated_by: user.id,
@@ -233,8 +237,11 @@ export async function updateJobPostAction(
       return { success: false, error: 'Job post not found' }
     }
 
-    const seoTitle = formData.seo_meta_title || generateSeoTitle(formData)
-    const seoDescription = formData.seo_meta_description || generateSeoDescription(formData)
+    // Validate application email if provided
+    const applicationEmail = formData.application_email?.trim()
+    if (applicationEmail && !isValidEmail(applicationEmail)) {
+      return { success: false, error: 'Valid application email is required' }
+    }
 
     // Skills is still an array (for tags), split from multi-line text
     const skills = formData.skills ? splitByNewline(formData.skills) : []
@@ -266,8 +273,7 @@ export async function updateJobPostAction(
       status: formData.status || existingPost.status,
       custom_posted_date: formData.custom_posted_date || null,
 
-      seo_meta_title: seoTitle,
-      seo_meta_description: seoDescription,
+      ...(applicationEmail && { application_email: applicationEmail }),
 
       updated_by: user.id,
     }

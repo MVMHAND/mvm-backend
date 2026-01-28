@@ -1,33 +1,11 @@
-import type { JobPost, JobPostFormData } from '@/types/job-posts'
+import type { JobPost } from '@/types/job-posts'
 
 /**
- * Generate SEO meta title with fallback
+ * Validate email format
  */
-export function generateSeoTitle(post: Partial<JobPost> | JobPostFormData): string {
-  if ('seo_meta_title' in post && post.seo_meta_title?.trim()) {
-    return post.seo_meta_title
-  }
-
-  const parts = [post.title]
-  if (post.location) parts.push(post.location)
-  parts.push('My Virtual Mate Careers')
-
-  const title = parts.join(' | ')
-  return title.length > 60 ? title.substring(0, 57) + '...' : title
-}
-
-/**
- * Generate SEO meta description with fallback
- */
-export function generateSeoDescription(post: Partial<JobPost> | JobPostFormData): string {
-  if ('seo_meta_description' in post && post.seo_meta_description?.trim()) {
-    return post.seo_meta_description
-  }
-
-  const desc =
-    post.overview ||
-    `Join My Virtual Mate as a ${post.title}. ${post.employment_type} position${post.location ? ` in ${post.location}` : ''}.`
-  return desc.length > 160 ? desc.substring(0, 157) + '...' : desc
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
 }
 
 /**
@@ -63,6 +41,10 @@ export function canPublishPost(post: Partial<JobPost>): {
   if (!post.employment_type) errors.push('Employment type is required')
   if (!post.location?.trim()) errors.push('Location is required')
   if (!post.category_id) errors.push('Category is required')
+  if (!post.application_email?.trim()) errors.push('Application email is required')
+  if (post.application_email && !isValidEmail(post.application_email)) {
+    errors.push('Valid application email is required')
+  }
 
   const hasStructuredSalary = post.salary_min && post.salary_max
   const hasCustomSalary = post.salary_custom_text?.trim()

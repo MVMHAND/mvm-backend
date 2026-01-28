@@ -30,6 +30,7 @@ interface JobPostListItem {
   published_at: string | null
   custom_posted_date: string | null
   status: string
+  application_email: string
   category: JobCategory | null
 }
 
@@ -82,6 +83,7 @@ serve(async (req) => {
         published_at,
         custom_posted_date,
         status,
+        application_email,
         category:job_categories(id, name)
       `,
         { count: 'exact' }
