@@ -23,6 +23,7 @@ export type ExperienceLevel =
 export interface JobCategory {
   id: string
   name: string
+  color: string | null
   post_count: number
   created_at: string
   updated_at: string
@@ -37,6 +38,7 @@ export interface JobCategoryWithUsers extends JobCategory {
 
 export interface JobCategoryFormData {
   name: string
+  color?: string
 }
 
 export interface JobPost {

@@ -62,7 +62,16 @@ export function JobCategoryList({ categories, pagination }: JobCategoryListProps
       {
         key: 'name',
         header: 'Name',
-        render: (category) => <div className="font-medium text-gray-900">{category.name}</div>,
+        render: (category) => (
+          <div className="flex items-center gap-3">
+            <span
+              className="inline-block rounded-full px-3 py-1 text-sm font-medium text-white"
+              style={{ backgroundColor: category.color || '#6B7280' }}
+            >
+              {category.name}
+            </span>
+          </div>
+        ),
       },
       {
         key: 'posts',

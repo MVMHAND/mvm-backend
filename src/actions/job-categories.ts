@@ -89,6 +89,7 @@ export async function createJobCategoryAction(
       .from('job_categories')
       .insert({
         name: formData.name,
+        color: formData.color || null,
         created_by: user.id,
         updated_by: user.id,
       })
@@ -151,6 +152,7 @@ export async function updateJobCategoryAction(
       .from('job_categories')
       .update({
         name: formData.name,
+        color: formData.color || null,
         updated_by: user.id,
       })
       .eq('id', id)

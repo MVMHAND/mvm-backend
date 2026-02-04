@@ -18,7 +18,7 @@ interface ContentTypeConfig {
   hasSocialPreview: boolean
 }
 
-const CONTENT_TYPE_CONFIG: Record<ContentType, ContentTypeConfig> = {
+export const CONTENT_TYPE_CONFIG: Record<ContentType, ContentTypeConfig> = {
   blog: {
     pathTemplate: '/blog/{slug}',
     identifierKey: 'slug',

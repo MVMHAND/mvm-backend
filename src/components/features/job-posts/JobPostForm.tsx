@@ -17,10 +17,12 @@ import type {
 import { RichTextEditor } from '@/components/features/blog/RichTextEditor'
 import { AuditInfo } from '@/components/features/shared/AuditInfo'
 import { useUser } from '@/store/provider'
+import { getJobPostAnalyticsUrl } from '@/lib/analytics/job-analytics'
 
 interface CategoryOption {
   id: string
   name: string
+  color?: string | null
 }
 
 interface JobPostFormProps {
@@ -43,7 +45,7 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
 
     category_id: post?.category_id || '',
     department: post?.department || '',
-    location: post?.location || '',
+    location: post?.location || 'Remote - ',
     employment_type: post?.employment_type || 'full-time',
 
     salary_type: post?.salary_custom_text ? 'custom' : 'structured',
@@ -140,7 +142,33 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
     <Card className="relative">
       <LoadingOverlay isLoading={isPending} message="Saving job post..." />
       <CardHeader>
-        <CardTitle>{isEditing ? 'Edit Job Post' : 'Create New Job Post'}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>{isEditing ? 'Edit Job Post' : 'Create New Job Post'}</CardTitle>
+          {isEditing && post && (
+            <a
+              href={getJobPostAnalyticsUrl(post.job_id)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-mvm-blue px-4 py-2 text-sm font-medium text-white hover:bg-mvm-blue/90 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 3v18h18" />
+                <path d="m19 9-5 5-4-4-3 3" />
+              </svg>
+              View Analytics
+            </a>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={(e) => handleSubmit(e)} className="space-y-8">
@@ -198,6 +226,20 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
                     </option>
                   ))}
                 </select>
+                {formData.category_id && (
+                  <div className="mt-2">
+                    <span className="text-xs text-gray-600">Preview: </span>
+                    <span
+                      className="inline-block rounded-full px-3 py-1 text-sm font-medium text-white"
+                      style={{
+                        backgroundColor:
+                          categories.find((c) => c.id === formData.category_id)?.color || '#6B7280',
+                      }}
+                    >
+                      {categories.find((c) => c.id === formData.category_id)?.name}
+                    </span>
+                  </div>
+                )}
                 {errors.category_id && (
                   <p className="mt-1 text-sm text-red-600">{errors.category_id}</p>
                 )}
@@ -215,10 +257,12 @@ export function JobPostForm({ post, categories, isEditing = false }: JobPostForm
                   label="Location"
                   value={formData.location || ''}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="e.g., Remote, Sydney, New York"
                   required
                   error={errors.location}
                 />
+                <p className="mt-1 text-sm text-gray-500">
+                  Examples: "Remote - Global", "Remote - India, Philippines"
+                </p>
               </div>
 
               <div>

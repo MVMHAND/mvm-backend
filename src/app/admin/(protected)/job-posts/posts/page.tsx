@@ -2,6 +2,7 @@ import { JobPostList } from '@/components/features/job-posts/JobPostList'
 import { getJobPostsAction } from '@/actions/job-posts'
 import { getJobCategoriesAction } from '@/actions/job-categories'
 import { PageContainer, PageHeader, ErrorMessage } from '@/components/layout/PageLayout'
+import { getJobPostsOverviewAnalyticsUrl } from '@/lib/analytics/job-analytics'
 
 interface JobPostsPageProps {
   searchParams: Promise<{
@@ -58,6 +59,30 @@ export default async function JobPostsPage({ searchParams }: JobPostsPageProps) 
       <PageHeader
         title="Job Posts"
         description={`Manage job postings and openings (${total} total)`}
+        action={
+          <a
+            href={getJobPostsOverviewAnalyticsUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-mvm-blue px-4 py-2 text-sm font-medium text-white hover:bg-mvm-blue/90 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 3v18h18" />
+              <path d="m19 9-5 5-4-4-3 3" />
+            </svg>
+            View All Analytics
+          </a>
+        }
       />
 
       <JobPostList

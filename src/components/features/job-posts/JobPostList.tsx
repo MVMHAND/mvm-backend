@@ -10,7 +10,6 @@ import { useToast } from '@/contexts/ToastContext'
 import {
   AdminTable,
   Column,
-  TableBadge,
   DateCell,
   TableError,
   FilterConfig,
@@ -25,6 +24,7 @@ import {
 import { formatDateTime } from '@/lib/utils'
 import { AuditTooltip } from '@/components/features/shared/AuditTooltip'
 import type { JobPostWithUsers } from '@/types/job-posts'
+import { getJobPostAnalyticsUrl } from '@/lib/analytics/job-analytics'
 
 interface CategoryOption {
   id: string
@@ -40,6 +40,11 @@ interface JobPostListProps {
     total: number
     totalPages: number
   }
+}
+
+interface CreatorOption {
+  id: string
+  name: string
 }
 
 export function JobPostList({ posts, categories, pagination }: JobPostListProps) {
@@ -119,6 +124,16 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
     })
   }
 
+  const uniqueCreators: CreatorOption[] = useMemo(() => {
+    const creatorsMap = new Map<string, string>()
+    posts.forEach((post) => {
+      if (post.creator && post.created_by) {
+        creatorsMap.set(post.created_by, post.creator.name)
+      }
+    })
+    return Array.from(creatorsMap.entries()).map(([id, name]) => ({ id, name }))
+  }, [posts])
+
   const filters: FilterConfig[] = useMemo(
     () => [
       {
@@ -153,8 +168,15 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
         options: categories.map((c) => ({ value: c.id, label: c.name })),
         placeholder: 'All categories',
       },
+      {
+        key: 'created_by',
+        label: 'Created By',
+        type: 'select',
+        options: uniqueCreators.map((c) => ({ value: c.id, label: c.name })),
+        placeholder: 'All creators',
+      },
     ],
-    [categories]
+    [categories, uniqueCreators]
   )
 
   const columns: Column<JobPostWithUsers>[] = useMemo(
@@ -171,25 +193,28 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
         className: 'whitespace-normal',
       },
       {
-        key: 'category',
-        header: 'Category',
+        key: 'details',
+        header: 'Category / Type / Location',
         render: (post) => (
-          <TableBadge variant="info">{post.category?.name || 'Uncategorized'}</TableBadge>
-        ),
-      },
-      {
-        key: 'employment_type',
-        header: 'Type',
-        render: (post) => (
-          <span className="text-sm capitalize">{post.employment_type.replace('-', ' ')}</span>
-        ),
-      },
-      {
-        key: 'location',
-        header: 'Location',
-        render: (post) => (
-          <div>
-            <div className="text-sm">{post.location || '—'}</div>
+          <div className="space-y-1">
+            <div>
+              {post.category ? (
+                <span
+                  className="inline-block rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                  style={{ backgroundColor: post.category.color || '#6B7280' }}
+                >
+                  {post.category.name}
+                </span>
+              ) : (
+                <span className="text-xs text-gray-500">Uncategorized</span>
+              )}
+            </div>
+            <div className="text-xs text-gray-600 capitalize">
+              {post.employment_type.replace('-', ' ')}
+            </div>
+            <div className="text-xs text-gray-600">
+              {post.location || '—'}
+            </div>
           </div>
         ),
       },
@@ -210,6 +235,13 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
             </span>
           )
         },
+      },
+      {
+        key: 'created_by',
+        header: 'Created By',
+        render: (post) => (
+          <div className="text-sm text-gray-700">{post.creator?.name || '—'}</div>
+        ),
       },
       {
         key: 'posted_date',
@@ -235,6 +267,29 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
         cellAlign: 'right',
         render: (post) => (
           <div className="flex justify-end gap-2">
+            <a
+              href={getJobPostAnalyticsUrl(post.job_id)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="View Analytics"
+            >
+              <Button size="sm" variant="outline">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 3v18h18" />
+                  <path d="m19 9-5 5-4-4-3 3" />
+                </svg>
+              </Button>
+            </a>
             {hasPermission(Permissions.JOB_POSTS_EDIT) && (
               <Link href={`/admin/job-posts/posts/${post.id}`}>
                 <Button size="sm" variant="outline">

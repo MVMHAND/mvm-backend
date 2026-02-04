@@ -46,7 +46,7 @@ export async function getJobPostsAction(params: GetJobPostsParams = {}): Promise
       .select(
         `
         *,
-        category:job_categories(id, name),
+        category:job_categories(id, name, color),
         creator:created_by(name, email),
         updater:updated_by(name, email),
         publisher:published_by(name, email)
@@ -101,7 +101,7 @@ export async function getJobPostByIdAction(id: string): Promise<ActionResponse<J
       .select(
         `
         *,
-        category:job_categories(id, name),
+        category:job_categories(id, name, color),
         creator:created_by(name, email),
         updater:updated_by(name, email),
         publisher:published_by(name, email)
@@ -183,7 +183,7 @@ export async function createJobPostAction(
     const { data, error } = await supabase
       .from('job_posts')
       .insert(insertData)
-      .select('*, category:job_categories(id, name)')
+      .select('*, category:job_categories(id, name, color)')
       .single()
 
     if (error) {
@@ -282,7 +282,7 @@ export async function updateJobPostAction(
       .from('job_posts')
       .update(updateData)
       .eq('id', id)
-      .select('*, category:job_categories(id, name)')
+      .select('*, category:job_categories(id, name, color)')
       .single()
 
     if (error) {
@@ -346,7 +346,7 @@ export async function publishJobPostAction(id: string): Promise<ActionResponse<J
       .from('job_posts')
       .update({ status: 'published', published_by: user.id, published_at: new Date() })
       .eq('id', id)
-      .select('*, category:job_categories(id, name)')
+      .select('*, category:job_categories(id, name, color)')
       .single()
 
     if (error) {
@@ -392,7 +392,7 @@ export async function unpublishJobPostAction(id: string): Promise<ActionResponse
         published_by: null,
       })
       .eq('id', id)
-      .select('*, category:job_categories(id, name)')
+      .select('*, category:job_categories(id, name, color)')
       .single()
 
     if (error) {

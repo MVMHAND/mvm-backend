@@ -9,6 +9,7 @@ Internal administrative platform for managing users, roles, permissions, and blo
 - **Role-Based Access Control** - Dynamic permissions with code-driven navigation
 - **Blog Management** - Full CMS for posts, categories, and contributors with rich text editing
 - **Job Posts Module** - End-to-end admin workflows for job categories, listings, publishing, and copy-ready preview/live links with rich text authoring for responsibilities, skills, and benefits
+- **Job Analytics Insights** - One-click GA4 deep links from job lists/forms for both individual posts and portfolio-level traffic reviews
 - **Application Email Routing** - Job posts auto-populate and validate creator email addresses so admins can publish copy-ready "apply via email" listings without exposing external forms
 - **Unified URL Generation** - Centralized URL builder keeps preview/social/production links consistent across blog and job posts
 - **Email Integration** - Automated invitations and password reset via Resend
@@ -168,7 +169,9 @@ my-virtual-mate/
 
 - Full CRUD for job categories and posts powered by strict permissions (`job-posts.view/edit/publish/delete`).
 - Dedicated admin pages for list, detail, and form flows with audit logging for every mutation.
+- Color-coded category chips synchronize between admin and public UI, with selectable palettes + custom hex support inside the category form.
 - Automatic SEO + JSON-LD enrichment, centralized URL generation (preview/social/production), and publish validation helpers.
+- Built-in GA4 shortcuts let admins open filtered analytics for a single job or the full jobs portfolio directly from the dashboard.
 - Supabase Edge Functions (`job-list-posts`, `job-get-post`) expose a read-only API for the public site to consume jobs without leaking admin credentials.
 - Sequential `JOB-000001` style IDs with collision-safe generation keep records human-friendly while remaining unique.
 - Inline TipTap editors persist HTML for responsibilities, must-have skills, preferred skills, and benefits so publishing validations run against real formatted content instead of arrays.
