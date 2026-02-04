@@ -1,5 +1,5 @@
 import { JobPostList } from '@/components/features/job-posts/JobPostList'
-import { getJobPostsAction } from '@/actions/job-posts'
+import { getJobPostsAction, getJobPostCreatorsAction } from '@/actions/job-posts'
 import { getJobCategoriesAction } from '@/actions/job-categories'
 import { PageContainer, PageHeader, ErrorMessage } from '@/components/layout/PageLayout'
 import { getJobPostsOverviewAnalyticsUrl } from '@/lib/analytics/job-analytics'
@@ -11,6 +11,7 @@ interface JobPostsPageProps {
     status?: string
     category?: string
     employment_type?: string
+    created_by?: string
   }>
 }
 
@@ -21,8 +22,9 @@ export default async function JobPostsPage({ searchParams }: JobPostsPageProps) 
   const status = params.status || ''
   const category = params.category || ''
   const employment_type = params.employment_type || ''
+  const created_by = params.created_by || ''
 
-  const [postsResult, categoriesResult] = await Promise.all([
+  const [postsResult, categoriesResult, creatorsResult] = await Promise.all([
     getJobPostsAction({
       page,
       limit: 10,
@@ -37,8 +39,10 @@ export default async function JobPostsPage({ searchParams }: JobPostsPageProps) 
         | 'freelance'
         | 'internship'
         | undefined,
+      created_by: created_by || undefined,
     }),
     getJobCategoriesAction(),
+    getJobPostCreatorsAction(),
   ])
 
   if (!postsResult.success || !postsResult.data) {
@@ -88,6 +92,7 @@ export default async function JobPostsPage({ searchParams }: JobPostsPageProps) 
       <JobPostList
         posts={posts}
         categories={categoriesResult.success ? categoriesResult.data || [] : []}
+        creators={creatorsResult.success ? creatorsResult.data || [] : []}
         pagination={{ page, pageSize: 10, total, totalPages: pages }}
       />
     </PageContainer>

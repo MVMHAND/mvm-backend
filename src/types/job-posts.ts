@@ -130,6 +130,7 @@ export interface GetJobPostsParams {
   status?: JobStatus
   category?: string
   employment_type?: EmploymentType
+  created_by?: string
 }
 
 export interface JobPostWithCategory extends Omit<JobPost, 'category'> {

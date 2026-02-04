@@ -169,6 +169,8 @@ my-virtual-mate/
 
 - Full CRUD for job categories and posts powered by strict permissions (`job-posts.view/edit/publish/delete`).
 - Dedicated admin pages for list, detail, and form flows with audit logging for every mutation.
+- Advanced filtering system with status, employment type, category, and creator filters for efficient job post management.
+- Creator filter fetches all unique post creators independently to enable seamless switching between users without resetting filters.
 - Color-coded category chips synchronize between admin and public UI, with selectable palettes + custom hex support inside the category form.
 - Automatic SEO + JSON-LD enrichment, centralized URL generation (preview/social/production), and publish validation helpers.
 - Built-in GA4 shortcuts let admins open filtered analytics for a single job or the full jobs portfolio directly from the dashboard.

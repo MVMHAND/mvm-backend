@@ -22,6 +22,46 @@ type ActionResponse<T = unknown> =
   | { success: false; error: string }
 
 /**
+ * Get all unique job post creators
+ */
+export async function getJobPostCreatorsAction(): Promise<
+  ActionResponse<Array<{ id: string; name: string }>>
+> {
+  try {
+    await verifySession()
+    await requirePermission(Permissions.JOB_POSTS_VIEW)
+
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('job_posts')
+      .select('created_by, creator:created_by(name)')
+      .not('created_by', 'is', null)
+
+    if (error) {
+      console.error('Error fetching job post creators:', error)
+      return { success: false, error: 'Failed to fetch creators' }
+    }
+
+    // Get unique creators
+    const creatorsMap = new Map<string, string>()
+    data?.forEach((post) => {
+      // Supabase returns creator as an object when using foreign key syntax
+      const creatorData = post.creator as unknown as { name: string } | null
+      if (post.created_by && creatorData?.name) {
+        creatorsMap.set(post.created_by, creatorData.name)
+      }
+    })
+
+    const creators = Array.from(creatorsMap.entries()).map(([id, name]) => ({ id, name }))
+
+    return { success: true, data: creators }
+  } catch (error) {
+    console.error('Unexpected error in getJobPostCreatorsAction:', error)
+    return { success: false, error: 'An unexpected error occurred' }
+  }
+}
+
+/**
  * Get paginated job posts with filters
  */
 export async function getJobPostsAction(params: GetJobPostsParams = {}): Promise<
@@ -62,6 +102,7 @@ export async function getJobPostsAction(params: GetJobPostsParams = {}): Promise
     if (params.status) query = query.eq('status', params.status)
     if (params.category) query = query.eq('category_id', params.category)
     if (params.employment_type) query = query.eq('employment_type', params.employment_type)
+    if (params.created_by) query = query.eq('created_by', params.created_by)
 
     query = query.range(offset, offset + limit - 1)
 

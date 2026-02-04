@@ -31,9 +31,15 @@ interface CategoryOption {
   name: string
 }
 
+interface CreatorOption {
+  id: string
+  name: string
+}
+
 interface JobPostListProps {
   posts: JobPostWithUsers[]
   categories: CategoryOption[]
+  creators: CreatorOption[]
   pagination?: {
     page: number
     pageSize: number
@@ -42,12 +48,7 @@ interface JobPostListProps {
   }
 }
 
-interface CreatorOption {
-  id: string
-  name: string
-}
-
-export function JobPostList({ posts, categories, pagination }: JobPostListProps) {
+export function JobPostList({ posts, categories, creators, pagination }: JobPostListProps) {
   const router = useRouter()
   const { success, error: showError } = useToast()
   const { hasPermission } = useAuth()
@@ -124,16 +125,6 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
     })
   }
 
-  const uniqueCreators: CreatorOption[] = useMemo(() => {
-    const creatorsMap = new Map<string, string>()
-    posts.forEach((post) => {
-      if (post.creator && post.created_by) {
-        creatorsMap.set(post.created_by, post.creator.name)
-      }
-    })
-    return Array.from(creatorsMap.entries()).map(([id, name]) => ({ id, name }))
-  }, [posts])
-
   const filters: FilterConfig[] = useMemo(
     () => [
       {
@@ -172,11 +163,11 @@ export function JobPostList({ posts, categories, pagination }: JobPostListProps)
         key: 'created_by',
         label: 'Created By',
         type: 'select',
-        options: uniqueCreators.map((c) => ({ value: c.id, label: c.name })),
+        options: creators.map((c) => ({ value: c.id, label: c.name })),
         placeholder: 'All creators',
       },
     ],
-    [categories, uniqueCreators]
+    [categories, creators]
   )
 
   const columns: Column<JobPostWithUsers>[] = useMemo(
