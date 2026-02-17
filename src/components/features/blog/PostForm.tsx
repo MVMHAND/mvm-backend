@@ -222,7 +222,9 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
         seo_meta_description: seoDescription.trim() || '',
         seo_keywords: seoKeywords.trim() || '',
         slug: slug.trim(),
-        cover_image_url: isEditing ? coverImageUrl : null, // Will be updated after upload for new posts
+        // For editing: if cover changed, keep original URL (will be updated after upload)
+        // For new posts: null (will be updated after upload)
+        cover_image_url: isEditing && !coverImageChanged ? coverImageUrl : isEditing ? post?.cover_image_url : null,
         category_id: categoryId || null,
         contributor_id: contributorId || null,
         content: content || '',
