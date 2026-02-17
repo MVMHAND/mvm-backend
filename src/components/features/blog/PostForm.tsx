@@ -64,13 +64,13 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
   const [additionalSchemas, setAdditionalSchemas] = useState<AdditionalSchema[]>(
     post?.seo_additional_schemas
       ? post.seo_additional_schemas.map(
-          (data, index) =>
-            ({
-              id: `schema-${index}`,
-              type: ((data as Record<string, unknown>)['@type'] as string) || 'Custom',
-              data: data as Record<string, unknown>,
-            }) as AdditionalSchema
-        )
+        (data, index) =>
+          ({
+            id: `schema-${index}`,
+            type: ((data as Record<string, unknown>)['@type'] as string) || 'Custom',
+            data: data as Record<string, unknown>,
+          }) as AdditionalSchema
+      )
       : []
   )
 
@@ -337,7 +337,7 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
             label="Cover Image"
             onUpload={handleCoverUpload}
             currentUrl={coverImageUrl}
-            maxSizeMB={5}
+            maxSizeMB={10}
             aspectRatio="16:9"
             aspectRatioHelp="Upload a 16:9 cover image (recommended 1200x675 px; larger sizes like 1600x900 or 1920×1080 also work)"
           />

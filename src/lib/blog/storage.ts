@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
 // Maximum file sizes
-const MAX_COVER_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_COVER_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024 // 2MB
 
 /**
@@ -239,7 +239,7 @@ export function getFileSizeLimits(): {
   return {
     cover: {
       bytes: MAX_COVER_IMAGE_SIZE,
-      display: '5MB',
+      display: '10MB',
     },
     avatar: {
       bytes: MAX_AVATAR_SIZE,
