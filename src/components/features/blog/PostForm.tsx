@@ -339,9 +339,9 @@ export function PostForm({ post, categories, contributors, isEditing = false }: 
             label="Cover Image"
             onUpload={handleCoverUpload}
             currentUrl={coverImageUrl}
-            maxSizeMB={10}
+            maxSizeMB={4}
             aspectRatio="16:9"
-            aspectRatioHelp="Upload a 16:9 cover image (recommended 1200x675 px; larger sizes like 1600x900 or 1920×1080 also work)"
+            aspectRatioHelp="Upload a 16:9 cover image (recommended 1200x675 px; keep file size under 4MB)"
           />
 
           {/* Category */}
